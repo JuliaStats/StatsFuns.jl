@@ -32,12 +32,32 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
     ccdf    = string(basename, "ccdf")
     logcdf  = string(basename, "logcdf")
     logccdf = string(basename, "logccdf")
+    invcdf     = string(basename, "invcdf")
+    invccdf    = string(basename, "invccdf")
+    invlogcdf  = string(basename, "invlogcdf")
+    invlogccdf = string(basename, "invlogccdf")
 
-    stats_pdf = get_statsfun(pdf)
-    stats_logpdf = get_statsfun(logpdf)
+    stats_pdf     = get_statsfun(pdf)
+    stats_logpdf  = get_statsfun(logpdf)
+    stats_cdf     = get_statsfun(cdf)
+    stats_ccdf    = get_statsfun(ccdf)
+    stats_logcdf  = get_statsfun(logcdf)
+    stats_logccdf = get_statsfun(logccdf)
+    stats_invcdf     = get_statsfun(invcdf)
+    stats_invccdf    = get_statsfun(invccdf)
+    stats_invlogcdf  = get_statsfun(invlogcdf)
+    stats_invlogccdf = get_statsfun(invlogccdf)
 
-    rmath_pdf = get_statsfun(pdf)
-    rmath_logpdf = get_statsfun(logpdf)
+    rmath_pdf     = get_rmathfun(pdf)
+    rmath_logpdf  = get_rmathfun(logpdf)
+    rmath_cdf     = get_rmathfun(cdf)
+    rmath_ccdf    = get_rmathfun(ccdf)
+    rmath_logcdf  = get_rmathfun(logcdf)
+    rmath_logccdf = get_rmathfun(logccdf)
+    rmath_invcdf     = get_rmathfun(invcdf)
+    rmath_invccdf    = get_rmathfun(invccdf)
+    rmath_invlogcdf  = get_rmathfun(invlogcdf)
+    rmath_invlogccdf = get_rmathfun(invlogccdf)
 
     for i = 1:length(X)
         x = X[i]
@@ -45,63 +65,30 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
             params, "x", x, true, rtol)
         check_rmath(logpdf, stats_logpdf, rmath_logpdf,
             params, "x", x, false, rtol)
+        check_rmath(cdf, stats_cdf, rmath_cdf,
+            params, "x", x, true, rtol)
+        check_rmath(ccdf, stats_ccdf, rmath_ccdf,
+            params, "x", x, true, rtol)
+        check_rmath(logcdf, stats_logcdf, rmath_logcdf,
+            params, "x", x, false, rtol)
+        check_rmath(logccdf, stats_logccdf, rmath_logccdf,
+            params, "x", x, false, rtol)
+
+        p = rmath_cdf(params..., x)
+        cp = rmath_ccdf(params..., x)
+        lp = rmath_logcdf(params..., x)
+        lcp = rmath_logccdf(params..., x)
+
+        check_rmath(invcdf, stats_invcdf, rmath_invcdf,
+            params, "p", p, false, rtol)
+        check_rmath(invccdf, stats_invccdf, rmath_invccdf,
+            params, "p", cp, false, rtol)
+        check_rmath(invlogcdf, stats_invlogcdf, rmath_invlogcdf,
+            params, "lp", lp, false, rtol)
+        check_rmath(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
+            params, "lp", lcp, false, rtol)
     end
 end
-
-
-# macro generate_rmath_compfun(basename)
-#     # function symbols
-#     compfun = symbol(string("rmathcomp_", basename))
-#
-#     pdf     = symbol(string(basename, "pdf"))
-#     logpdf  = symbol(string(basename, "logpdf"))
-#     cdf     = symbol(string(basename, "cdf"))
-#     ccdf    = symbol(string(basename, "ccdf"))
-#     logcdf  = symbol(string(basename, "logcdf"))
-#     logccdf = symbol(string(basename, "logccdf"))
-#
-#     invcdf     = symbol(string(basename, "invcdf"))
-#     invccdf    = symbol(string(basename, "invccdf"))
-#     invlogcdf  = symbol(string(basename, "invlogcdf"))
-#     invlogccdf = symbol(string(basename, "invlogccdf"))
-#
-#     esc(quote
-#         function $(compfun){N}(params::NTuple{N,Real}, X::AbstractArray, rtol=1.0e-12)
-#             for i = 1:length(X)
-#                 x = X[i]
-#                 check_rmath($(string(pdf)), params, "x", x,
-#                     $(pdf)(params..., x), Rmath.$(pdf)(params..., x), true, rtol)
-#                 check_rmath($(string(logpdf)), params, "x", x,
-#                     $(logpdf)(params..., x), Rmath.$(logpdf)(params..., x), false, rtol)
-#
-#                 check_rmath($(string(cdf)), params, "x", x,
-#                     $(cdf)(params..., x), Rmath.$(cdf)(params..., x), true, rtol)
-#                 check_rmath($(string(ccdf)), params, "x", x,
-#                     $(ccdf)(params..., x), Rmath.$(ccdf)(params..., x), true, rtol)
-#                 check_rmath($(string(logcdf)), params, "x", x,
-#                     $(logcdf)(params..., x), Rmath.$(logcdf)(params..., x), false, rtol)
-#                 check_rmath($(string(logccdf)), params, "x", x,
-#                     $(logccdf)(params..., x), Rmath.$(logccdf)(params..., x), true, rtol)
-#
-#                 p = Rmath.$(cdf)(params..., x)
-#                 cp = Rmath.$(ccdf)(params..., x)
-#                 lp = log(p)
-#                 lcp = log(cp)
-#
-#                 check_rmath($(string(invcdf)), params, "p", p,
-#                     $(invcdf)(params..., p), Rmath.$(invcdf)(params..., p), false, rtol)
-#                 check_rmath($(string(invccdf)), params, "p", cp,
-#                     $(invccdf)(params..., cp), Rmath.$(invccdf)(params..., cp), false, rtol)
-#                 check_rmath($(string(invlogcdf)), params, "lp", lp,
-#                     $(invlogcdf)(params..., lp), Rmath.$(invlogcdf)(params..., lp), false, rtol)
-#                 check_rmath($(string(invlogccdf)), params, "lp", lcp,
-#                     $(invlogccdf)(params..., lcp), Rmath.$(invlogccdf)(params..., lcp), false, rtol)
-#             end
-#         end
-#     end)
-# end
-#
-# @generate_rmath_compfun norm
 
 rmathcomp("norm", (0.0, 1.0), -6.0:0.01:6.0)
 rmathcomp("norm", (2.0, 1.0), -3.0:0.01:7.0)
