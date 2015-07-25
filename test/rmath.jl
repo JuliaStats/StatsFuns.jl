@@ -41,8 +41,8 @@ macro generate_rmath_compfun(basename)
     # invlogcdf  = symbol(string(basename, "invlogcdf"))
     # invlogccdf = symbol(string(basename, "invlogccdf"))
 
-    quote
-        function $(esc(compfun)){N}(params::NTuple{N,Real}, X::AbstractArray, rtol=1.0e-12)
+    esc(quote
+        function $(compfun){N}(params::NTuple{N,Real}, X::AbstractArray, rtol=1.0e-12)
             for i = 1:length(X)
                 x = X[i]
                 check_rmath($pdfname, params, "x", x,
@@ -74,7 +74,7 @@ macro generate_rmath_compfun(basename)
                 #     $(invlogccdf)(params..., lcp), Rmath.$(invlogccdf)(params..., lcp), false, rtol)
             end
         end
-    end
+    end)
 end
 
 @generate_rmath_compfun norm
