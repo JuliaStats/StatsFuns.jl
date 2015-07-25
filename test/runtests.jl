@@ -1,7 +1,14 @@
 tests = ["basicfuns", "rmath"]
 
 for t in tests
-    fp = "$t.jl"
-    println("Running $fp ...")
-    include(fp)
+    to_test = true
+    if VERSION < v"0.4.0-dev"
+        to_test = false
+    end
+
+    if to_test
+        fp = "$t.jl"
+        println("Running $fp ...")
+        include(fp)
+    end
 end
