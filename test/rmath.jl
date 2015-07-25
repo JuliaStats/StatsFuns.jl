@@ -45,8 +45,8 @@ macro generate_rmath_compfun(basename)
         function $(compfun){N}(params::NTuple{N,Real}, X::AbstractArray, rtol=1.0e-12)
             for i = 1:length(X)
                 x = X[i]
-                # check_rmath($pdfname, params, "x", x,
-                #     $(pdf)(params..., x), Rmath.$(pdf)(params..., x), true, rtol)
+                check_rmath($pdfname, params, "x", x,
+                    $(pdf)(params..., x), Rmath.$(pdf)(params..., x), true, rtol)
                 # check_rmath($logpdfname, params, "x", x,
                 #     $(logpdf)(params..., x), Rmath.$(logpdf)(params..., x), false, rtol)
                 #
