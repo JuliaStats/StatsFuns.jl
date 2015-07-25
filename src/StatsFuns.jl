@@ -49,14 +49,16 @@ export
     logmxp1,        # log(x) - x + 1
 
     # normfuns
-    normpdf,        # pdf of standard normal distribution
-    normlogpdf,     # logpdf of standard normal distribution
-    normcdf,        # cdf of standard normal distribution
-    normccdf,       # ccdf of standard normal distribution
-    normlogcdf,     # logcdf of standard normal distribution
-    normlogccdf,    # logccdf of standard normal distribution
-    norminvcdf,     # inverse of cdf of standard normal distribution
-    norminvccdf,    # inverse of logcdf of standard normal distribution
+    normpdf,        # pdf of normal distribution
+    normlogpdf,     # logpdf of normal distribution
+    normcdf,        # cdf of normal distribution
+    normccdf,       # ccdf of normal distribution
+    normlogcdf,     # logcdf of normal distribution
+    normlogccdf,    # logccdf of normal distribution
+    norminvcdf,     # inverse-cdf of normal distribution
+    norminvccdf,    # inverse-ccdf of normal distribution
+    norminvlogcdf,  # inverse-logcdf of normal distribution
+    norminvlogccdf, # inverse-logccdf of normal distribution
 
     # misc
     logmvgamma,     # logarithm of multivariate gamma function

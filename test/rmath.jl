@@ -63,12 +63,12 @@ macro generate_rmath_compfun(basename)
 
                 check_rmath($(string(invcdf)), params, "p", p,
                     $(invcdf)(params..., p), Rmath.$(invcdf)(params..., p), false, rtol)
-                # check_rmath($(string(invccdf)), params, "p", cp,
-                #     $(invccdf)(params..., cp), Rmath.$(invccdf)(params..., cp), false, rtol)
-                # check_rmath($(string(invlogcdf)), params, "lp", lp,
-                #     $(invlogcdf)(params..., lp), Rmath.$(invlogcdf)(params..., lp), false, rtol)
-                # check_rmath($(string(invlogccdf)), params, "lp", lcp,
-                #     $(invlogccdf)(params..., lcp), Rmath.$(invlogccdf)(params..., lcp), false, rtol)
+                check_rmath($(string(invccdf)), params, "p", cp,
+                    $(invccdf)(params..., cp), Rmath.$(invccdf)(params..., cp), false, rtol)
+                check_rmath($(string(invlogcdf)), params, "lp", lp,
+                    $(invlogcdf)(params..., lp), Rmath.$(invlogcdf)(params..., lp), false, rtol)
+                check_rmath($(string(invlogccdf)), params, "lp", lcp,
+                    $(invlogccdf)(params..., lcp), Rmath.$(invlogccdf)(params..., lcp), false, rtol)
             end
         end
     end

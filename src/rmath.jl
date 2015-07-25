@@ -78,10 +78,10 @@ function _import_rmath(nparams::Int, basename::Symbol)
             ccall(($qfun, rmathlib), Float64, $qtypes, p, $(pargs...), 0, 0)
 
         $invlogcdf($(pdecls...), lp::Real) =
-            ccall($(qfun, rmathlib), Float64, $qtypes, lp, $(pargs...), 1, 1)
+            ccall(($qfun, rmathlib), Float64, $qtypes, lp, $(pargs...), 1, 1)
 
         $invlogccdf($(pdecls...), lp::Real) =
-            ccall($(qfun, rmathlib), Float64, $qtypes, lp, $(pargs...), 0, 1)
+            ccall(($qfun, rmathlib), Float64, $qtypes, lp, $(pargs...), 0, 1)
     end
 end
 
