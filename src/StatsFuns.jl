@@ -46,11 +46,22 @@ export
 
     # log1pmx
     log1pmx,        # log(1 + x) - x
-    logmxp1         # log(x) - x + 1
+    logmxp1,        # log(x) - x + 1
+
+    # normfuns
+    normpdf,        # pdf of standard normal distribution
+    normlogpdf,     # logpdf of standard normal distribution
+    normcdf,        # cdf of standard normal distribution
+    normccdf,       # ccdf of standard normal distribution
+    normlogcdf,     # logcdf of standard normal distribution
+    normlogccdf,    # logccdf of standard normal distribution
+    norminvcdf,     # inverse of cdf of standard normal distribution
+    norminvccdf     # inverse of logcdf of standard normal distribution
 
 ## source files
 include("constants.jl")
 include("basicfuns.jl")
 include("log1pmx.jl")
+include("normfuns.jl")
 
 end # module
