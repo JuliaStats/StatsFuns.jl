@@ -6,7 +6,7 @@ xval(μ::Real, σ::Real, z::Real) = xval(f64(μ), f64(σ), f64(z))
 zval(μ::Real, σ::Real, x::Real) = zval(f64(μ), f64(σ), f64(x))
 
 # pdf
-normpdf(z::Float64) = exp(-0.5 * abs2(z)) / sqrt2π
+normpdf(z::Float64) = exp(-0.5 * abs2(z)) * invsqrt2π
 normpdf(z::Real) = normpdf(f64(z))
 normpdf(μ::Real, σ::Real, x::Real) = normpdf(zval(μ, σ, x)) / f64(σ)
 
@@ -16,26 +16,26 @@ normlogpdf(z::Real) = normpdf(f64(z))
 normlogpdf(μ::Real, σ::Real, x::Real) = normlogpdf(zval(μ, σ, x)) - log(f64(σ))
 
 # cdf
-normcdf(z::Float64) = 0.5 * erfc(-z / sqrt2)
+normcdf(z::Float64) = 0.5 * erfc(-z * invsqrt2)
 normcdf(z::Real) = normcdf(f64(z))
 normcdf(μ::Real, σ::Real, x::Real) = normcdf(zval(μ, σ, x))
 
 # ccdf
-normccdf(z::Float64) = 0.5 * erfc(z / sqrt2)
+normccdf(z::Float64) = 0.5 * erfc(z * invsqrt2)
 normccdf(z::Real) = normccdf(f64(z))
 normccdf(μ::Real, σ::Real, x::Real) = normccdf(zval(μ, σ, x))
 
 # logcdf
 normlogcdf(z::Float64) = z < -1.0 ?
-    log(0.5 * erfcx(-z / sqrt2)) - 0.5 * abs2(z) :
-    log1p(-0.5 * erfc(z / sqrt2))
+    log(0.5 * erfcx(-z * invsqrt2)) - 0.5 * abs2(z) :
+    log1p(-0.5 * erfc(z * invsqrt2))
 normlogcdf(z::Real) = normlogcdf(f64(z))
 normlogcdf(μ::Real, σ::Real, x::Real) = normlogcdf(zval(μ, σ, x))
 
 # logccdf
 normlogccdf(z::Float64) = z > 1.0 ?
-    log(0.5 * erfcx(z / sqrt2)) - 0.5 * abs2(z) :
-    log1p(-0.5 * erfc(-z / sqrt2))
+    log(0.5 * erfcx(z * invsqrt2)) - 0.5 * abs2(z) :
+    log1p(-0.5 * erfc(-z * invsqrt2))
 normlogccdf(z::Real) = normlogccdf(f64(z))
 normlogccdf(μ::Real, σ::Real, x::Real) = normlogccdf(zval(μ, σ, x))
 
