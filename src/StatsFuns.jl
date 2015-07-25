@@ -56,12 +56,17 @@ export
     normlogcdf,     # logcdf of standard normal distribution
     normlogccdf,    # logccdf of standard normal distribution
     norminvcdf,     # inverse of cdf of standard normal distribution
-    norminvccdf     # inverse of logcdf of standard normal distribution
+    norminvccdf,    # inverse of logcdf of standard normal distribution
+
+    # misc
+    logmvgamma,     # logarithm of multivariate gamma function
+    lstirling_asym
 
 ## source files
 include("constants.jl")
 include("basicfuns.jl")
 include("log1pmx.jl")
 include("normfuns.jl")
+include("misc.jl")
 
 end # module
