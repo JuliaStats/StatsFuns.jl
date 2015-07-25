@@ -15,15 +15,28 @@ using Base.Test
 @test_approx_eq logit(0.5) 0.0
 @test_approx_eq logit(logistic(2)) 2.0
 
-# softplus & invsoftplus
+# log1psq
 
-@test_approx_eq softplus(2.0) log(1.0 + exp(2.0))
-@test_approx_eq softplus(-2.0) log(1.0 + exp(-2.0))
-@test_approx_eq softplus(10000) 10000.0
-@test_approx_eq softplus(-10000) 0.0
+@test_approx_eq log1psq(0.0) 0.0
+@test_approx_eq log1psq(1.0) log1p(1.0)
+@test_approx_eq log1psq(2.0) log1p(4.0)
 
-@test_approx_eq invsoftplus(softplus(2.0)) 2.0
-@test_approx_eq invsoftplus(softplus(-2.0)) -2.0
+# log1pexp, log1mexp, log2mexp & logexpm1
+
+@test_approx_eq log1pexp(2.0) log(1.0 + exp(2.0))
+@test_approx_eq log1pexp(-2.0) log(1.0 + exp(-2.0))
+@test_approx_eq log1pexp(10000) 10000.0
+@test_approx_eq log1pexp(-10000) 0.0
+
+@test_approx_eq log1mexp(-1.0) log1p(- exp(-1.0))
+@test_approx_eq log1mexp(-10.0) log1p(- exp(-10.0))
+
+@test_approx_eq log2mexp(0.0) 0.0
+@test_approx_eq log2mexp(-1.0) log(2.0 - exp(-1.0))
+
+@test_approx_eq logexpm1(2.0) log(exp(2.0) - 1.0)
+@test_approx_eq logexpm1(log1pexp(2.0)) 2.0
+@test_approx_eq logexpm1(log1pexp(-2.0)) -2.0
 
 # logsumexp
 

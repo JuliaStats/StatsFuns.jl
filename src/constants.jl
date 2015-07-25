@@ -18,9 +18,8 @@
 @irrational sqrt4π    3.5449077018110320546 sqrt(big(π) * 4.0)
 @irrational sqrthalfπ 1.2533141373155002512 sqrt(big(0.5)*π)
 
+@irrational loghalf -0.6931471805599453094 log(big(0.5))
 @irrational logtwo 0.6931471805599453094 log(big(2.))
 @irrational logπ   1.1447298858494001741 log(big(π))
 @irrational log2π  1.8378770664093454836 log(big(2.)*π)
 @irrational log4π  2.5310242469692907930 log(big(4.)*π)
-
-@irrational loghalf -0.6931471805599453094 log(big(0.5))

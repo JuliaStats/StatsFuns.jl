@@ -7,24 +7,61 @@ xlogy{T<:FloatingPoint}(x::T, y::T) = x > zero(T) ? x * log(y) : zero(x)
 xlogy{T<:Real}(x::T, y::T) = xlogy(float(x), float(y))
 xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
+# logistic: 1 / (1 + exp(-x))
+#
 logistic(x::FloatingPoint) = one(x) / (one(x) + exp(-x))
 logistic(x::Real) = logistic(float(x))
 
+# logit: log(x / (1 - x))
+#
 logit(x::FloatingPoint) = log(x / (one(x) - x))
 logit(x::Real) = logit(float(x))
 
-softplus(x::FloatingPoint) = x <= 0 ? log1p(exp(x)) : x + log1p(exp(-x))
-softplus(x::Real) = softplus(float(x))
+# log1psq: log(1+x^2)
+#
+log1psq(x::FloatingPoint) = log1p(abs2(x))
+log1psq(x::Union(Float32,Float64)) = (ax = abs(x); ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax))
+log1psq(x::Real) = log1psq(float(x))
 
-invsoftplus(x::FloatingPoint) = log(exp(x) - one(x))
-invsoftplus(x::Real) = invsoftplus(float(x))
+# log1pexp: log(1+exp(x))
+#
+log1pexp(x::FloatingPoint) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : x
+log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : x
+log1pexp(x::Real) = log1pexp(float(x))
+
+# log1mexp: log(1 - exp(x))
+#
+# See:
+#   Martin Maechler (2012) "Accurately Computing log(1 − exp(− |a|))"
+#   http://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf
+#
+# Note: different than Maechler (2012), no negation inside parantheses
+log1mexp(x::FloatingPoint) = x < loghalf ? log1p(-exp(x)) : log(-expm1(x))
+
+# log2mexp: log(2 - exp(x))
+#
+log2mexp(x::FloatingPoint) = log1p(-expm1(x))
+log2mexp(x::Real) = log2mexp(float(x))
+
+# logexpm1: log(exp(x) - 1)
+#
+logexpm1(x::FloatingPoint) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : x
+logexpm1(x::Float32) = x <= 9f0 ? log(expm1(x)) : x <= 16f0 ? x - exp(-x) : x
+logexpm1(x::Real) = logexpm1(float(x))
 
 @vectorize_1arg Real xlogx
 @vectorize_2arg Real xlogy
 @vectorize_1arg Real logistic
 @vectorize_1arg Real logit
-@vectorize_1arg Real softplus
-@vectorize_1arg Real invsoftplus
+@vectorize_1arg Real log1psq
+@vectorize_1arg Real log1pexp
+@vectorize_1arg Real log1mexp
+@vectorize_1arg Real log2mexp
+@vectorize_1arg Real logexpm1
+
+const softplus = log1pexp
+const invsoftplus = logexpm1
+
 
 ## logsumexp
 
