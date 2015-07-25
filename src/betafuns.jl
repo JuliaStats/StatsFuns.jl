@@ -1,6 +1,7 @@
 # functions related to beta distributions
 
-import StatsFuns.Rmath:
+using .Rmath
+import .Rmath:
     betalogpdf,
     betacdf,
     betaccdf,
