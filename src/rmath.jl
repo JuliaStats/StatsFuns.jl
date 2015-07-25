@@ -34,7 +34,7 @@ function _import_rmath(nparams::Int, basename::Symbol)
     logccdf = symbol(string(jbase, "logccdf"))
 
     invcdf = symbol(string(jbase, "invcdf"))
-    invccdf = symbol(string(jbase, "invcdf"))
+    invccdf = symbol(string(jbase, "invccdf"))
     invlogcdf = symbol(string(jbase, "invlogcdf"))
     invlogccdf = symbol(string(jbase, "invlogccdf"))
 

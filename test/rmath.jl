@@ -33,6 +33,11 @@ macro generate_rmath_compfun(basename)
     logcdf  = symbol(string(basename, "logcdf"))
     logccdf = symbol(string(basename, "logccdf"))
 
+    invcdf     = symbol(string(basename, "invcdf"))
+    invccdf    = symbol(string(basename, "invccdf"))
+    invlogcdf  = symbol(string(basename, "invlogcdf"))
+    invlogccdf = symbol(string(basename, "invlogccdf"))
+
     quote
         function $(esc(compfun)){N}(params::NTuple{N,Real}, X::AbstractArray, rtol=1.0e-12)
             for i = 1:length(X)
@@ -41,10 +46,29 @@ macro generate_rmath_compfun(basename)
                     $(pdf)(params..., x), Rmath.$(pdf)(params..., x), true, rtol)
                 check_rmath($(string(logpdf)), params, "x", x,
                     $(logpdf)(params..., x), Rmath.$(logpdf)(params..., x), false, rtol)
+
                 check_rmath($(string(cdf)), params, "x", x,
                     $(cdf)(params..., x), Rmath.$(cdf)(params..., x), true, rtol)
                 check_rmath($(string(ccdf)), params, "x", x,
                     $(ccdf)(params..., x), Rmath.$(ccdf)(params..., x), true, rtol)
+                check_rmath($(string(logcdf)), params, "x", x,
+                    $(logcdf)(params..., x), Rmath.$(logcdf)(params..., x), false, rtol)
+                check_rmath($(string(logccdf)), params, "x", x,
+                    $(logccdf)(params..., x), Rmath.$(logccdf)(params..., x), true, rtol)
+
+                p = Rmath.$(cdf)(params..., x)
+                cp = Rmath.$(ccdf)(params..., x)
+                lp = log(p)
+                lcp = log(cp)
+
+                check_rmath($(string(invcdf)), params, "p", p,
+                    $(invcdf)(params..., p), Rmath.$(invcdf)(params..., p), false, rtol)
+                # check_rmath($(string(invccdf)), params, "p", cp,
+                #     $(invccdf)(params..., cp), Rmath.$(invccdf)(params..., cp), false, rtol)
+                # check_rmath($(string(invlogcdf)), params, "lp", lp,
+                #     $(invlogcdf)(params..., lp), Rmath.$(invlogcdf)(params..., lp), false, rtol)
+                # check_rmath($(string(invlogccdf)), params, "lp", lcp,
+                #     $(invlogccdf)(params..., lcp), Rmath.$(invlogccdf)(params..., lcp), false, rtol)
             end
         end
     end
