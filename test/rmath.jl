@@ -1,11 +1,11 @@
 using StatsFuns
 using Base.Test
 
-function check_rmath(fname, params, aname, a, v, rv, isprob, rtol)
+function check_rmath(params, aname, a, v, rv, isprob, rtol)
     if isprob
         rd = abs(v / rv - 1.0)
         if rd > rtol
-            error("$fname deviates too much from Rmath at " *
+            error("deviates too much from Rmath at " *
                 "params = $params, $aname = $a:\n" *
                 "  v = $v (rv = $rv)\n  |v/rv - 1| = $rd > $rtol.")
         end
@@ -13,7 +13,7 @@ function check_rmath(fname, params, aname, a, v, rv, isprob, rtol)
         τ = (1.0 + abs(rv)) * rtol
         ad = abs(v - rv)
         if ad > τ
-            error("$fname deviates too much from Rmath at " *
+            error("deviates too much from Rmath at " *
                 "params = $params, $aname = $a:\n" *
                 "  v = $v (rv = $rv)\n  |v - rv| = $ad > $τ.")
         end
@@ -45,7 +45,7 @@ macro generate_rmath_compfun(basename)
         function $(compfun){N}(params::NTuple{N,Real}, X::AbstractArray, rtol=1.0e-12)
             for i = 1:length(X)
                 x = X[i]
-                check_rmath($pdfname, params, "x", x,
+                check_rmath(params, "x", x,
                     $(pdf)(params..., x), Rmath.$(pdf)(params..., x), true, rtol)
                 # check_rmath($logpdfname, params, "x", x,
                 #     $(logpdf)(params..., x), Rmath.$(logpdf)(params..., x), false, rtol)
