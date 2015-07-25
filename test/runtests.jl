@@ -1,4 +1,4 @@
-tests = ["basicfuns"]
+tests = ["basicfuns", "rmath"]
 
 for t in tests
     fp = "$t.jl"
