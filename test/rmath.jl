@@ -73,6 +73,7 @@ macro generate_rmath_compfun(basename)
 end
 
 @generate_rmath_compfun norm
+
 rmathcomp_norm((0.0, 1.0), -6.0:0.01:6.0)
 rmathcomp_norm((2.0, 1.0), -3.0:0.01:7.0)
 rmathcomp_norm((0.0, 0.5), -3.0:0.01:3.0)
