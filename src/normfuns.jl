@@ -1,22 +1,46 @@
 # functions related to normal distribution
 
+xval(μ::Float64, σ::Float64, z::Float64) = μ + σ * z
+zval(μ::Float64, σ::Float64, x::Float64) = (x - μ) / σ
+xval(μ::Real, σ::Real, z::Real) = xval(f64(μ), f64(σ), f64(z))
+zval(μ::Real, σ::Real, x::Real) = zval(f64(μ), f64(σ), f64(x))
+
 # pdf of the standard normal distribution
-normpdf(z::Real) = exp(-0.5 * abs2(z)) / sqrt2π
+normpdf(z::Float64) = exp(-0.5 * abs2(z)) / sqrt2π
+normpdf(z::Real) = normpdf(f64(z))
+normpdf(μ::Real, σ::Real, x::Real) = normpdf(zval(μ, σ, x)) / f64(σ)
 
 # logpdf of the standard normal distribution
-normlogpdf(z::Real) = -0.5 * (abs2(z) + log2π)
+normlogpdf(z::Float64) = -0.5 * (abs2(z) + log2π)
+normlogpdf(z::Real) = normpdf(f64(z))
+normlogpdf(μ::Real, σ::Real, x::Real) = normlogpdf(zval(μ, σ, x)) - log(f64(σ))
 
 # cdf of the standard normal distribution
-normcdf(z::Real) = 0.5 * erfc(-z / sqrt2)
+normcdf(z::Float64) = 0.5 * erfc(-z / sqrt2)
+normcdf(z::Real) = normcdf(f64(z))
+normcdf(μ::Real, σ::Real, x::Real) = normcdf(zval(μ, σ, x))
 
 # ccdf of the standard normal distribution
-normccdf(z::Real) = 0.5 * erfc(z / sqrt2)
+normccdf(z::Float64) = 0.5 * erfc(z / sqrt2)
+normccdf(z::Real) = normccdf(f64(z))
+normccdf(μ::Real, σ::Real, x::Real) = normccdf(zval(μ, σ, x))
 
 # logcdf of the standard normal distribution
-normlogcdf(z::Real) = z < -1.0 ? log(0.5 * erfcx(-z / sqrt2)) - 0.5 * abs2(z) : log1p(-0.5 * erfc(z / sqrt2))
+normlogcdf(z::Float64) = z < -1.0 ?
+    log(0.5 * erfcx(-z / sqrt2)) - 0.5 * abs2(z) :
+    log1p(-0.5 * erfc(z / sqrt2))
+
+normlogcdf(z::Real) = normlogcdf(f64(z))
+normlogcdf(μ::Real, σ::Real, x::Real) = normlogcdf(zval(μ, σ, x))
 
 # logccdf of the standard normal distribution
-normlogccdf(z::Real) = z > 1.0 ? log(0.5 * erfcx(z / sqrt2)) - 0.5 * abs2(z) : log1p(-0.5 * erfc(-z / sqrt2))
+normlogccdf(z::Float64) = z > 1.0 ?
+    log(0.5 * erfcx(z / sqrt2)) - 0.5 * abs2(z) :
+    log1p(-0.5 * erfc(-z / sqrt2))
+
+normlogccdf(z::Real) = normlogccdf(f64(z))
+normlogccdf(μ::Real, σ::Real, x::Real) = normlogccdf(zval(μ, σ, x))
+
 
 # Rational approximations for the inverse cdf and its logarithm, from:
 #
