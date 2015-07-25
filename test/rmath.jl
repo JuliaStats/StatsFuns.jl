@@ -1,8 +1,6 @@
 using StatsFuns
 using Base.Test
 
-import StatsFuns.Rmath
-
 function check_rmath(fname, params, aname, a, v, rv, isprob, rtol)
     if isprob
         rd = abs(v / rv - 1.0)
@@ -43,32 +41,32 @@ macro generate_rmath_compfun(basename)
             for i = 1:length(X)
                 x = X[i]
                 check_rmath($(string(pdf)), params, "x", x,
-                    $(pdf)(params..., x), Rmath.$(pdf)(params..., x), true, rtol)
+                    $(pdf)(params..., x), RMath.$(pdf)(params..., x), true, rtol)
                 check_rmath($(string(logpdf)), params, "x", x,
-                    $(logpdf)(params..., x), Rmath.$(logpdf)(params..., x), false, rtol)
+                    $(logpdf)(params..., x), RMath.$(logpdf)(params..., x), false, rtol)
 
                 check_rmath($(string(cdf)), params, "x", x,
-                    $(cdf)(params..., x), Rmath.$(cdf)(params..., x), true, rtol)
+                    $(cdf)(params..., x), RMath.$(cdf)(params..., x), true, rtol)
                 check_rmath($(string(ccdf)), params, "x", x,
-                    $(ccdf)(params..., x), Rmath.$(ccdf)(params..., x), true, rtol)
+                    $(ccdf)(params..., x), RMath.$(ccdf)(params..., x), true, rtol)
                 check_rmath($(string(logcdf)), params, "x", x,
-                    $(logcdf)(params..., x), Rmath.$(logcdf)(params..., x), false, rtol)
+                    $(logcdf)(params..., x), RMath.$(logcdf)(params..., x), false, rtol)
                 check_rmath($(string(logccdf)), params, "x", x,
-                    $(logccdf)(params..., x), Rmath.$(logccdf)(params..., x), true, rtol)
+                    $(logccdf)(params..., x), RMath.$(logccdf)(params..., x), true, rtol)
 
-                p = Rmath.$(cdf)(params..., x)
-                cp = Rmath.$(ccdf)(params..., x)
+                p = RMath.$(cdf)(params..., x)
+                cp = RMath.$(ccdf)(params..., x)
                 lp = log(p)
                 lcp = log(cp)
 
                 check_rmath($(string(invcdf)), params, "p", p,
-                    $(invcdf)(params..., p), Rmath.$(invcdf)(params..., p), false, rtol)
+                    $(invcdf)(params..., p), RMath.$(invcdf)(params..., p), false, rtol)
                 check_rmath($(string(invccdf)), params, "p", cp,
-                    $(invccdf)(params..., cp), Rmath.$(invccdf)(params..., cp), false, rtol)
+                    $(invccdf)(params..., cp), RMath.$(invccdf)(params..., cp), false, rtol)
                 check_rmath($(string(invlogcdf)), params, "lp", lp,
-                    $(invlogcdf)(params..., lp), Rmath.$(invlogcdf)(params..., lp), false, rtol)
+                    $(invlogcdf)(params..., lp), RMath.$(invlogcdf)(params..., lp), false, rtol)
                 check_rmath($(string(invlogccdf)), params, "lp", lcp,
-                    $(invlogccdf)(params..., lcp), Rmath.$(invlogccdf)(params..., lcp), false, rtol)
+                    $(invlogccdf)(params..., lcp), RMath.$(invlogccdf)(params..., lcp), false, rtol)
             end
         end
     end

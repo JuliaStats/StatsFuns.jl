@@ -40,19 +40,19 @@ normlogccdf(z::Real) = normlogccdf(f64(z))
 normlogccdf(μ::Real, σ::Real, x::Real) = normlogccdf(zval(μ, σ, x))
 
 # invcdf
-norminvcdf(p::Real) = norminvcdf_impl(f64(p))
+norminvcdf(p::Real) = _norminvcdf_impl(f64(p))
 norminvcdf(μ::Real, σ::Real, p::Real) = xval(μ, σ, norminvcdf(p))
 
 # invccdf
-norminvccdf(p::Real) = -norminvcdf_impl(f64(p))
+norminvccdf(p::Real) = -_norminvcdf_impl(f64(p))
 norminvccdf(μ::Real, σ::Real, p::Real) = xval(μ, σ, norminvccdf(p))
 
 # invlogcdf
-norminvlogcdf(lp::Real) = norminvlogcdf_impl(f64(lp))
+norminvlogcdf(lp::Real) = _norminvlogcdf_impl(f64(lp))
 norminvlogcdf(μ::Real, σ::Real, lp::Real) = xval(μ, σ, norminvlogcdf(lp))
 
 # invlogccdf
-norminvlogccdf(lp::Real) = -norminvlogcdf_impl(f64(lp))
+norminvlogccdf(lp::Real) = -_norminvlogcdf_impl(f64(lp))
 norminvlogccdf(μ::Real, σ::Real, lp::Real) = xval(μ, σ, norminvlogccdf(lp))
 
 
@@ -63,14 +63,14 @@ norminvlogccdf(μ::Real, σ::Real, lp::Real) = xval(μ, σ, norminvlogccdf(lp))
 #   Wichura, M.J. (1988) Algorithm AS 241: The Percentage Points of the Normal Distribution
 #   Journal of the Royal Statistical Society. Series C (Applied Statistics), Vol. 37, No. 3, pp. 477-484
 #
-function norminvcdf_impl(p::Float64)
+function _norminvcdf_impl(p::Float64)
     if 0.0 < p < 1.0
         q = p - 0.5
         if abs(q) <= 0.425
-            qnorm_ker1(q)
+            _qnorm_ker1(q)
         else
             r = sqrt(q < 0 ? -log(p) : -log1p(-p))
-            copysign(qnorm_ker2(r), q)
+            copysign(_qnorm_ker2(r), q)
         end
     else
         if p <= 0.0
@@ -81,15 +81,15 @@ function norminvcdf_impl(p::Float64)
     end
 end
 
-function norminvlogcdf_impl(lp::Float64)
+function _norminvlogcdf_impl(lp::Float64)
     if isfinite(lp) && lp < 0.0
         q = exp(lp) - 0.5
         # qnorm_kernel(lp, q, true)
         if abs(q) <= 0.425
-            qnorm_ker1(q)
+            _qnorm_ker1(q)
         else
             r = sqrt(q < 0 ? -lp : -log1mexp(lp))
-            return copysign(qnorm_ker2(r), q)
+            return copysign(_qnorm_ker2(r), q)
         end
     elseif lp >= 0.0
         lp == 0.0 ? Inf : NaN
@@ -98,7 +98,7 @@ function norminvlogcdf_impl(lp::Float64)
     end
 end
 
-function qnorm_ker1(q::Float64)
+function _qnorm_ker1(q::Float64)
     # pre-condition: abs(q) <= 0.425
     r = 0.180625 - q*q
     return q * @horner(r,
@@ -121,7 +121,7 @@ function qnorm_ker1(q::Float64)
             5.22649_52788_52854_5610e3)
 end
 
-function qnorm_ker2(r::Float64)
+function _qnorm_ker2(r::Float64)
     if r < 5.0
         r -= 1.6
         @horner(r,

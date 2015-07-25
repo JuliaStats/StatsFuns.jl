@@ -60,6 +60,18 @@ export
     norminvlogcdf,  # inverse-logcdf of normal distribution
     norminvlogccdf, # inverse-logccdf of normal distribution
 
+    # betafuns
+    # betapdf,        # pdf of beta distribution
+    # betalogpdf,     # logpdf of beta distribution
+    # betacdf,        # cdf of beta distribution
+    # betaccdf,       # ccdf of beta distribution
+    # betalogcdf,     # logcdf of beta distribution
+    # betalogccdf,    # logccdf of beta distribution
+    # betainvcdf,     # inverse-cdf of beta distribution
+    # betainvccdf,    # inverse-ccdf of beta distribution
+    # betainvlogcdf,  # inverse-logcdf of beta distribution
+    # betainvlogccdf, # inverse-logccdf of beta distribution
+
     # misc
     logmvgamma,     # logarithm of multivariate gamma function
     lstirling_asym
@@ -70,7 +82,10 @@ include("rmath.jl")
 
 include("basicfuns.jl")
 include("log1pmx.jl")
+
+include("betafuns.jl")
 include("normfuns.jl")
+
 include("misc.jl")
 
 end # module

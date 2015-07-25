@@ -1,6 +1,6 @@
 # import of Rmath functions
 
-module Rmath
+module RMath
 
 const rmathlib = "libRmath-julia"
 
@@ -93,6 +93,6 @@ end
 ### Import specific functions
 
 @import_rmath 2 norm
-
+@import_rmath 2 beta
 
 end
