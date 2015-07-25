@@ -28,6 +28,9 @@ export
     log2π,      # log(2π)
     log4π,      # log(4π)
 
+    # rmath
+    Rmath,
+
     # basicfuns
     xlogx,          # x * log(x) for x > 0, or 0 when x == 0
     xlogy,          # x * log(y) for x > 0, or 0 when x == 0
@@ -83,7 +86,7 @@ include("rmath.jl")
 include("basicfuns.jl")
 include("log1pmx.jl")
 
-include("betafuns.jl")
+# include("betafuns.jl")
 include("normfuns.jl")
 
 include("misc.jl")
