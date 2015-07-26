@@ -8,7 +8,7 @@ for t in tests
 
     if to_test
         fp = "$t.jl"
-        println("Running $fp ...")
+        println("* running $fp")
         include(fp)
     end
 end

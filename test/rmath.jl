@@ -90,6 +90,14 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
     end
 end
 
+### Test cases
+
+println("\ttesting beta ...")
+rmathcomp("beta", (1.0, 1.0), 0.01:0.01:0.99)
+rmathcomp("beta", (2.0, 3.0), 0.01:0.01:0.99)
+rmathcomp("beta", (10.0, 2.0), 0.01:0.01:0.99)
+
+println("\ttesting norm ...")
 rmathcomp("norm", (0.0, 1.0), -6.0:0.01:6.0)
 rmathcomp("norm", (2.0, 1.0), -3.0:0.01:7.0)
 rmathcomp("norm", (0.0, 0.5), -3.0:0.01:3.0)
