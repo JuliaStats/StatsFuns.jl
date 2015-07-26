@@ -22,6 +22,8 @@ export
     sqrt2π,     # √2π
     sqrt4π,     # √4π
     sqrthalfπ,  # √(π / 2)
+    invsqrt2,   # 1 / √2
+    invsqrt2π,  # 1 / √2π
     loghalf,    # log(1 / 2)
     logtwo,     # log(2)
     logπ,       # log(π)
