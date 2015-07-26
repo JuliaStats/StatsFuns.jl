@@ -84,8 +84,8 @@ include("constants.jl")
 include("basicfuns.jl")
 
 include("rmath.jl")
-include("betafuns.jl")
-include("normfuns.jl")
+include(joinpath("distrs", "beta.jl"))
+include(joinpath("distrs", "norm.jl"))
 
 include("misc.jl")
 
