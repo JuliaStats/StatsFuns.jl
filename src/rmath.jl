@@ -6,39 +6,35 @@ const rmathlib = "libRmath-julia"
 
 ### import macro
 
-function _import_rmath(nparams::Int, basename::Symbol)
-    # basename: e.g. :norm is the basename for :dnorm, :pnorm, etc
-    # nparams: the number of distribution parameters
-
+function _import_rmath(nparams::Int, rname::Symbol, jname::Symbol)
     # C function names
-    if basename == :norm
+    if rname == :norm
         dfun = Expr(:quote, "dnorm4")
         pfun = Expr(:quote, "pnorm5")
         qfun = Expr(:quote, "qnorm5")
         rfun = Expr(:quote, "rnorm")
     else
-        dfun = Expr(:quote, string('d', basename))    # density
-        pfun = Expr(:quote, string('p', basename))    # cumulative probability
-        qfun = Expr(:quote, string('q', basename))    # quantile
-        rfun = Expr(:quote, string('r', basename))    # random sampling
+        dfun = Expr(:quote, string('d', rname))    # density
+        pfun = Expr(:quote, string('p', rname))    # cumulative probability
+        qfun = Expr(:quote, string('q', rname))    # quantile
+        rfun = Expr(:quote, string('r', rname))    # random sampling
     end
 
     # Julia function names
-    jbase = basename
-    pdf = symbol(string(jbase, "pdf"))
-    cdf = symbol(string(jbase, "cdf"))
-    ccdf = symbol(string(jbase, "ccdf"))
+    pdf = symbol(string(jname, "pdf"))
+    cdf = symbol(string(jname, "cdf"))
+    ccdf = symbol(string(jname, "ccdf"))
 
-    logpdf = symbol(string(jbase, "logpdf"))
-    logcdf = symbol(string(jbase, "logcdf"))
-    logccdf = symbol(string(jbase, "logccdf"))
+    logpdf = symbol(string(jname, "logpdf"))
+    logcdf = symbol(string(jname, "logcdf"))
+    logccdf = symbol(string(jname, "logccdf"))
 
-    invcdf = symbol(string(jbase, "invcdf"))
-    invccdf = symbol(string(jbase, "invccdf"))
-    invlogcdf = symbol(string(jbase, "invlogcdf"))
-    invlogccdf = symbol(string(jbase, "invlogccdf"))
+    invcdf = symbol(string(jname, "invcdf"))
+    invccdf = symbol(string(jname, "invccdf"))
+    invlogcdf = symbol(string(jname, "invlogcdf"))
+    invlogccdf = symbol(string(jname, "invlogccdf"))
 
-    rand = symbol(string(jbase, "rand"))
+    rand = symbol(string(jname, "rand"))
 
     # arguments & argument types
     _pts = fill(:Cdouble, nparams)
@@ -85,14 +81,14 @@ function _import_rmath(nparams::Int, basename::Symbol)
     end
 end
 
-macro import_rmath(nparams, basename)
-    esc(_import_rmath(nparams, basename))
+macro import_rmath(nparams, rname, jname)
+    esc(_import_rmath(nparams, rname, jname))
 end
 
 
 ### Import specific functions
 
-@import_rmath 2 norm
-@import_rmath 2 beta
+@import_rmath 2 norm norm
+@import_rmath 2 beta beta
 
 end
