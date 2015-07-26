@@ -80,13 +80,13 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
         lcp = rmath_logccdf(params..., x)
 
         check_rmath(invcdf, stats_invcdf, rmath_invcdf,
-            params, "p", p, false, rtol)
+            params, "q", p, false, rtol)
         check_rmath(invccdf, stats_invccdf, rmath_invccdf,
-            params, "p", cp, false, rtol)
+            params, "q", cp, false, rtol)
         check_rmath(invlogcdf, stats_invlogcdf, rmath_invlogcdf,
-            params, "lp", lp, false, rtol)
+            params, "lq", lp, false, rtol)
         check_rmath(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
-            params, "lp", lcp, false, rtol)
+            params, "lq", lcp, false, rtol)
     end
 end
 

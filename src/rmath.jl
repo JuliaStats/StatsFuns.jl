@@ -66,29 +66,41 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
         $logccdf($(pdecls...), x::Real) =
             ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 0, 1)
 
-        $invcdf($(pdecls...), p::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, p, $(pargs...), 1, 0)
+        $invcdf($(pdecls...), q::Real) =
+            ccall(($qfun, rmathlib), Float64, $qtypes, q, $(pargs...), 1, 0)
 
-        $invccdf($(pdecls...), p::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, p, $(pargs...), 0, 0)
+        $invccdf($(pdecls...), q::Real) =
+            ccall(($qfun, rmathlib), Float64, $qtypes, q, $(pargs...), 0, 0)
 
-        $invlogcdf($(pdecls...), lp::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, lp, $(pargs...), 1, 1)
+        $invlogcdf($(pdecls...), lq::Real) =
+            ccall(($qfun, rmathlib), Float64, $qtypes, lq, $(pargs...), 1, 1)
 
-        $invlogccdf($(pdecls...), lp::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, lp, $(pargs...), 0, 1)
+        $invlogccdf($(pdecls...), lq::Real) =
+            ccall(($qfun, rmathlib), Float64, $qtypes, lq, $(pargs...), 0, 1)
     end
 end
 
-macro import_rmath(nparams, rname, pargs...)
-    esc(_import_rmath(nparams, rname, pargs))
+macro import_rmath(rname, jname, pargs...)
+    esc(_import_rmath(rname, jname, pargs))
 end
 
 
 ### Import specific functions
 
 @import_rmath beta beta α β
+@import_rmath binom binom n p
+@import_rmath chisq chisq k
+@import_rmath f fdist d1 d2
+@import_rmath gamma gamma α β
+@import_rmath hyper hyper ms mf n
 @import_rmath norm norm μ σ
+@import_rmath nbinom nbinom r p
+@import_rmath pois pois λ
+@import_rmath t tdist k
 
+@import_rmath nbeta nbeta α β λ
+@import_rmath nchisq nchisq k λ
+@import_rmath nf nfdist k1 k2 λ
+@import_rmath nt ntdist k λ
 
 end
