@@ -1,4 +1,4 @@
-# functions related binomial distribution
+# functions related to binomial distribution
 
 import .Rmath:
     binompdf,
