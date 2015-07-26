@@ -38,6 +38,16 @@ using Base.Test
 @test_approx_eq logexpm1(log1pexp(2.0)) 2.0
 @test_approx_eq logexpm1(log1pexp(-2.0)) -2.0
 
+# log1pmx
+
+@test_approx_eq log1pmx(0.0) 0.0
+@test_approx_eq log1pmx(1.0) log(2.0) - 1.0
+@test_approx_eq log1pmx(2.0) log(3.0) - 2.0
+
+@test_approx_eq logmxp1(1.0) 0.0
+@test_approx_eq logmxp1(2.0) log(2.0) - 1.0
+@test_approx_eq logmxp1(3.0) log(3.0) - 2.0
+
 # logsumexp
 
 @test_approx_eq logsumexp(2.0, 3.0) log(exp(2.0) + exp(3.0))

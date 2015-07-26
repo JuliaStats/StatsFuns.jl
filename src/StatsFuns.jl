@@ -81,11 +81,9 @@ export
 
 ## source files
 include("constants.jl")
-include("rmath.jl")
-
 include("basicfuns.jl")
-include("log1pmx.jl")
 
+include("rmath.jl")
 include("betafuns.jl")
 include("normfuns.jl")
 
