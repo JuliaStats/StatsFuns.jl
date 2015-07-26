@@ -6,7 +6,7 @@ const rmathlib = "libRmath-julia"
 
 ### import macro
 
-function _import_rmath(nparams::Int, rname::Symbol, jname::Symbol)
+function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     # C function names
     if rname == :norm
         dfun = Expr(:quote, "dnorm4")
@@ -37,14 +37,13 @@ function _import_rmath(nparams::Int, rname::Symbol, jname::Symbol)
     rand = symbol(string(jname, "rand"))
 
     # arguments & argument types
-    _pts = fill(:Cdouble, nparams)
+    _pts = fill(:Cdouble, length(pargs))
 
     dtypes = Expr(:tuple, :Cdouble, _pts..., :Cint)
     ptypes = Expr(:tuple, :Cdouble, _pts..., :Cint, :Cint)
     qtypes = Expr(:tuple, :Cdouble, _pts..., :Cint, :Cint)
     rtypes = Expr(:tuple, _pts...)
 
-    pargs = [symbol(string('p', i)) for i in 1:nparams]  # [:p1, :p2, ...]
     pdecls = [Expr(:(::), ps, :Real) for ps in pargs] # [:(p1::Real), :(p2::Real), ...]
 
     # function implementation
@@ -81,14 +80,15 @@ function _import_rmath(nparams::Int, rname::Symbol, jname::Symbol)
     end
 end
 
-macro import_rmath(nparams, rname, jname)
-    esc(_import_rmath(nparams, rname, jname))
+macro import_rmath(nparams, rname, pargs...)
+    esc(_import_rmath(nparams, rname, pargs))
 end
 
 
 ### Import specific functions
 
-@import_rmath 2 norm norm
-@import_rmath 2 beta beta
+@import_rmath beta beta α β
+@import_rmath norm norm μ σ
+
 
 end
