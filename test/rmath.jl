@@ -37,6 +37,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
     invccdf    = string(basename, "invccdf")
     invlogcdf  = string(basename, "invlogcdf")
     invlogccdf = string(basename, "invlogccdf")
+    rand       = string(basename, "rand")
 
     stats_pdf     = get_statsfun(pdf)
     stats_logpdf  = get_statsfun(logpdf)
@@ -59,6 +60,13 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
     rmath_invccdf    = get_rmathfun(invccdf)
     rmath_invlogcdf  = get_rmathfun(invlogcdf)
     rmath_invlogccdf = get_rmathfun(invlogccdf)
+
+    # tackle rand specially
+    has_rand = true
+    if basename == "nbeta" || basename == "nfdist" || basename == "ntdist"
+        has_rand = false
+    end
+    rmath_rand = has_rand ? get_rmathfun(rand) : nothing
 
     for i = 1:length(X)
         x = X[i]
@@ -88,6 +96,11 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
             params, "lq", lp, false, rtol)
         check_rmath(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
             params, "lq", lcp, false, rtol)
+
+        # make sure that rand works
+        if has_rand
+            rmath_rand(params...)
+        end
     end
 end
 

@@ -35,6 +35,10 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     invlogccdf = symbol(string(jname, "invlogccdf"))
 
     rand = symbol(string(jname, "rand"))
+    has_rand = true
+    if rname == :nbeta || rname == :nf || rname == :nt
+        has_rand = false
+    end
 
     # arguments & argument types
     _pts = fill(:Cdouble, length(pargs))
@@ -77,6 +81,11 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
 
         $invlogccdf($(pdecls...), lq::Real) =
             ccall(($qfun, rmathlib), Float64, $qtypes, lq, $(pargs...), 0, 1)
+
+        if $has_rand
+            $rand($(pdecls...)) =
+                ccall(($rfun, rmathlib), Float64, $rtypes, $(pargs...))
+        end
     end
 end
 
