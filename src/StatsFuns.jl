@@ -72,10 +72,19 @@ export
     norminvcdf,     # inverse-cdf of normal distribution
     norminvccdf,    # inverse-ccdf of normal distribution
     norminvlogcdf,  # inverse-logcdf of normal distribution
-    norminvlogccdf  # inverse-logccdf of normal distribution
+    norminvlogccdf, # inverse-logccdf of normal distribution
 
-    # distrs/
-
+    # distrs/binom
+    binompdf,        # pdf of binomial distribution
+    binomlogpdf,     # logpdf of binomial distribution
+    binomcdf,        # cdf of binomial distribution
+    binomccdf,       # ccdf of binomial distribution
+    binomlogcdf,     # logcdf of binomial distribution
+    binomlogccdf,    # logccdf of binomial distribution
+    binominvcdf,     # inverse-cdf of binomial distribution
+    binominvccdf,    # inverse-ccdf of binomial distribution
+    binominvlogcdf,  # inverse-logcdf of binomial distribution
+    binominvlogccdf  # inverse-logccdf of binomial distribution
 
 
 ## source files
@@ -86,6 +95,7 @@ include("misc.jl")
 include("rmath.jl")
 using .Rmath
 include(joinpath("distrs", "beta.jl"))
+include(joinpath("distrs", "binom.jl"))
 include(joinpath("distrs", "norm.jl"))
 
 end # module

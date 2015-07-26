@@ -98,6 +98,13 @@ rmathcomp("beta", (1.0, 1.0), 0.01:0.01:0.99)
 rmathcomp("beta", (2.0, 3.0), 0.01:0.01:0.99)
 rmathcomp("beta", (10.0, 2.0), 0.01:0.01:0.99)
 
+println("\ttesting binom ...")
+rmathcomp("binom", (1, 0.5), 0:1)
+rmathcomp("binom", (1, 0.7), 0:1)
+rmathcomp("binom", (8, 0.6), 0:8)
+rmathcomp("binom", (20, 0.1), 0:20)
+rmathcomp("binom", (20, 0.9), 0:20)
+
 println("\ttesting norm ...")
 rmathcomp("norm", (0.0, 1.0), -6.0:0.01:6.0)
 rmathcomp("norm", (2.0, 1.0), -3.0:0.01:7.0)

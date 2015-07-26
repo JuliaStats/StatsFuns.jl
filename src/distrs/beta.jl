@@ -1,6 +1,5 @@
 # functions related to beta distributions
 
-using .Rmath
 import .Rmath:
     betalogpdf,
     betacdf,
