@@ -28,9 +28,6 @@ export
     log2π,      # log(2π)
     log4π,      # log(4π)
 
-    # rmath
-    Rmath,
-
     # basicfuns
     xlogx,          # x * log(x) for x > 0, or 0 when x == 0
     xlogy,          # x * log(y) for x > 0, or 0 when x == 0
@@ -43,27 +40,17 @@ export
     logexpm1,       # log(exp(x) - 1)
     softplus,       # alias of log1pexp
     invsoftplus,    # alias of logexpm1
+    log1pmx,        # log(1 + x) - x
+    logmxp1,        # log(x) - x + 1
     logsumexp,      # log(exp(x) + exp(y)) or log(sum(exp(x)))
     softmax,        # exp(x_i) / sum(exp(x)), for i
     softmax!,       # inplace softmax
 
-    # log1pmx
-    log1pmx,        # log(1 + x) - x
-    logmxp1,        # log(x) - x + 1
+    # misc
+    logmvgamma,     # logarithm of multivariate gamma function
+    lstirling_asym,
 
-    # normfuns
-    normpdf,        # pdf of normal distribution
-    normlogpdf,     # logpdf of normal distribution
-    normcdf,        # cdf of normal distribution
-    normccdf,       # ccdf of normal distribution
-    normlogcdf,     # logcdf of normal distribution
-    normlogccdf,    # logccdf of normal distribution
-    norminvcdf,     # inverse-cdf of normal distribution
-    norminvccdf,    # inverse-ccdf of normal distribution
-    norminvlogcdf,  # inverse-logcdf of normal distribution
-    norminvlogccdf, # inverse-logccdf of normal distribution
-
-    # betafuns
+    # distrs/beta
     betapdf,        # pdf of beta distribution
     betalogpdf,     # logpdf of beta distribution
     betacdf,        # cdf of beta distribution
@@ -75,18 +62,30 @@ export
     betainvlogcdf,  # inverse-logcdf of beta distribution
     betainvlogccdf, # inverse-logccdf of beta distribution
 
-    # misc
-    logmvgamma,     # logarithm of multivariate gamma function
-    lstirling_asym
+    # distrs/norm
+    normpdf,        # pdf of normal distribution
+    normlogpdf,     # logpdf of normal distribution
+    normcdf,        # cdf of normal distribution
+    normccdf,       # ccdf of normal distribution
+    normlogcdf,     # logcdf of normal distribution
+    normlogccdf,    # logccdf of normal distribution
+    norminvcdf,     # inverse-cdf of normal distribution
+    norminvccdf,    # inverse-ccdf of normal distribution
+    norminvlogcdf,  # inverse-logcdf of normal distribution
+    norminvlogccdf  # inverse-logccdf of normal distribution
+
+    # distrs/
+
+
 
 ## source files
 include("constants.jl")
 include("basicfuns.jl")
+include("misc.jl")
 
 include("rmath.jl")
+using .Rmath
 include(joinpath("distrs", "beta.jl"))
 include(joinpath("distrs", "norm.jl"))
-
-include("misc.jl")
 
 end # module

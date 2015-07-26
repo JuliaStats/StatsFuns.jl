@@ -1,5 +1,6 @@
 using StatsFuns
 using Base.Test
+import StatsFuns.Rmath
 
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = statsfun(params..., a)
