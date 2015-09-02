@@ -1,7 +1,10 @@
 # StatsFuns
 
 Mathematical functions related to statistics.
+
 [![Build Status](https://travis-ci.org/JuliaStats/StatsFuns.jl.svg?branch=master)](https://travis-ci.org/JuliaStats/StatsFuns.jl)
+[![StatsFuns](http://pkg.julialang.org/badges/StatsFuns_0.3.svg)](http://pkg.julialang.org/?pkg=StatsFuns&ver=0.3)
+[![StatsFuns](http://pkg.julialang.org/badges/StatsFuns_0.4.svg)](http://pkg.julialang.org/?pkg=StatsFuns&ver=0.4)
 
 This package provides a collection of mathematical constants and numerical functions for statistical computing.
 
