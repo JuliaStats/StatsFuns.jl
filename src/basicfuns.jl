@@ -4,32 +4,32 @@ f64(x::Real) = convert(Float64, x)
 
 # scalar functions
 
-xlogx(x::FloatingPoint) = x > zero(x) ? x * log(x) : zero(x)
+xlogx(x::AbstractFloat) = x > zero(x) ? x * log(x) : zero(x)
 xlogx(x::Real) = xlogx(float(x))
 
-xlogy{T<:FloatingPoint}(x::T, y::T) = x > zero(T) ? x * log(y) : zero(x)
+xlogy{T<:AbstractFloat}(x::T, y::T) = x > zero(T) ? x * log(y) : zero(x)
 xlogy{T<:Real}(x::T, y::T) = xlogy(float(x), float(y))
 xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
 # logistic: 1 / (1 + exp(-x))
 #
-logistic(x::FloatingPoint) = one(x) / (one(x) + exp(-x))
+logistic(x::AbstractFloat) = one(x) / (one(x) + exp(-x))
 logistic(x::Real) = logistic(float(x))
 
 # logit: log(x / (1 - x))
 #
-logit(x::FloatingPoint) = log(x / (one(x) - x))
+logit(x::AbstractFloat) = log(x / (one(x) - x))
 logit(x::Real) = logit(float(x))
 
 # log1psq: log(1+x^2)
 #
-log1psq(x::FloatingPoint) = log1p(abs2(x))
-log1psq(x::Union(Float32,Float64)) = (ax = abs(x); ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax))
+log1psq(x::AbstractFloat) = log1p(abs2(x))
+@compat log1psq(x::Union{Float32,Float64}) = (ax = abs(x); ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax))
 log1psq(x::Real) = log1psq(float(x))
 
 # log1pexp: log(1+exp(x))
 #
-log1pexp(x::FloatingPoint) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : x
+log1pexp(x::AbstractFloat) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : x
 log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : x
 log1pexp(x::Real) = log1pexp(float(x))
 
@@ -40,16 +40,16 @@ log1pexp(x::Real) = log1pexp(float(x))
 #   http://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf
 #
 # Note: different than Maechler (2012), no negation inside parantheses
-log1mexp(x::FloatingPoint) = x < loghalf ? log1p(-exp(x)) : log(-expm1(x))
+log1mexp(x::AbstractFloat) = x < loghalf ? log1p(-exp(x)) : log(-expm1(x))
 
 # log2mexp: log(2 - exp(x))
 #
-log2mexp(x::FloatingPoint) = log1p(-expm1(x))
+log2mexp(x::AbstractFloat) = log1p(-expm1(x))
 log2mexp(x::Real) = log2mexp(float(x))
 
 # logexpm1: log(exp(x) - 1)
 #
-logexpm1(x::FloatingPoint) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : x
+logexpm1(x::AbstractFloat) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : x
 logexpm1(x::Float32) = x <= 9f0 ? log(expm1(x)) : x <= 16f0 ? x - exp(-x) : x
 logexpm1(x::Real) = logexpm1(float(x))
 
@@ -127,7 +127,7 @@ end
 
 ## logsumexp
 
-logsumexp{T<:FloatingPoint}(x::T, y::T) = x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
+logsumexp{T<:AbstractFloat}(x::T, y::T) = x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
 logsumexp{T<:Real}(x::T, y::T) = logsumexp(float(x), float(y))
 logsumexp(x::Real, y::Real) = logsumexp(promote(x, y)...)
 
@@ -143,7 +143,7 @@ end
 
 ## softmax
 
-function softmax!{R<:FloatingPoint,T<:Real}(r::AbstractArray{R}, x::AbstractArray{T})
+function softmax!{R<:AbstractFloat,T<:Real}(r::AbstractArray{R}, x::AbstractArray{T})
 	n = length(x)
 	length(r) == n || throw(DimensionMismatch("Inconsistent array lengths."))
 	u = maximum(x)
@@ -158,5 +158,5 @@ function softmax!{R<:FloatingPoint,T<:Real}(r::AbstractArray{R}, x::AbstractArra
 	r
 end
 
-softmax!{T<:FloatingPoint}(x::AbstractArray{T}) = softmax!(x, x)
+softmax!{T<:AbstractFloat}(x::AbstractArray{T}) = softmax!(x, x)
 softmax{T<:Real}(x::AbstractArray{T}) = softmax!(Array(Float64, size(x)), x)
