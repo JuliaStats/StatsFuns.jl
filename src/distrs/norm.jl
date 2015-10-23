@@ -1,35 +1,35 @@
 # functions related to normal distribution
 
-xval(μ::Real, σ::Real, z::Real) = μ + σ * z
-zval(μ::Real, σ::Real, x::Real) = (x - μ) / σ
+xval(μ::Real, σ::Real, z::Number) = μ + σ * z
+zval(μ::Real, σ::Real, x::Number) = (x - μ) / σ
 
 # pdf
-normpdf(z::Real) = exp(-abs2(z)/2) * invsqrt2π
-normpdf(μ::Real, σ::Real, x::Real) = normpdf(zval(μ, σ, x)) / σ
+normpdf(z::Number) = exp(-abs2(z)/2) * invsqrt2π
+normpdf(μ::Real, σ::Real, x::Number) = normpdf(zval(μ, σ, x)) / σ
 
 # logpdf
-normlogpdf(z::Real) = -(abs2(z) + log2π)/2
-normlogpdf(μ::Real, σ::Real, x::Real) = normlogpdf(zval(μ, σ, x)) - log(σ)
+normlogpdf(z::Number) = -(abs2(z) + log2π)/2
+normlogpdf(μ::Real, σ::Real, x::Number) = normlogpdf(zval(μ, σ, x)) - log(σ)
 
 # cdf
-normcdf(z::Real) = erfc(-z * invsqrt2)/2
-normcdf(μ::Real, σ::Real, x::Real) = normcdf(zval(μ, σ, x))
+normcdf(z::Number) = erfc(-z * invsqrt2)/2
+normcdf(μ::Real, σ::Real, x::Number) = normcdf(zval(μ, σ, x))
 
 # ccdf
-normccdf(z::Real) = erfc(z * invsqrt2)/2
-normccdf(μ::Real, σ::Real, x::Real) = normccdf(zval(μ, σ, x))
+normccdf(z::Number) = erfc(z * invsqrt2)/2
+normccdf(μ::Real, σ::Real, x::Number) = normccdf(zval(μ, σ, x))
 
 # logcdf
-normlogcdf(z::Real) = z < -1.0 ?
+normlogcdf(z::Number) = z < -1.0 ?
     log(erfcx(-z * invsqrt2)/2) - abs2(z)/2 :
     log1p(-erfc(z * invsqrt2)/2)
-normlogcdf(μ::Real, σ::Real, x::Real) = normlogcdf(zval(μ, σ, x))
+normlogcdf(μ::Real, σ::Real, x::Number) = normlogcdf(zval(μ, σ, x))
 
 # logccdf
-normlogccdf(z::Real) = z > 1.0 ?
+normlogccdf(z::Number) = z > 1.0 ?
     log(erfcx(z * invsqrt2)/2) - abs2(z)/2 :
     log1p(-erfc(-z * invsqrt2)/2)
-normlogccdf(μ::Real, σ::Real, x::Real) = normlogccdf(zval(μ, σ, x))
+normlogccdf(μ::Real, σ::Real, x::Number) = normlogccdf(zval(μ, σ, x))
 
 # invcdf. Fixme! Support more precisions than Float64
 norminvcdf(p::Real) = convert(typeof(p), _norminvcdf_impl(f64(p)))
