@@ -5,9 +5,10 @@
 # See: https://en.wikipedia.org/wiki/Multivariate_gamma_function
 #
 function logmvgamma(p::Int, a::Real)
-    res = p * (p - 1) / 4 * log(pi * one(a))
+    # NOTE: one(a) factors are here for type stability for, e.g., Float32
+    res = p * (p - 1) * log(pi * one(a)) / 4
     for ii in 1:p
-        res += lgamma(a + (1 - ii) / 2)
+        res += lgamma(a + (1 - ii) * one(a)/ 2)
     end
     return res
 end
