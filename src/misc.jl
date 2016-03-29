@@ -5,9 +5,9 @@
 # See: https://en.wikipedia.org/wiki/Multivariate_gamma_function
 #
 function logmvgamma(p::Int, a::Real)
-    res = p * (p - 1.0) / 4.0 * log(pi)
+    res = p * (p - 1) / 4 * log(pi * one(a))
     for ii in 1:p
-        res += lgamma(a + (1.0 - ii) / 2.0)
+        res += lgamma(a + (1 - ii) / 2)
     end
     return res
 end
