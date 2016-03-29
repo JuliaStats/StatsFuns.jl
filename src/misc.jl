@@ -5,7 +5,7 @@
 # See: https://en.wikipedia.org/wiki/Multivariate_gamma_function
 #
 function logmvgamma(p::Int, a::Real)
-    # NOTE: one(a) factors are here for type stability for, e.g., Float32
+    # NOTE: one(a) factors are here to prevent unnecessary promotion of Float32
     res = p * (p - 1) * log(pi * one(a)) / 4
     for ii in 1:p
         res += lgamma(a + (1 - ii) * one(a)/ 2)
