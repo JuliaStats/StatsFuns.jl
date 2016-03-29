@@ -4,8 +4,8 @@
 #
 # See: https://en.wikipedia.org/wiki/Multivariate_gamma_function
 #
-function logmvgamma(p::Int, a::Float64)
-    res::Float64 = p * (p - 1.0) / 4.0 * log(pi)
+function logmvgamma(p::Int, a::Real)
+    res = p * (p - 1.0) / 4.0 * log(pi)
     for ii in 1:p
         res += lgamma(a + (1.0 - ii) / 2.0)
     end
