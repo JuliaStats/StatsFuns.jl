@@ -2,6 +2,8 @@
 
 module Rmath
 
+using Compat
+
 const rmathlib = "libRmath-julia"
 
 ### import macro
@@ -21,20 +23,20 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     end
 
     # Julia function names
-    pdf = symbol(string(jname, "pdf"))
-    cdf = symbol(string(jname, "cdf"))
-    ccdf = symbol(string(jname, "ccdf"))
+    pdf = @compat(Symbol(jname, "pdf"))
+    cdf = @compat(Symbol(jname, "cdf"))
+    ccdf = @compat(Symbol(jname, "ccdf"))
 
-    logpdf = symbol(string(jname, "logpdf"))
-    logcdf = symbol(string(jname, "logcdf"))
-    logccdf = symbol(string(jname, "logccdf"))
+    logpdf = @compat(Symbol(jname, "logpdf"))
+    logcdf = @compat(Symbol(jname, "logcdf"))
+    logccdf = @compat(Symbol(jname, "logccdf"))
 
-    invcdf = symbol(string(jname, "invcdf"))
-    invccdf = symbol(string(jname, "invccdf"))
-    invlogcdf = symbol(string(jname, "invlogcdf"))
-    invlogccdf = symbol(string(jname, "invlogccdf"))
+    invcdf = @compat(Symbol(jname, "invcdf"))
+    invccdf = @compat(Symbol(jname, "invccdf"))
+    invlogcdf = @compat(Symbol(jname, "invlogcdf"))
+    invlogccdf = @compat(Symbol(jname, "invlogccdf"))
 
-    rand = symbol(string(jname, "rand"))
+    rand = @compat(Symbol(jname, "rand"))
     has_rand = true
     if rname == :nbeta || rname == :nf || rname == :nt
         has_rand = false
