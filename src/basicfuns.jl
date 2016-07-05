@@ -24,8 +24,8 @@ log1psq(x::Real) = log1p(abs2(x))
 
 # log1pexp: log(1+exp(x))
 #
-log1pexp(x::Real) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : x*one(exp(-x))
-log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : x*one(exp(-x))
+log1pexp(x::Real) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : oftype(exp(-x), x)
+log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : oftype(exp(-x), x)
 
 # log1mexp: log(1 - exp(x))
 #
@@ -42,8 +42,8 @@ log2mexp(x::Real) = log1p(-expm1(x))
 
 # logexpm1: log(exp(x) - 1)
 #
-logexpm1(x::Real) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : x*one(exp(-x))
-logexpm1(x::Float32) = x <= 9f0 ? log(expm1(x)) : x <= 16f0 ? x - exp(-x) : x
+logexpm1(x::Real) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : oftype(exp(-x), x)
+logexpm1(x::Float32) = x <= 9f0 ? log(expm1(x)) : x <= 16f0 ? x - exp(-x) : oftype(exp(-x), x)
 
 @vectorize_1arg Real xlogx
 @vectorize_2arg Real xlogy
