@@ -4,34 +4,28 @@ f64(x::Real) = convert(Float64, x)
 
 # scalar functions
 
-xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(x)
-xlogx(x::Integer) = xlogx(float(x))
+xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(log(x))
 
-xlogy{T<:Real}(x::T, y::T) = x > zero(T) ? x * log(y) : zero(x)
-xlogy{T<:Integer}(x::T, y::T) = xlogy(float(x), float(y))
+xlogy{T<:Real}(x::T, y::T) = x > zero(T) ? x * log(y) : zero(log(x))
 xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
 # logistic: 1 / (1 + exp(-x))
 #
 logistic(x::Real) = one(x) / (one(x) + exp(-x))
-logistic(x::Integer) = logistic(float(x))
 
 # logit: log(x / (1 - x))
 #
 logit(x::Real) = log(x / (one(x) - x))
-logit(x::Integer) = logit(float(x))
 
 # log1psq: log(1+x^2)
 #
 log1psq(x::Real) = log1p(abs2(x))
 @compat log1psq(x::Union{Float32,Float64}) = (ax = abs(x); ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax))
-log1psq(x::Integer) = log1psq(float(x))
 
 # log1pexp: log(1+exp(x))
 #
-log1pexp(x::Real) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : x
-log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : x
-log1pexp(x::Integer) = log1pexp(float(x))
+log1pexp(x::Real) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : x*one(exp(-x))
+log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : x*one(exp(-x))
 
 # log1mexp: log(1 - exp(x))
 #
@@ -41,18 +35,15 @@ log1pexp(x::Integer) = log1pexp(float(x))
 #
 # Note: different than Maechler (2012), no negation inside parantheses
 log1mexp(x::Real) = x < loghalf ? log1p(-exp(x)) : log(-expm1(x))
-log1mexp(x::Integer) = log1mexp(float(x))
 
 # log2mexp: log(2 - exp(x))
 #
 log2mexp(x::Real) = log1p(-expm1(x))
-log2mexp(x::Integer) = log2mexp(float(x))
 
 # logexpm1: log(exp(x) - 1)
 #
-logexpm1(x::Real) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : x
+logexpm1(x::Real) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : x*one(exp(-x))
 logexpm1(x::Float32) = x <= 9f0 ? log(expm1(x)) : x <= 16f0 ? x - exp(-x) : x
-logexpm1(x::Integer) = logexpm1(float(x))
 
 @vectorize_1arg Real xlogx
 @vectorize_2arg Real xlogy
@@ -129,7 +120,6 @@ end
 ## logsumexp
 
 logsumexp{T<:Real}(x::T, y::T) = x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
-logsumexp{T<:Integer}(x::T, y::T) = logsumexp(float(x), float(y))
 logsumexp(x::Real, y::Real) = logsumexp(promote(x, y)...)
 
 function logsumexp{T<:Real}(x::AbstractArray{T})
