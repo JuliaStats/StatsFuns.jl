@@ -1,6 +1,6 @@
 # functions related to negative binomial distribution
 
-import .Rmath:
+import .RFunctions:
     nbinompdf,
     nbinomlogpdf,
     nbinomcdf,

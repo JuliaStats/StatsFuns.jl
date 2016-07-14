@@ -1,10 +1,10 @@
 # import of Rmath functions
 
-module Rmath
+module RFunctions
 
 using Compat
-
-const rmathlib = "libRmath-julia"
+using Rmath
+import Rmath: libRmath
 
 ### import macro
 
@@ -55,38 +55,38 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     # function implementation
     quote
         $pdf($(pdecls...), x::Real) =
-            ccall(($dfun, rmathlib), Float64, $dtypes, x, $(pargs...), 0)
+            ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0)
 
         $logpdf($(pdecls...), x::Real) =
-            ccall(($dfun, rmathlib), Float64, $dtypes, x, $(pargs...), 1)
+            ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1)
 
         $cdf($(pdecls...), x::Real) =
-            ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 1, 0)
+            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0)
 
         $ccdf($(pdecls...), x::Real) =
-            ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 0, 0)
+            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0)
 
         $logcdf($(pdecls...), x::Real) =
-            ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 1, 1)
+            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1)
 
         $logccdf($(pdecls...), x::Real) =
-            ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 0, 1)
+            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1)
 
         $invcdf($(pdecls...), q::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, q, $(pargs...), 1, 0)
+            ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0)
 
         $invccdf($(pdecls...), q::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, q, $(pargs...), 0, 0)
+            ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0)
 
         $invlogcdf($(pdecls...), lq::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, lq, $(pargs...), 1, 1)
+            ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1)
 
         $invlogccdf($(pdecls...), lq::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, lq, $(pargs...), 0, 1)
+            ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1)
 
         if $has_rand
             $rand($(pdecls...)) =
-                ccall(($rfun, rmathlib), Float64, $rtypes, $(pargs...))
+                ccall(($rfun, libRmath), Float64, $rtypes, $(pargs...))
         end
     end
 end

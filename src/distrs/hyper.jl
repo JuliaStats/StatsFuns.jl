@@ -1,6 +1,6 @@
 # functions related to hyper-geometric distribution
 
-import .Rmath:
+import .RFunctions:
     hyperpdf,
     hyperlogpdf,
     hypercdf,

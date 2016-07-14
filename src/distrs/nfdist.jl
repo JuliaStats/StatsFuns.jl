@@ -1,6 +1,6 @@
 # functions related to noncentral F distribution
 
-import .Rmath:
+import .RFunctions:
     nfdistpdf,
     nfdistlogpdf,
     nfdistcdf,

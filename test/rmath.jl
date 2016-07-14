@@ -1,6 +1,6 @@
 using StatsFuns
 using Base.Test
-import StatsFuns.Rmath
+import StatsFuns.RFunctions
 using Compat
 
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)

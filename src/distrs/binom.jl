@@ -1,6 +1,6 @@
 # functions related to binomial distribution
 
-import .Rmath:
+import .RFunctions:
     binompdf,
     binomlogpdf,
     binomcdf,

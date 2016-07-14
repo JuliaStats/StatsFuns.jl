@@ -1,6 +1,6 @@
 # functions related to chi-square distribution
 
-import .Rmath:
+import .RFunctions:
     chisqpdf,
     chisqlogpdf,
     chisqcdf,

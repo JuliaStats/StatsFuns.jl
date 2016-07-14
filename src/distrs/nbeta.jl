@@ -1,6 +1,6 @@
 # functions related to noncentral beta distribution
 
-import .Rmath:
+import .RFunctions:
     nbetapdf,
     nbetalogpdf,
     nbetacdf,

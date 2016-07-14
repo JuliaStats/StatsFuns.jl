@@ -1,6 +1,6 @@
 # functions related to student's T distribution
 
-import .Rmath:
+import .RFunctions:
     tdistpdf,
     tdistlogpdf,
     tdistcdf,
