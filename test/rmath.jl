@@ -25,7 +25,7 @@ function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
 end
 
 get_statsfun(fname) = eval(Symbol(fname))
-get_rmathfun(fname) = eval(parse(string("Rmath.", fname)))
+get_rmathfun(fname) = eval(parse(string("RFunctions.", fname)))
 
 function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
     pdf     = string(basename, "pdf")
