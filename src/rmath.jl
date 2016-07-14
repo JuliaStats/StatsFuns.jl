@@ -1,10 +1,9 @@
 # import of Rmath functions
 
-module Rmath
+module RFunctions
 
 using Compat
-
-const rmathlib = "libRmath-julia"
+import Rmath: libRmath
 
 ### import macro
 
@@ -23,20 +22,20 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     end
 
     # Julia function names
-    pdf = @compat(Symbol(jname, "pdf"))
-    cdf = @compat(Symbol(jname, "cdf"))
-    ccdf = @compat(Symbol(jname, "ccdf"))
+    pdf = @compat Symbol(jname, "pdf")
+    cdf = @compat Symbol(jname, "cdf")
+    ccdf = @compat Symbol(jname, "ccdf")
 
-    logpdf = @compat(Symbol(jname, "logpdf"))
-    logcdf = @compat(Symbol(jname, "logcdf"))
-    logccdf = @compat(Symbol(jname, "logccdf"))
+    logpdf = @compat Symbol(jname, "logpdf")
+    logcdf = @compat Symbol(jname, "logcdf")
+    logccdf = @compat Symbol(jname, "logccdf")
 
-    invcdf = @compat(Symbol(jname, "invcdf"))
-    invccdf = @compat(Symbol(jname, "invccdf"))
-    invlogcdf = @compat(Symbol(jname, "invlogcdf"))
-    invlogccdf = @compat(Symbol(jname, "invlogccdf"))
+    invcdf = @compat Symbol(jname, "invcdf")
+    invccdf = @compat Symbol(jname, "invccdf")
+    invlogcdf = @compat Symbol(jname, "invlogcdf")
+    invlogccdf = @compat Symbol(jname, "invlogccdf")
 
-    rand = @compat(Symbol(jname, "rand"))
+    rand = @compat Symbol(jname, "rand")
     has_rand = true
     if rname == :nbeta || rname == :nf || rname == :nt
         has_rand = false
@@ -55,38 +54,38 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     # function implementation
     quote
         $pdf($(pdecls...), x::Real) =
-            ccall(($dfun, rmathlib), Float64, $dtypes, x, $(pargs...), 0)
+            ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0)
 
         $logpdf($(pdecls...), x::Real) =
-            ccall(($dfun, rmathlib), Float64, $dtypes, x, $(pargs...), 1)
+            ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1)
 
         $cdf($(pdecls...), x::Real) =
-            ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 1, 0)
+            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0)
 
         $ccdf($(pdecls...), x::Real) =
-            ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 0, 0)
+            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0)
 
         $logcdf($(pdecls...), x::Real) =
-            ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 1, 1)
+            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1)
 
         $logccdf($(pdecls...), x::Real) =
-            ccall(($pfun, rmathlib), Float64, $ptypes, x, $(pargs...), 0, 1)
+            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1)
 
         $invcdf($(pdecls...), q::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, q, $(pargs...), 1, 0)
+            ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0)
 
         $invccdf($(pdecls...), q::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, q, $(pargs...), 0, 0)
+            ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0)
 
         $invlogcdf($(pdecls...), lq::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, lq, $(pargs...), 1, 1)
+            ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1)
 
         $invlogccdf($(pdecls...), lq::Real) =
-            ccall(($qfun, rmathlib), Float64, $qtypes, lq, $(pargs...), 0, 1)
+            ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1)
 
         if $has_rand
             $rand($(pdecls...)) =
-                ccall(($rfun, rmathlib), Float64, $rtypes, $(pargs...))
+                ccall(($rfun, libRmath), Float64, $rtypes, $(pargs...))
         end
     end
 end

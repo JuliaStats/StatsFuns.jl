@@ -1,6 +1,6 @@
 # functions related to gamma distribution
 
-import .Rmath:
+import .RFunctions:
     gammapdf,
     gammalogpdf,
     gammacdf,

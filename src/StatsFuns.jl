@@ -2,10 +2,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
 
 module StatsFuns
 
-using Compat
-
-import Base.Math.@horner
-import Compat.@irrational
+import Base: Math.@horner, @irrational
 
 export
     # constants
@@ -227,9 +224,10 @@ export
 include("constants.jl")
 include("basicfuns.jl")
 include("misc.jl")
-
 include("rmath.jl")
-using .Rmath
+
+using .RFunctions
+
 include(joinpath("distrs", "beta.jl"))
 include(joinpath("distrs", "binom.jl"))
 include(joinpath("distrs", "chisq.jl"))

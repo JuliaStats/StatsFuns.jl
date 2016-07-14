@@ -1,6 +1,6 @@
 # functions related to F distribution
 
-import .Rmath:
+import .RFunctions:
     fdistpdf,
     fdistlogpdf,
     fdistcdf,

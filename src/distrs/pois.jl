@@ -1,6 +1,6 @@
 # functions related to Poisson distribution
 
-import .Rmath:
+import .RFunctions:
     poispdf,
     poislogpdf,
     poiscdf,
