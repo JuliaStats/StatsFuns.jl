@@ -2,8 +2,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
 
 module StatsFuns
 
-import Base.Math.@horner
-import Compat.@irrational
+import Base: Math.@horner, @irrational
 
 export
     # constants
@@ -229,9 +228,19 @@ include("rmath.jl")
 
 using .RFunctions
 
-for distr in ("beta", "binom", "chisq", "fdist", "gamma", "hyper", "nbeta",
-             "nbinom", "nchisq", "nfdist", "norm", "ntdist", "pois", "tdist")
-    include(joinpath("distrs", "$distr.jl"))
-end
+include(joinpath("distrs", "beta.jl"))
+include(joinpath("distrs", "binom.jl"))
+include(joinpath("distrs", "chisq.jl"))
+include(joinpath("distrs", "fdist.jl"))
+include(joinpath("distrs", "gamma.jl"))
+include(joinpath("distrs", "hyper.jl"))
+include(joinpath("distrs", "nbeta.jl"))
+include(joinpath("distrs", "nbinom.jl"))
+include(joinpath("distrs", "nchisq.jl"))
+include(joinpath("distrs", "nfdist.jl"))
+include(joinpath("distrs", "norm.jl"))
+include(joinpath("distrs", "ntdist.jl"))
+include(joinpath("distrs", "pois.jl"))
+include(joinpath("distrs", "tdist.jl"))
 
 end # module
