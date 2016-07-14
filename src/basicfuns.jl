@@ -20,7 +20,7 @@ logit(x::Real) = log(x / (one(x) - x))
 # log1psq: log(1+x^2)
 #
 log1psq(x::Real) = log1p(abs2(x))
-@compat log1psq(x::Union{Float32,Float64}) = (ax = abs(x); ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax))
+log1psq(x::Union{Float32,Float64}) = (ax = abs(x); ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax))
 
 # log1pexp: log(1+exp(x))
 #
@@ -127,7 +127,7 @@ function logsumexp{T<:Real}(x::AbstractArray{T})
     u = maximum(x)
     s = 0.
     for i = 1:length(x)
-    	@inbounds s += exp(x[i] - u)
+        @inbounds s += exp(x[i] - u)
     end
     log(s) + u
 end
@@ -135,18 +135,18 @@ end
 ## softmax
 
 function softmax!{R<:AbstractFloat,T<:Real}(r::AbstractArray{R}, x::AbstractArray{T})
-	n = length(x)
-	length(r) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-	u = maximum(x)
-	s = 0.
-	@inbounds for i = 1:n
-		s += (r[i] = exp(x[i] - u))
-	end
-	invs = convert(R, inv(s))
-	@inbounds for i = 1:n
-		r[i] *= invs
-	end
-	r
+    n = length(x)
+    length(r) == n || throw(DimensionMismatch("Inconsistent array lengths."))
+    u = maximum(x)
+    s = 0.
+    @inbounds for i = 1:n
+        s += (r[i] = exp(x[i] - u))
+    end
+    invs = convert(R, inv(s))
+    @inbounds for i = 1:n
+        r[i] *= invs
+    end
+    r
 end
 
 softmax!{T<:AbstractFloat}(x::AbstractArray{T}) = softmax!(x, x)

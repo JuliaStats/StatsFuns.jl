@@ -2,8 +2,6 @@
 
 module RFunctions
 
-using Compat
-using Rmath
 import Rmath: libRmath
 
 ### import macro
@@ -23,20 +21,20 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     end
 
     # Julia function names
-    pdf = @compat(Symbol(jname, "pdf"))
-    cdf = @compat(Symbol(jname, "cdf"))
-    ccdf = @compat(Symbol(jname, "ccdf"))
+    pdf = Symbol(jname, "pdf")
+    cdf = Symbol(jname, "cdf")
+    ccdf = Symbol(jname, "ccdf")
 
-    logpdf = @compat(Symbol(jname, "logpdf"))
-    logcdf = @compat(Symbol(jname, "logcdf"))
-    logccdf = @compat(Symbol(jname, "logccdf"))
+    logpdf = Symbol(jname, "logpdf")
+    logcdf = Symbol(jname, "logcdf")
+    logccdf = Symbol(jname, "logccdf")
 
-    invcdf = @compat(Symbol(jname, "invcdf"))
-    invccdf = @compat(Symbol(jname, "invccdf"))
-    invlogcdf = @compat(Symbol(jname, "invlogcdf"))
-    invlogccdf = @compat(Symbol(jname, "invlogccdf"))
+    invcdf = Symbol(jname, "invcdf")
+    invccdf = Symbol(jname, "invccdf")
+    invlogcdf = Symbol(jname, "invlogcdf")
+    invlogccdf = Symbol(jname, "invlogccdf")
 
-    rand = @compat(Symbol(jname, "rand"))
+    rand = Symbol(jname, "rand")
     has_rand = true
     if rname == :nbeta || rname == :nf || rname == :nt
         has_rand = false

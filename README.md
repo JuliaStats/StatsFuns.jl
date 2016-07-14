@@ -2,7 +2,6 @@
 
 Mathematical functions related to statistics.
 
-[![StatsFuns](http://pkg.julialang.org/badges/StatsFuns_0.3.svg)](http://pkg.julialang.org/?pkg=StatsFuns)
 [![StatsFuns](http://pkg.julialang.org/badges/StatsFuns_0.4.svg)](http://pkg.julialang.org/?pkg=StatsFuns)
 [![StatsFuns](http://pkg.julialang.org/badges/StatsFuns_0.5.svg)](http://pkg.julialang.org/?pkg=StatsFuns)
 [![Travis](https://travis-ci.org/JuliaStats/StatsFuns.jl.svg?branch=master)](https://travis-ci.org/JuliaStats/StatsFuns.jl)

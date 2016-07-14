@@ -2,11 +2,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
 
 module StatsFuns
 
-using Compat
-using Rmath
-
 import Base.Math.@horner
-import Compat.@irrational
 
 export
     # constants
