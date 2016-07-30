@@ -31,20 +31,20 @@ normlogccdf(z::Number) = z > 1.0 ?
     log1p(-erfc(-z * invsqrt2)/2)
 normlogccdf(μ::Real, σ::Real, x::Number) = normlogccdf(zval(μ, σ, x))
 
-# invcdf. Fixme! Support more precisions than Float64
-norminvcdf(p::Real) = convert(typeof(p), _norminvcdf_impl(f64(p)))
+norminvcdf(p::Real) = -erfcinv(2*p) * sqrt2
 norminvcdf(μ::Real, σ::Real, p::Real) = xval(μ, σ, norminvcdf(p))
 
-# invccdf. Fixme! Support more precisions than Float64
-norminvccdf(p::Real) = convert(typeof(p), -_norminvcdf_impl(f64(p)))
+norminvccdf(p::Real) = erfcinv(2*p) * sqrt2
 norminvccdf(μ::Real, σ::Real, p::Real) = xval(μ, σ, norminvccdf(p))
 
 # invlogcdf. Fixme! Support more precisions than Float64
-norminvlogcdf(lp::Real) = convert(typeof(lp), _norminvlogcdf_impl(f64(lp)))
+norminvlogcdf(lp::Union{Float16,Float32}) = convert(typeof(lp), _norminvlogcdf_impl(Float64(lp)))
+norminvlogcdf(lp::Real) = _norminvlogcdf_impl(Float64(lp))
 norminvlogcdf(μ::Real, σ::Real, lp::Real) = xval(μ, σ, norminvlogcdf(lp))
 
 # invlogccdf. Fixme! Support more precisions than Float64
-norminvlogccdf(lp::Real) = convert(typeof(lp), -_norminvlogcdf_impl(f64(lp)))
+norminvlogccdf(lp::Union{Float16,Float32}) = convert(typeof(lp), -_norminvlogcdf_impl(Float64(lp)))
+norminvlogccdf(lp::Real) = -_norminvlogcdf_impl(Float64(lp))
 norminvlogccdf(μ::Real, σ::Real, lp::Real) = xval(μ, σ, norminvlogccdf(lp))
 
 
@@ -55,23 +55,6 @@ norminvlogccdf(μ::Real, σ::Real, lp::Real) = xval(μ, σ, norminvlogccdf(lp))
 #   Wichura, M.J. (1988) Algorithm AS 241: The Percentage Points of the Normal Distribution
 #   Journal of the Royal Statistical Society. Series C (Applied Statistics), Vol. 37, No. 3, pp. 477-484
 #
-function _norminvcdf_impl(p::Float64)
-    if 0.0 < p < 1.0
-        q = p - 0.5
-        if abs(q) <= 0.425
-            _qnorm_ker1(q)
-        else
-            r = sqrt(q < 0 ? -log(p) : -log1p(-p))
-            copysign(_qnorm_ker2(r), q)
-        end
-    else
-        if p <= 0.0
-            p == 0.0 ? -Inf : NaN
-        else # p >= 1.0
-            p == 1.0 ? Inf : NaN
-        end
-    end
-end
 
 function _norminvlogcdf_impl(lp::Float64)
     if isfinite(lp) && lp < 0.0

@@ -1,7 +1,5 @@
 # common facilities
 
-f64(x::Real) = convert(Float64, x)
-
 # scalar functions
 
 xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(log(x))
