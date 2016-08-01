@@ -27,7 +27,7 @@ end
 get_statsfun(fname) = eval(Symbol(fname))
 get_rmathfun(fname) = eval(parse(string("RFunctions.", fname)))
 
-function rmathcomp(basename, params, X::AbstractArray, rtol=1.0e-12)
+function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(eltype(X)))))
     pdf     = string(basename, "pdf")
     logpdf  = string(basename, "logpdf")
     cdf     = string(basename, "cdf")
@@ -185,6 +185,8 @@ rmathcomp_tests("norm", [
     ((0.0, 1.0), -6.0:0.01:6.0),
     ((2.0, 1.0), -3.0:0.01:7.0),
     ((0.0, 0.5), -3.0:0.01:3.0),
+    ((0, 1), -3:3),
+    ((0, 1), -Float16(3):Float16(0.01):Float16(3))
 ])
 
 rmathcomp_tests("ntdist", [
