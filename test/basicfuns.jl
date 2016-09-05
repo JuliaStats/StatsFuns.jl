@@ -1,5 +1,6 @@
 using StatsFuns
 using Base.Test
+using Compat
 
 # xlogx & xlogy
 
@@ -81,7 +82,7 @@ println("\ttesting logsumexp ...")
 println("\ttesting softmax ...")
 
 x = [1.0, 2.0, 3.0]
-r = exp(x) ./ sum(exp(x))
+r = @compat exp.(x) ./ sum(exp.(x))
 @test_approx_eq softmax([1.0, 2.0, 3.0]) r
 softmax!(x)
 @test_approx_eq x r
