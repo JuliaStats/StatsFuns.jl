@@ -1,6 +1,6 @@
 # StatsFuns
 
-Mathematical functions related to statistics.
+**A purely internal library for mathematical functions related to statistics that provides back-end machinery for the Distributions.jl package. End users should always use Distributions.jl and should never use this package under any circumstances.**
 
 [![StatsFuns](http://pkg.julialang.org/badges/StatsFuns_0.4.svg)](http://pkg.julialang.org/?pkg=StatsFuns)
 [![StatsFuns](http://pkg.julialang.org/badges/StatsFuns_0.5.svg)](http://pkg.julialang.org/?pkg=StatsFuns)
