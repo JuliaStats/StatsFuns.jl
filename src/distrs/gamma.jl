@@ -12,8 +12,8 @@ import .RFunctions:
     gammainvlogcdf,
     gammainvlogccdf
 
-# pdf
+# pdf for numbers with generic types
 gammapdf(k::Real, θ::Real, x::Real) = 1 / (gamma(k) * θ^k) * x^(k - 1) * exp(-x / θ)
 
-# logpdf
+# logpdf for numbers with generic types
 gammalogpdf(k::Real, θ::Real, x::Real) = -lgamma(k) - k * log(θ) + (k - 1) * log(x) - x / θ
