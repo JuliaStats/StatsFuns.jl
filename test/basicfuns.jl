@@ -76,6 +76,20 @@ println("\ttesting logsumexp ...")
 @test_approx_eq logsumexp([1.0, 2.0, 3.0]) 3.40760596444438
 @test_approx_eq logsumexp([1.0, 2.0, 3.0] .+ 1000.) 1003.40760596444438
 
+let cases = [([-Inf, -Inf], -Inf),
+             ([-Inf, -Inf32], -Inf),
+             ([-Inf, Inf], Inf),
+             ([-Inf, 9.0], 9.0),
+             ([Inf, 9.0], Inf),
+             ([NaN, 9.0], NaN),
+             ([NaN, Inf], NaN),
+             ([NaN, -Inf], NaN)]
+    for (arguments, result) in cases
+        @test logsumexp(arguments) ≡ result
+        @test logsumexp(arguments...) ≡ result
+    end
+end
+
 # softmax
 
 println("\ttesting softmax ...")
