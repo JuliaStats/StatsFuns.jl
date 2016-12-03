@@ -117,13 +117,19 @@ end
 
 ## logsumexp
 
-logsumexp{T<:Real}(x::T, y::T) = x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
+function logsumexp{T<:Real}(x::T, y::T)
+    x == y && abs(x) == Inf && return x
+    x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
+end
+
 logsumexp(x::Real, y::Real) = logsumexp(promote(x, y)...)
 
 function logsumexp{T<:Real}(x::AbstractArray{T})
-    isempty(x) && return -Inf
+    S = typeof(exp(zero(T)))    # because of 0.4.0
+    isempty(x) && return -S(Inf)
     u = maximum(x)
-    s = 0.
+    abs(u) == Inf && return any(isnan, x) ? S(NaN) : u
+    s = zero(S)
     for i = 1:length(x)
         @inbounds s += exp(x[i] - u)
     end
