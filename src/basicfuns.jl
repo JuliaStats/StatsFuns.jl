@@ -129,8 +129,8 @@ logsumexp(x::Real, y::Real) = logsumexp(promote(x, y)...)
 function logsumexp{T<:Real}(x::AbstractArray{T})
     isempty(x) && return -T(Inf)
     u = maximum(x)
-    abs(u) == Inf && return any(isnan.(x)) ? T(NaN) : u
-    s = zero(T)
+    abs(u) == Inf && return any(isnan(x)) ? T(NaN) : u
+    s = zero(Base.promote_op(exp, T))
     for i = 1:length(x)
         @inbounds s += exp(x[i] - u)
     end
