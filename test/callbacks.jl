@@ -22,13 +22,11 @@ function check_rmath(fname, statsfun, params, aname, a, isprob, rtol)
     end
 end
 
-get_statsfun(fname) = eval(Symbol(fname))
-
 function genericcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(eltype(X)))))
   pdf = string(basename, "pdf")
   logpdf = string(basename, "logpdf")
-  stats_pdf = get_statsfun(pdf)
-  stats_logpdf = get_statsfun(logpdf)
+  stats_pdf = eval(Symbol(pdf))
+  stats_logpdf = eval(Symbol(logpdf))
   for i = 1:length(X)
     x = X[i]
     check_rmath(pdf, stats_pdf, params, "x", x, true, rtol)
