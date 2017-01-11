@@ -53,10 +53,10 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
 
     # function implementation
     quote
-        $pdf($(pdecls...), x::Real) =
+        $pdf($(pdecls...), x::Union{Float64,Int64}) =
             ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0)
 
-        $logpdf($(pdecls...), x::Real) =
+        $logpdf($(pdecls...), x::Union{Float64,Int64}) =
             ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1)
 
         $cdf($(pdecls...), x::Real) =

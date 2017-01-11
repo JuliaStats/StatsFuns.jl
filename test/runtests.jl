@@ -1,4 +1,4 @@
-tests = ["basicfuns", "rmath"]
+tests = ["basicfuns", "rmath", "generic"]
 
 for t in tests
     to_test = true
