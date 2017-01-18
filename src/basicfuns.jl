@@ -154,4 +154,4 @@ function softmax!{R<:AbstractFloat,T<:Real}(r::AbstractArray{R}, x::AbstractArra
 end
 
 softmax!{T<:AbstractFloat}(x::AbstractArray{T}) = softmax!(x, x)
-softmax{T<:Real}(x::AbstractArray{T}) = softmax!(Array(Float64, size(x)), x)
+softmax{T<:Real}(x::AbstractArray{T}) = softmax!(Array{Float64}(size(x)), x)
