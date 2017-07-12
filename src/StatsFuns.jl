@@ -228,6 +228,9 @@ include("misc.jl")
 include("rmath.jl")
 
 using .RFunctions
+if VERSION >= v"0.6.0-dev.2767"
+    using SpecialFunctions
+end
 
 include(joinpath("distrs", "beta.jl"))
 include(joinpath("distrs", "binom.jl"))
