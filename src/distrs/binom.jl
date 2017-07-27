@@ -16,6 +16,4 @@ import .RFunctions:
 binompdf(n::Real, p::Real, k::Real) = exp(binomlogpdf(n, p, k))
 
 # logpdf for numbers with generic types
-binomlogpdf(n::Real, p::Real, k::Real) = begin
-    -log(n + 1) - lbeta(n - k + 1, k + 1) + k * log(p) + (n - k) * log(1 - p)
-end
+binomlogpdf(n::Real, p::Real, k::Real) = -log1p(n) - lbeta(n - k + 1, k + 1) + k * log(p) + (n - k) * log1p(-p)
