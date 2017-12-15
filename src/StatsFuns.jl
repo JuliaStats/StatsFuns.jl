@@ -1,4 +1,4 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
+__precompile__(true)
 
 module StatsFuns
 
@@ -228,9 +228,7 @@ include("misc.jl")
 include("rmath.jl")
 
 using .RFunctions
-if VERSION >= v"0.6.0-dev.2767"
-    using SpecialFunctions
-end
+using SpecialFunctions
 
 include(joinpath("distrs", "beta.jl"))
 include(joinpath("distrs", "binom.jl"))
