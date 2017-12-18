@@ -4,7 +4,7 @@
 
 xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(log(x))
 
-xlogy{T<:Real}(x::T, y::T) = x > zero(T) ? x * log(y) : zero(log(x))
+xlogy(x::T, y::T) where {T<:Real} = x > zero(T) ? x * log(y) : zero(log(x))
 xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
 # logistic: 1 / (1 + exp(-x))
@@ -117,14 +117,14 @@ end
 
 ## logsumexp
 
-function logsumexp{T<:Real}(x::T, y::T)
+function logsumexp(x::T, y::T) where T<:Real
     x == y && abs(x) == Inf && return x
     x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
 end
 
 logsumexp(x::Real, y::Real) = logsumexp(promote(x, y)...)
 
-function logsumexp{T<:Real}(x::AbstractArray{T})
+function logsumexp(x::AbstractArray{T}) where T<:Real
     S = typeof(exp(zero(T)))    # because of 0.4.0
     isempty(x) && return -S(Inf)
     u = maximum(x)
@@ -138,7 +138,7 @@ end
 
 ## softmax
 
-function softmax!{R<:AbstractFloat,T<:Real}(r::AbstractArray{R}, x::AbstractArray{T})
+function softmax!(r::AbstractArray{R}, x::AbstractArray{T}) where {R<:AbstractFloat,T<:Real}
     n = length(x)
     length(r) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     u = maximum(x)
@@ -153,5 +153,5 @@ function softmax!{R<:AbstractFloat,T<:Real}(r::AbstractArray{R}, x::AbstractArra
     r
 end
 
-softmax!{T<:AbstractFloat}(x::AbstractArray{T}) = softmax!(x, x)
-softmax{T<:Real}(x::AbstractArray{T}) = softmax!(Array{Float64}(size(x)), x)
+softmax!(x::AbstractArray{<:AbstractFloat}) = softmax!(x, x)
+softmax(x::AbstractArray{<:Real}) = softmax!(Array{Float64}(size(x)), x)
