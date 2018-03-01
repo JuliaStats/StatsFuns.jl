@@ -226,6 +226,7 @@ include("constants.jl")
 include("basicfuns.jl")
 include("misc.jl")
 include("rmath.jl")
+include("binomial.jl")
 
 using .RFunctions
 using SpecialFunctions
