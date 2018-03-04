@@ -16,13 +16,9 @@ end
 
 println("\ttesting binomlogpdf ...");
 for i = 1:length(N)
-    @testset "$i" begin
     for x = Int64(0):N[i]
     bin = factorial(Int64(N[i]))/factorial(x)/factorial(N[i] - x);
-    v = log(bin*(P[i]^x)*(1-P[i])^(N[i] - x));
-    ans = binomlogpdf(N[i], P[i], x);
-    diff = abs(ans - v);
-    @test_throws "$v ≈ $ans, abserror = $diff" ≈(v, ans, atol = 1e-15)
+    v = bin*(P[i]^x)*(1-P[i])^(N[i] - x);
+    @test ≈(log(v), binomlogpdf(N[i], P[i], x), atol = 1e-15)
     end
-end
 end
