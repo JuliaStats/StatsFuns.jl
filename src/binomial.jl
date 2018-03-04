@@ -89,5 +89,15 @@ julia> binomlogpdf(13, 0.58, 7)
 ...
 """
 function binomlogpdf(n::Integer, p::AbstractFloat, x::Integer)
-    return log(binompdf(n, p, x))
+    if (n  < 1 || x > n || x < 0) return NaN end
+    if ( p < 0.0 || p > 1.0) return NaN end
+    if ( p == 0.0 ) return ( (x == 0) ? Float64(1.0):Float64(0.0)) end
+    if ( p == 1.0 ) return ( (x == n) ? Float64(1.0):Float64(0.0)) end
+    if ( x == 0 ) return exp(n*log(1-p)) end
+    if ( x == n ) return exp(n*log(p)) end
+    n = convert(Int64, min(typemax(Int64), n))
+    p = convert(Float64, max(eps(Float64), p))
+    x = convert(Int64, min(typemax(Int64), x))
+    lc = stirlerr(n) - stirlerr(x) - stirlerr(n-x) -D(x, n*p) - D(n-x, n*(1.0-p))
+    return  lc + 0.5*log(n/(2*pi*x*(n-x)))
 end
