@@ -10,13 +10,13 @@ println("\ttesting binompdf ...");
 
 for i = 1:length(N)
     for x = Int64(0):N[i]
-@test abs(Rmath.dbinom(x, N[i], P[i])/binompdf(N[i], P[i], x) - 1.0) < 1e-14
+@test abs(binompdf(N[i], P[i], x)/Rmath.dbinom(x, N[i], P[i]) - 1.0) < 2.23e-14
     end
 end
 
 println("\ttesting binomlogpdf ...");
 for i = 1:length(N)
     for x = Int64(0):N[i]
-    @test  abs(Rmath.dbinom(x, N[i], P[i], true)/binomlogpdf(N[i], P[i], x) - 1.0) < 1e-14
+    @test  abs(binomlogpdf(N[i], P[i], x)/(Rmath.dbinom(x, N[i], P[i], true) - 1.0) < 2.23e-14
     end
 end
