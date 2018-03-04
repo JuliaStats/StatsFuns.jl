@@ -16,9 +16,11 @@ end
 println("\ttesting binomlogpdf ...");
 
 for i = 1:length(N)
+    @testset "$i" begin
     for x = Int64(0):N[i]
     bin = factorial(Int64(N[i]))/factorial(x)/factorial(N[i] - x);
     v = bin*(P[i]^x)*(1-P[i])^(N[i] - x);
     @test ≈(log(v), binomlogpdf(N[i], P[i], x), atol = 1e-15)
     end
+end
 end
