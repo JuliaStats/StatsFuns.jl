@@ -116,8 +116,8 @@ genericcomp_tests("norm", [
 # ])
 
 genericcomp_tests("pois", [
-    ((1.0), 0:30),
-    ((10.0), 0:300)
+    ((1.0,), 0:30),
+    ((10.0,), 0:42)
 ])
 
 genericcomp_tests("tdist", [
