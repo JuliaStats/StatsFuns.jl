@@ -1,16 +1,13 @@
+#sfe(x) = log(n!*e^n/((n^n)*sqrt(2*pi*n))), for stirlerr
+const sfe = Float64[log(factorial(n)) - log(sqrt(2pi * n) * (n/Base.e)^n) for n in big(1):big(20)]
+# stirlerr(x) = log(x!) -log(sqrt(2*pi*x)*(n/e)^n)
 function stirlerr(n::Float64)
-    # stirlerr(x) = log(x!) -log(sqrt(2*pi*x)*(n/e)^n)
-    const S0 = 0.083333333333333333333        # 1/12
-    const S1 = 0.00277777777777777777778      # 1/360
-    const S2 = 0.00079365079365079365079365   # 1/1260
-    const S3 = 0.000595238095238095238095238  # 1/1680
-    const S4 = 0.0008417508417508417508417508 # 1/1188
-    # 15 values, sfe(x) = log(n!*e^n/((n^n)*sqrt(2*pi*n)))
-    sfe = (0.0810614667953272582196702, 0.0413406959554092940938221,  0.02767792568499833914878929,
-    0.02079067210376509311152277, 0.01664469118982119216319487, 0.01387612882307074799874573,
-    0.01189670994589177009505572, 0.010411265261972096497478567, 0.009255462182712732917728637,
-    0.008330563433362871256469318,0.007573675487951840794972024, 0.006942840107209529865664152,
-    0.006408994188004207068439631,0.005951370112758847735624416, 0.0055547335519628013710386899)
+
+    const S0 = inv(12)
+    const S1 = inv(360)
+    const S2 = inv(1260)
+    const S3 = inv(1680)
+    const S4 = inv(1188)
     if (n <= 15)
         @inbounds return(sfe[n])
     end
@@ -48,7 +45,9 @@ function binompdf(n::Integer, p::AbstractFloat, x::Integer)
     if ( p == 1.0 ) return ( (x == n) ? 1.0 : 0.0) end
     if ( x == 0 ) return exp(n*log1p(-p)) end
     if ( x == n ) return exp(n*log(p)) end
-    if(n > typemax(int64)) error("`n` is too large.") end
+    if n > typemax(Int64)
+        error("n is too large.")
+    end
     n = convert(Int64, n)
     p = convert(Float64, p)
     x = convert(Int64, x)
