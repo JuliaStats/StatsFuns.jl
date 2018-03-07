@@ -96,7 +96,7 @@ function binomlogpdf(n::Integer, p::AbstractFloat, x::Integer)
     if ( p == 1.0 ) return ( (x == n) ? 0.0 : -Inf) end
     if ( x == 0 ) return n*log(1 - p) end
     if ( x == n ) return n*log(p) end
-    if n > typemax(int64)
+    if n > typemax(Int64)
         error("`n` is too large.")
     end
     n = convert(Int64, n)
