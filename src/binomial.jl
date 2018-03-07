@@ -1,4 +1,4 @@
-function stirlerr(n::Int64)
+function stirlerr(n::Float64)
     # stirlerr(x) = log(x!) -log(sqrt(2*pi*x)*(n/e)^n)
     const S0 = 0.083333333333333333333        # 1/12
     const S1 = 0.00277777777777777777778      # 1/360
@@ -21,6 +21,8 @@ function stirlerr(n::Int64)
     return((S0-(S1-(S2-(S3-S4/nn)/nn)/nn)/nn)/n)
 end
 
+stirlerr(n::Int64) = stirlerr(Float64(n))
+
 """
     binompdf(n::Integer, p::Float, x::Integer)
 
@@ -42,28 +44,29 @@ function binompdf(n::Integer, p::AbstractFloat, x::Integer)
     # Using Saddle Point Algorithm by Catherine Loader which can be found here: http://octave.1599824.n4.nabble.com/attachment/3829107/0/loader2000Fast.pdf
     if (n  < 1 || x > n || x < 0) return NaN end
     if ( p < 0.0 || p > 1.0) return NaN end
-    if ( p == 0.0 ) return ( (x == 0) ? Float64(1.0):Float64(0.0)) end
-    if ( p == 1.0 ) return ( (x == n) ? Float64(1.0):Float64(0.0)) end
-    if ( x == 0 ) return exp(n*log(1-p)) end
+    if ( p == 0.0 ) return ( (x == 0) ? 1.0 : 0.0) end
+    if ( p == 1.0 ) return ( (x == n) ? 1.0 : 0.0) end
+    if ( x == 0 ) return exp(n*log1p(-p)) end
     if ( x == n ) return exp(n*log(p)) end
-    n = convert(Int64, min(typemax(Int64), n))
-    p = convert(Float64, max(eps(Float64), p))
-    x = convert(Int64, min(typemax(Int64), x))
-    lc = stirlerr(n) - stirlerr(x) - stirlerr(n-x) -D(x, n*p) - D(n-x, n*(1.0-p))
-    return  exp(lc)*sqrt(n/(2*pi*x*(n-x)))
+    if(n > typemax(int64)) error("`n` is too large.") end
+    n = convert(Int64, n)
+    p = convert(Float64, p)
+    x = convert(Int64, x)
+    lc = stirlerr(n) - stirlerr(x) - stirlerr(n-x) -D(x, n*p) - D(n-x, n*(1 - p))
+    return  exp(lc)*sqrt(n/(2*pi*x*(n - x)))
 end
 
 function D(x::Int64, np::Float64) # Deviance term, x*log(x/np) + np - x
-    if( abs(x - np) < 0.1*(x+np))
+    if abs(x - np) < 0.1*(x + np)
         s = (x - np)*(x - np)/(x + np)
         v = (x - np)/(x + np)
         ej = 2*x*v
-        j = 1
-        s1 = 0
+        j = 1.0
+        s1 = 0.0
         while true
             ej *= v*v
-            s1 = s+ej/(2*j+1)
-            if( s1 == s) return s1 end
+            s1 = s + ej/(2*j + 1)
+            if s1 == s return s1 end
             s = s1
             j += 1
         end
@@ -91,13 +94,16 @@ julia> binomlogpdf(13, 0.58, 7)
 function binomlogpdf(n::Integer, p::AbstractFloat, x::Integer)
     if (n  < 1 || x > n || x < 0) return NaN end
     if ( p < 0.0 || p > 1.0) return NaN end
-    if ( p == 0.0 ) return ( (x == 0) ? 0.0:-Inf) end
-    if ( p == 1.0 ) return ( (x == n) ? 0.0:-Inf) end
-    if ( x == 0 ) return n*log(1-p) end
+    if ( p == 0.0 ) return ( (x == 0) ? 0.0 : -Inf) end
+    if ( p == 1.0 ) return ( (x == n) ? 0.0 : -Inf) end
+    if ( x == 0 ) return n*log(1 - p) end
     if ( x == n ) return n*log(p) end
-    n = convert(Int64, min(typemax(Int64), n))
-    p = convert(Float64, max(eps(Float64), p))
-    x = convert(Int64, min(typemax(Int64), x))
-    lc = stirlerr(n) - stirlerr(x) - stirlerr(n-x) -D(x, n*p) - D(n-x, n*(1.0-p))
-    return  lc + 0.5*log(n/(2*pi*x*(n-x)))
+    if n > typemax(int64)
+        error("`n` is too large.")
+    end
+    n = convert(Int64, n)
+    p = convert(Float64, p)
+    x = convert(Int64, x)
+    lc = stirlerr(n) - stirlerr(x) - stirlerr(n - x) - D(x, n*p) - D(n - x, n*(1.0 - p))
+    return  lc + 0.5*log(n/(2*pi*x*(n - x)))
 end
