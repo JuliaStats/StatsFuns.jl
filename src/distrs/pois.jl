@@ -15,8 +15,6 @@ import .RFunctions:
 # generic versions
 poispdf(λ::Real, x::Real) = exp(poislogpdf(λ, x))
 
-function poislogpdf(λ::T, x::T) where {T <: Real}
-    iszero(λ) ? (iszero(x) ? x : T(-Inf)) : xlogy(x, λ) - λ - lgamma(x + 1)
-end
+poislogpdf(λ::T, x::T) where {T <: Real} = xlogy(x, λ) - λ - lgamma(x + 1)
 
 poislogpdf(λ::Number, x::Number) = poislogpdf(promote(float(λ), x)...)
