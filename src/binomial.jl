@@ -2,19 +2,10 @@
 const sfe = Float64[log(factorial(n)) - log(sqrt(2pi * n) * (n/Base.e)^n) for n in big(1):big(20)]
 # stirlerr(x) = log(x!) -log(sqrt(2*pi*x)*(n/e)^n)
 function stirlerr(n::Float64)
-    const S0 = inv(12)
-    const S1 = inv(360)
-    const S2 = inv(1260)
-    const S3 = inv(1680)
-    const S4 = inv(1188)
     if (n <= 15)
         @inbounds return(sfe[Int64(n)])
     end
-    nn = n*n
-    if (n > 500) return((S0-S1/nn)/n) end
-    if (n > 80) return((S0-(S1-S2/nn)/nn)/n) end
-    if (n > 35) return((S0-(S1-(S2-S3/nn)/nn)/nn)/n) end
-    return((S0-(S1-(S2-(S3-S4/nn)/nn)/nn)/nn)/n)
+    return lstirling_asym(n)
 end
 
 stirlerr(n::Int64) = stirlerr(Float64(n))
