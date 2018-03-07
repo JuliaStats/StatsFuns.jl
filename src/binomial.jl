@@ -1,8 +1,7 @@
 #sfe(x) = log(n!*e^n/((n^n)*sqrt(2*pi*n))), for stirlerr
 const sfe = Float64[log(factorial(n)) - log(sqrt(2pi * n) * (n/Base.e)^n) for n in big(1):big(20)]
 # stirlerr(x) = log(x!) -log(sqrt(2*pi*x)*(n/e)^n)
-function stirlerr(n::Float64)
-
+function stirlerr(n::Int64)
     const S0 = inv(12)
     const S1 = inv(360)
     const S2 = inv(1260)
@@ -17,8 +16,6 @@ function stirlerr(n::Float64)
     if (n > 35) return((S0-(S1-(S2-S3/nn)/nn)/nn)/n) end
     return((S0-(S1-(S2-(S3-S4/nn)/nn)/nn)/nn)/n)
 end
-
-stirlerr(n::Int64) = stirlerr(Float64(n))
 
 """
     binompdf(n::Integer, p::Float, x::Integer)
