@@ -211,4 +211,4 @@ end
 Return the [`softmax transformation`](https://en.wikipedia.org/wiki/Softmax_function) applied to `x`
 """
 softmax!(x::AbstractArray{<:AbstractFloat}) = softmax!(x, x)
-softmax(x::AbstractArray{<:Real}) = softmax!(Array{Float64}(size(x)), x)
+softmax(x::AbstractArray{<:Real}) = softmax!(similar(x, Float64), x)
