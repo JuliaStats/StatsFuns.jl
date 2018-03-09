@@ -48,10 +48,9 @@ total numeric error appears to be < 2 ulps
 """
 function lstirling_asym end
 
-# For BigInt use the exact calculation of factorial(x-1)
-function lstirling_asym(x::BigInt)
-    (x < 500 ? log(factorial(x-1)) : lgamma(x)) + x - log(x)*(x - 0.5) - log2π/big(2)
-end
+lstirling_asym(x::BigFloat) = lgamma(x) + x - log(x)*(x - big(0.5)) - log2π/big(2)
+
+lstirling_asym(x::Integer) = lstirling_asym(float(x))
 
 const lstirlingF64 = Float64[lstirling_asym(k) for k in big(1):big(64)]
 const lstirlingF32 = Float64[lstirling_asym(k) for k in big(1):big(40)]
@@ -73,7 +72,7 @@ end
 
 function lstirling_asym(x::Float32)
     isinteger(x) && (0 < x ≤ length(lstirlingF32)) && return lstirlingF32[Int(x)]
-    t = inv/(abs2(x))
+    t = inv(abs2(x))
     @horner(t,
              8.333333333333f-2, #  1/12 x^-1
             -2.777777777777f-3, # -1/360 x^-3
@@ -81,5 +80,3 @@ function lstirling_asym(x::Float32)
             -5.952380952381f-4, # -1/1680 x^-7
              8.417508417508f-4)/x #  1/1188 x^-9
 end
-
-lstirling_asym(x::Integer) = lstirling_asym(float(x))

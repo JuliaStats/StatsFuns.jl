@@ -185,6 +185,11 @@ end
 
 logsumexp(x::Real, y::Real) = logsumexp(promote(x, y)...)
 
+"""
+    logsumexp(x::AbstractArray{T}) where T<:Real
+
+Return `log(sum(exp, x))`, evaluated avoiding intermediate overflow/undeflow.
+"""
 function logsumexp(x::AbstractArray{T}) where T<:Real
     S = typeof(exp(zero(T)))    # because of 0.4.0
     isempty(x) && return -S(Inf)
