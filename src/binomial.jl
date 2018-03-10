@@ -1,15 +1,10 @@
-#sfe(x) = log(n!*e^n/((n^n)*sqrt(2*pi*n))), for stirlerr
-const sfe = Float64[log(factorial(n)) - log(sqrt(2pi * n) * (n/Base.e)^n) for n in big(1):big(20)]
-# stirlerr(x) = log(x!) -log(sqrt(2*pi*x)*(n/e)^n)
-function stirlerr(n::Float64)
-    if (n <= 15)
-        @inbounds return(sfe[Int64(n)])
-    end
-    return lstirling_asym(n)
-end
-
-stirlerr(n::Int64) = stirlerr(Float64(n))
-
+# Computation of binomial probability distribution function using Catherine Loader's Saddle point algorithm (http://octave.1599824.n4.nabble.com/attachment/3829107/0/loader2000Fast.pdf)
+# binompdf(n, p, x)
+# log(binompdf(n, p, x)) = log(binompdf(n, x/n, x)) - Dev(n, p, x)
+# Deviance term 'Dev': Dev(n, p, x) = xlog(x/(np)) + (n-x)log((n - x)/(n*(1 - p)))
+# Stirling's approximation: n! = √(2*π*n) * (n/e)^n + δ(n), where δ(n) is the error in the stirling approximation
+# δ(n) ≈ lstirling_asym(n), the Asymptotic stirling series expansion error, https://dlmf.nist.gov/5.11, lstirling_asym defined in misc.jl
+# p(n, x/n, x) = √(n/(2πx(n - x)))*e^(δ(n) - δ(x) - δ(n - x)), log(p(n, x/n, x)) = 0.5*log(n/(2*pi*x*(n - x))) + δ(n) - δ(x) - δ(n - x)
 """
     binompdf(n::Integer, p::Float, x::Integer)
 
@@ -27,25 +22,24 @@ julia> binompdf(13, 0.58, 7)
 - `x::Integer`: number of successful trials.
 ...
 """
-function binompdf(n::Integer, p::AbstractFloat, x::Integer)
-    # Using Saddle Point Algorithm by Catherine Loader which can be found here: http://octave.1599824.n4.nabble.com/attachment/3829107/0/loader2000Fast.pdf
-    if (n  < 1 || x > n || x < 0) return NaN end
-    if ( p < 0.0 || p > 1.0) return NaN end
-    if ( p == 0.0 ) return ( (x == 0) ? 1.0 : 0.0) end
-    if ( p == 1.0 ) return ( (x == n) ? 1.0 : 0.0) end
-    if ( x == 0 ) return exp(n*log1p(-p)) end
-    if ( x == n ) return exp(n*log(p)) end
+function binompdf{ T <: Union{Float16, Float32, Float64} }(n::Integer, p::T, x::Integer)
+    p0 = Float64(p)
+    if (n  < 1 || x > n || x < 0) return T(NaN) end
+    if ( p < 0.0 || p > 1.0) return T(NaN) end
+    if ( p == 0.0 ) return ( (x == 0) ? T(1.0) : T(0.0) ) end
+    if ( p == 1.0 ) return ( (x == n) ? T(1.0) : T(0.0) ) end
+    if ( x == 0 ) return T(exp(n*log1p(-p0))) end
+    if ( x == n ) return T(p0^n) end
     if n > typemax(Int64)
         error("n is too large.")
     end
-    n = convert(Int64, n)
-    p = convert(Float64, p)
-    x = convert(Int64, x)
-    lc = stirlerr(n) - stirlerr(x) - stirlerr(n-x) -D(x, n*p) - D(n-x, n*(1 - p))
-    return  exp(lc)*sqrt(n/(2*pi*x*(n - x)))
+    (n, x) = (Int64(n), Int64(x))
+    lc = lstirling_asym(n) - lstirling_asym(x) - lstirling_asym(n - x) -D(x, n*p0) - D(n - x, n*(1 - p0))
+    return  T(exp(lc)*sqrt(n/(2π*x*(n - x))))
 end
 
-function D(x::Int64, np::Float64) # Deviance term, x*log(x/np) + np - x
+# Deviance term: D(x, np) = x*log(x/np) + np - x
+function D(x::Int64, np::Float64)
     if abs(x - np) < 0.1*(x + np)
         s = (x - np)*(x - np)/(x + np)
         v = (x - np)/(x + np)
@@ -63,7 +57,8 @@ function D(x::Int64, np::Float64) # Deviance term, x*log(x/np) + np - x
     return x*log(x/np) + np - x
 end
 
-
+# binomlogpdf(n, p, x) = log(binompdf(n, p, x))
+# We use the same strategy as above but do not exponentiate the final result
 """
     binomlogpdf(n::Integer, p::Float, x::Integer)
 
@@ -80,19 +75,18 @@ julia> binomlogpdf(13, 0.58, 7)
 - `x::Integer`: number of successful trials.
 ...
 """
-function binomlogpdf(n::Integer, p::AbstractFloat, x::Integer)
-    if (n  < 1 || x > n || x < 0) return NaN end
-    if ( p < 0.0 || p > 1.0) return NaN end
-    if ( p == 0.0 ) return ( (x == 0) ? 0.0 : -Inf) end
-    if ( p == 1.0 ) return ( (x == n) ? 0.0 : -Inf) end
-    if ( x == 0 ) return n*log(1 - p) end
-    if ( x == n ) return n*log(p) end
+function binomlogpdf{ T <: Union{Float16, Float32, Float64} }(n::Integer, p::T, x::Integer)
+    p0 = Float64(p)
+    if (n  < 1 || x > n || x < 0) return T(NaN) end
+    if ( p < 0.0 || p > 1.0) return T(NaN) end
+    if ( p == 0.0 ) return ( (x == 0) ? T(0.0) : T(-Inf) ) end
+    if ( p == 1.0 ) return ( (x == n) ? T(0.0) : T(-Inf) ) end
+    if ( x == 0 ) return T(n*log(1 - p0)) end
+    if ( x == n ) return T(n*log(p0)) end
     if n > typemax(Int64)
         error("`n` is too large.")
     end
-    n = convert(Int64, n)
-    p = convert(Float64, p)
-    x = convert(Int64, x)
-    lc = stirlerr(n) - stirlerr(x) - stirlerr(n - x) - D(x, n*p) - D(n - x, n*(1.0 - p))
-    return  lc + 0.5*log(n/(2*pi*x*(n - x)))
+    (n, x) = (Int64(n), Int64(x))
+    lc = lstirling_asym(n) - lstirling_asym(x) - lstirling_asym(n - x) - D(x, n*p0) - D(n - x, n*(1.0 - p0))
+    return  T(lc + 0.5*log(n/(2π*x*(n - x))))
 end
