@@ -17,34 +17,39 @@ end
 """
     lstirling_asym(x)
 
-Return the remainder term after Stirling's approximation to `lgamma(x)`.
-
+The remainder term after
 [Stirling's approximation](https://en.wikipedia.org/wiki/Stirling%27s_approximation)
-to the log-gamma (`lgamma`) function also applies to `log(factorial(k))`  through
-the relationship `log(factorial(k)) = lgamma(k + 1)`.  Stirling's approximation is
+to [`lgamma`](@ref):
 
-    lgamma(x) ≈ x*log(x) - x + log(2π/x)/2 = log(x)*(x-0.5) + log2π/2 -x
+```math
+\log \Gamma(x) \approx x \log(x) - x + log(2π/x)/2 = \log(x)*(x-1/2) + \log(2\pi)/2 - x
+```
 
-Thus
+In Julia syntax, this means:
 
-    lstirling_asym(x) = lgamma(x) + x - (x-0.5)*log(x) - 0.5*log2π
-                      = 1/(12x) - 1/(360x^3) + 1/(1260x^5) + ...
+    lstirling_asym(x) = lgamma(x) + x - (x-0.5)*log(x) - 0.5*log(2π)
 
-Why bother with this when `lgamma` can be evaluated directly for most numeric types?
-In some formulas it is advantageous to evaluate the Stirling approximation and
-the remainder to take advantage of explicit cancelation of some terms in
-the Stirling approximation.
+For sufficiently large `x`, this can be approximated using the asymptotic
+_Stirling's series_ ([DLMF 5.11.1](https://dlmf.nist.gov/5.11.1)):
 
-Asymptotic expansion from:
+```math
+\frac{1}{12x} - \frac{1}{360x^3} + \frac{1}{1260x^5} - \frac{1}{1680x^7} + \ldots
+```
 
-   Temme, N. (1996) Special functions: An introduction to the classical
-   functions of mathematical physics, Wiley, New York, ISBN: 0-471-11313-1,
-   Chapter 3.6, pp 61-65.
+The truncation error is bounded by the first omitted term, and is of the same sign.
 
 Relative error of approximation is bounded by
     (174611/125400 x^-19) / (1/12 x^-1 - 1/360 x^-3)
-which is < 1/2 ulp for x >= 10.0
-total numeric error appears to be < 2 ulps
+which is < 1/2 ulp for x >= 10.0, and total numeric error appears to be < 2 ulps
+
+# References
+
+* Temme, N. (1996) Special functions: An introduction to the classical functions of
+   mathematical physics, Wiley, New York, ISBN: 0-471-11313-1, Chapter 3.6, pp 61-65.
+* Weisstein, Eric W. ["Stirling's Series."](http://mathworld.wolfram.com/StirlingsSeries.html).
+  MathWorld. 
+* [OEIS A046968](http://oeis.org/A046968) and [OEIS A046969](http://oeis.org/A046969)
+  for the series coefficients
 """
 function lstirling_asym end
 
