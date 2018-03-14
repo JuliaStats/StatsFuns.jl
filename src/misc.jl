@@ -22,7 +22,7 @@ The remainder term after
 to [`lgamma`](@ref):
 
 ```math
-\log \Gamma(x) \approx x \log(x) - x + log(2π/x)/2 = \log(x)*(x-1/2) + \log(2\pi)/2 - x
+\log \Gamma(x) \approx x \log(x) - x + \log(2π/x)/2 = \log(x)*(x-1/2) + \log(2\pi)/2 - x
 ```
 
 In Julia syntax, this means:
