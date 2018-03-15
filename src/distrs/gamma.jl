@@ -13,15 +13,12 @@ import .RFunctions:
     gammainvlogccdf
 
 # pdf for numbers with generic types
-function gammapdf(k::T, θ::T, x::T) where {T<:Real}
-    inv(gamma(k) * θ^k) * x^(k - 1) * exp(-x / θ)
-end
-
-gammapdf(k::Real, θ::Real, x::Real) = gammapdf(promote(k, θ, x)...)
+gammapdf(k::Real, θ::Real, x::Real) = exp(gammalogpdf(k, θ, x))
 
 # logpdf for numbers with generic types
 function gammalogpdf(k::T, θ::T, x::T) where {T<:Real}
-    -lgamma(k) - k * log(θ) + (k - 1) * log(x) - x / θ
+    k > 0 && θ > 0 || throw(ArgumentError("shape k = $k and scale θ = $θ must both be positive"))
+    x > 0 ? -lgamma(k) - k * log(θ) + (k - 1) * log(x) - x / θ : T(-Inf)
 end
 
 gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)

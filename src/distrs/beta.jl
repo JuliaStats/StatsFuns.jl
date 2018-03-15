@@ -13,9 +13,12 @@ import .RFunctions:
     betainvlogccdf
 
 # pdf for numbers with generic types
-betapdf(α::Real, β::Real, x::Real) = x^(α - 1) * (1 - x)^(β - 1) / beta(α, β)
+betapdf(α::Real, β::Real, x::Real) = exp(betalogpdf(α, β, x))
 
 # logpdf for numbers with generic types
-betalogpdf(α::T, β::T, x::T) where {T<:Real} =  (α - 1) * log(x) + (β - 1) * log1p(-x) - lbeta(α, β)
+function betalogpdf(α::T, β::T, x::T) where {T<:Real}
+    α > 0 && β > 0 || throw(ArgumentError("α and β must both be positive"))
+    0 < x < 1 ? (α - 1) * log(x) + (β - 1) * log1p(-x) - lbeta(α, β) : T(-Inf)
+end
 
 betalogpdf(α::Real, β::Real, x::Real) = betalogpdf(promote(α, β, x)...)

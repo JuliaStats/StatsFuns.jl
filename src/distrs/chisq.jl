@@ -13,13 +13,14 @@ import .RFunctions:
     chisqinvlogccdf
 
 # pdf for numbers with generic types
-function chisqpdf(k::Real, x::Number)
-  hk = k / 2  # hlaf k
-  1 / (2^(hk) * gamma(hk)) * x^(hk - 1) * exp(-x / 2)
-end
+chisqpdf(k::Real, x::Real) = exp(chisqlogpdf(k, x))
 
 # logpdf for numbers with generic types
-function chisqlogpdf(k::Real, x::Number)
-  hk = k / 2  # hlaf k
-  -hk * log(oftype(hk, 2)) - lgamma(hk) + (hk - 1) * log(x) - x / 2
+function chisqlogpdf(k::T, x::T) where {T <: Real}
+  isinteger(k) && k > 0 || throw(ArgumentError("k = $k must be a positive integer"))
+  x ≥ 0 || return T(-Inf)
+  hk = k / 2  # half k
+  -hk * logtwo - lgamma(hk) + (hk - 1) * log(x) - x / 2
 end
+
+chisqlogpdf(k::Real, x::Real) = chisqlogpdf(promote(k, x)...)
