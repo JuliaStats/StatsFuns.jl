@@ -1,45 +1,97 @@
 # common facilities
 
 # scalar functions
+"""
+    xlogx(x::Real)
 
+Return `x * log(x)` for `x ≥ 0`, handling `x = 0` by taking the downward limit.
+
+```jldoctest
+julia> StatsFuns.xlogx(0)
+0.0
+```
+"""
 xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(log(x))
 
+"""
+    xlogy(x::Real, y::Real)
+
+Return `x * log(y)` for `y > 0` with correct limit at `x = 0`.
+"""
 xlogy(x::T, y::T) where {T<:Real} = x > zero(T) ? x * log(y) : zero(log(x))
 xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
-# logistic: 1 / (1 + exp(-x))
-#
-logistic(x::Real) = one(x) / (one(x) + exp(-x))
+"""
+    logistic(x::Real)
 
-# logit: log(x / (1 - x))
-#
+The [logistic](https://en.wikipedia.org/wiki/Logistic_function) sigmoid function mapping a real number to a value in the interval [0,1],
+```math
+\sigma(x) = \frac{1}{e^{-x} + 1} = \frac{e^x}{1+e^x}.
+```
+
+Its inverse is the [`logit`](@ref) function.
+"""
+logistic(x::Real) = inv(exp(-x) + one(x))
+
+"""
+    logit(p::Real)
+
+The [logit](https://en.wikipedia.org/wiki/Logit) or log-odds transformation,
+```math
+\log\left(\frac{x}{1-x}\right), \text{where} 0 < x < 1
+```
+Its inverse is the [`logistic`](@ref) function.
+"""
 logit(x::Real) = log(x / (one(x) - x))
 
-# log1psq: log(1+x^2)
-#
-log1psq(x::Real) = log1p(abs2(x))
-log1psq(x::Union{Float32,Float64}) = (ax = abs(x); ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax))
+"""
+    log1psq(x::Real)
 
-# log1pexp: log(1+exp(x))
-#
+Return `log(1+x^2)` evaluated carefully for `abs(x)` very small or very large.
+"""
+log1psq(x::Real) = log1p(abs2(x))
+function log1psq(x::Union{Float32,Float64}) 
+    ax = abs(x)
+    ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax)
+end
+
+"""
+    log1pexp(x::Real)
+    
+Return `log(1+exp(x))` evaluated carefully for largish `x`.
+
+This is also called the ["softplus"](https://en.wikipedia.org/wiki/Rectifier_(neural_networks))
+transformation, being a smooth approximation to `max(0,x)`. Its inverse is [`logexpm1`](@ref). 
+"""
 log1pexp(x::Real) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : oftype(exp(-x), x)
 log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : oftype(exp(-x), x)
 
-# log1mexp: log(1 - exp(x))
-#
-# See:
-#   Martin Maechler (2012) "Accurately Computing log(1 − exp(− |a|))"
-#   http://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf
-#
-# Note: different than Maechler (2012), no negation inside parantheses
+"""
+    log1mexp(x::Real)
+
+Return `log(1 - exp(x))`
+
+See:
+ * Martin Maechler (2012) "Accurately Computing log(1 − exp(− |a|))", 
+   http://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf
+
+Note: different than Maechler (2012), no negation inside parentheses
+"""
 log1mexp(x::Real) = x < loghalf ? log1p(-exp(x)) : log(-expm1(x))
 
-# log2mexp: log(2 - exp(x))
-#
+"""
+    log2mexp(x::Real)
+
+Return `log(2 - exp(x))` evaluated as `log1p(-expm1(x))`
+"""
 log2mexp(x::Real) = log1p(-expm1(x))
 
-# logexpm1: log(exp(x) - 1)
-#
+"""
+    logexpm1(x::Real)
+    
+Return `log(exp(x) - 1)` or the "invsoftplus" function.
+It is the inverse of [`log1pexp`](@ref) (aka "softplus").
+"""
 logexpm1(x::Real) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : oftype(exp(-x), x)
 logexpm1(x::Float32) = x <= 9f0 ? log(expm1(x)) : x <= 16f0 ? x - exp(-x) : oftype(exp(-x), x)
 
@@ -56,10 +108,13 @@ Compat.@dep_vectorize_1arg Real logexpm1
 const softplus = log1pexp
 const invsoftplus = logexpm1
 
-# log1pmx: log(1 + x) - x
-#
-# use naive calculation or range reduction outside kernel range.
-# accurate ~2ulps for all x
+"""
+    log1pmx(x::Float64)
+
+Return `log(1 + x) - x`
+
+Use naive calculation or range reduction outside kernel range.  Accurate ~2ulps for all `x`.
+"""
 function log1pmx(x::Float64)
     if !(-0.7 < x < 0.9)
         return log1p(x) - x
@@ -80,8 +135,11 @@ function log1pmx(x::Float64)
     end
 end
 
-# logmxp1: log(x) - x + 1
-#
+"""
+    logmxp1(x::Float64)
+
+Return `log(x) - x + 1` carefully evaluated.
+"""
 function logmxp1(x::Float64)
     if x <= 0.3
         return (log(x) + 1.0) - x
@@ -115,8 +173,11 @@ function _log1pmx_ker(x::Float64)
 end
 
 
-## logsumexp
+"""
+    logsumexp(x::Real, y::Real)
 
+Return `log(exp(x) + exp(y))`, avoiding intermediate overflow/undeflow.
+"""
 function logsumexp(x::T, y::T) where T<:Real
     x == y && abs(x) == Inf && return x
     x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
@@ -124,6 +185,11 @@ end
 
 logsumexp(x::Real, y::Real) = logsumexp(promote(x, y)...)
 
+"""
+    logsumexp(x::AbstractArray{T}) where T<:Real
+
+Return `log(sum(exp, x))`, evaluated avoiding intermediate overflow/undeflow.
+"""
 function logsumexp(x::AbstractArray{T}) where T<:Real
     S = typeof(exp(zero(T)))    # because of 0.4.0
     isempty(x) && return -S(Inf)
@@ -136,8 +202,15 @@ function logsumexp(x::AbstractArray{T}) where T<:Real
     log(s) + u
 end
 
-## softmax
+"""
+    softmax!(r::AbstractArray, x::AbstractArray)
 
+Overwrite `r` with the `softmax` (or _normalized exponential_) transformation of `x`
+
+That is, `r` is overwritten with `exp.(x)`, normalized to sum to 1.
+
+See the [Wikipedia entry](https://en.wikipedia.org/wiki/Softmax_function)
+"""
 function softmax!(r::AbstractArray{R}, x::AbstractArray{T}) where {R<:AbstractFloat,T<:Real}
     n = length(x)
     length(r) == n || throw(DimensionMismatch("Inconsistent array lengths."))
@@ -153,5 +226,10 @@ function softmax!(r::AbstractArray{R}, x::AbstractArray{T}) where {R<:AbstractFl
     r
 end
 
+"""
+    softmax(x::AbstractArray{<:Real})
+
+Return the [`softmax transformation`](https://en.wikipedia.org/wiki/Softmax_function) applied to `x`
+"""
 softmax!(x::AbstractArray{<:AbstractFloat}) = softmax!(x, x)
-softmax(x::AbstractArray{<:Real}) = softmax!(Array{Float64}(size(x)), x)
+softmax(x::AbstractArray{<:Real}) = softmax!(similar(x, Float64), x)
