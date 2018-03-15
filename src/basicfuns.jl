@@ -95,16 +95,6 @@ It is the inverse of [`log1pexp`](@ref) (aka "softplus").
 logexpm1(x::Real) = x <= 18.0 ? log(expm1(x)) : x <= 33.3 ? x - exp(-x) : oftype(exp(-x), x)
 logexpm1(x::Float32) = x <= 9f0 ? log(expm1(x)) : x <= 16f0 ? x - exp(-x) : oftype(exp(-x), x)
 
-Compat.@dep_vectorize_1arg Real xlogx
-Compat.@dep_vectorize_2arg Real xlogy
-Compat.@dep_vectorize_1arg Real logistic
-Compat.@dep_vectorize_1arg Real logit
-Compat.@dep_vectorize_1arg Real log1psq
-Compat.@dep_vectorize_1arg Real log1pexp
-Compat.@dep_vectorize_1arg Real log1mexp
-Compat.@dep_vectorize_1arg Real log2mexp
-Compat.@dep_vectorize_1arg Real logexpm1
-
 const softplus = log1pexp
 const invsoftplus = logexpm1
 
