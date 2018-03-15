@@ -17,8 +17,8 @@ gammapdf(k::Real, θ::Real, x::Real) = exp(gammalogpdf(k, θ, x))
 
 # logpdf for numbers with generic types
 function gammalogpdf(k::T, θ::T, x::T) where {T<:Real}
-    k > 0 && θ > 0 || throw(ArgumentError("shape k = $k and scale θ = $θ must both be positive"))
+    k > 0 && θ > 0 || throw(ArgumentError("shape k and scale θ must both be positive, got k = $k and θ = $θ"))
     x > 0 ? -lgamma(k) - k * log(θ) + (k - 1) * log(x) - x / θ : T(-Inf)
 end
 
-gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)
+gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, float(x))...)

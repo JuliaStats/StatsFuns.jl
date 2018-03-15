@@ -16,7 +16,7 @@ import .RFunctions:
 poispdf(λ::Real, x::Real) = exp(poislogpdf(λ, x))
 
 function poislogpdf(λ::T, x::T) where {T <: AbstractFloat}
-    λ < 0 && throw(ArgumentError("λ = $λ must be non-negative"))
+    λ < 0 && throw(ArgumentError("λ must be non-negative, got λ = $λ"))
     isinteger(x) && 0 ≤ x || return T(-Inf)
     iszero(λ) && return iszero(x) ? zero(T) : T(-Inf)
     xlogy(x, λ) - λ - lgamma(x + 1)
