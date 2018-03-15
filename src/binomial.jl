@@ -23,21 +23,26 @@ julia> binompdf(13, 0.58, 7)
 ...
 """
 function binompdf{ T <: Union{Float16, Float32, Float64} }(n::Integer, p::T, x::Integer)
-    p0 = Float64(p)
-    if (n  < 1 || x > n || x < 0) return T(NaN) end
-    if ( p < 0.0 || p > 1.0) return T(NaN) end
-    if ( p == 0.0 ) return ( (x == 0) ? T(1.0) : T(0.0) ) end
-    if ( p == 1.0 ) return ( (x == n) ? T(1.0) : T(0.0) ) end
-    if ( x == 0 ) return T(exp(n*log1p(-p0))) end
-    if ( x == n ) return T(p0^n) end
-    if n > typemax(Int64)
-        error("n is too large.")
-    end
+    n > typemax(Int64) && error("n is too large.")
+    n < 1 && throw(ArgumentError("n = $n must be a positive integer"))
+    ( x > n || x < 0 ) && throw(ArgumentError("x = $x must ∈ [0, n]"))
+    (p < 0.0 || p > 1.0) && throw(ArgumentError("p = $p must ∈ [0, 1]"))
+    p == 0.0 && return ( (x == 0) ? T(1.0) : T(0.0) )
+    p == 1.0 && return ( (x == n) ? T(1.0) : T(0.0) )
+    x == 0 && return exp(n*log1p(-p))
+    x == n && return p^n
+    p = Float64(p)
     (n, x) = (Int64(n), Int64(x))
-    lc = lstirling_asym(n) - lstirling_asym(x) - lstirling_asym(n - x) -D(x, n*p0) - D(n - x, n*(1 - p0))
+    lc = stirling_err(n) - stirling_err(x) - stirling_err(n - x) -D(x, n*p) - D(n - x, n*(1 - p))
     return  T(exp(lc)*sqrt(n/(2π*x*(n - x))))
 end
 
+#
+const Stirlingerror = Float64[log(factorial(n)) - log(sqrt(2pi * n) * (n/Base.e)^n) for n in big(1):big(20)]
+function stirling_err(n)
+    n <= 20 && return Stirlingerror[n]
+    return lstirling_asym(n)
+end
 # Deviance term: D(x, np) = x*log(x/np) + np - x
 function D(x::Int64, np::Float64)
     if abs(x - np) < 0.1*(x + np)
@@ -76,17 +81,16 @@ julia> binomlogpdf(13, 0.58, 7)
 ...
 """
 function binomlogpdf{ T <: Union{Float16, Float32, Float64} }(n::Integer, p::T, x::Integer)
-    p0 = Float64(p)
-    if (n  < 1 || x > n || x < 0) return T(NaN) end
-    if ( p < 0.0 || p > 1.0) return T(NaN) end
-    if ( p == 0.0 ) return ( (x == 0) ? T(0.0) : T(-Inf) ) end
-    if ( p == 1.0 ) return ( (x == n) ? T(0.0) : T(-Inf) ) end
-    if ( x == 0 ) return T(n*log(1 - p0)) end
-    if ( x == n ) return T(n*log(p0)) end
-    if n > typemax(Int64)
-        error("`n` is too large.")
-    end
+    n > typemax(Int64) && error("n is too large.")
+    n < 1 && throw(ArgumentError("n = $n must be a positive integer"))
+    ( x > n || x < 0 ) && throw(ArgumentError("x = $x must ∈ [0, n]"))
+    (p < 0.0 || p > 1.0) && throw(ArgumentError("p = $p must ∈ [0, 1]"))
+    p == 0.0 && return ( (x == 0) ? T(0.0) : T(-Inf) )
+    p == 1.0 && return ( (x == n) ? T(0.0) : T(-Inf) )
+    x == 0 && return n*log1p(-p)
+    x == n && return n*log(p)
+    p = Float64(p)
     (n, x) = (Int64(n), Int64(x))
-    lc = lstirling_asym(n) - lstirling_asym(x) - lstirling_asym(n - x) - D(x, n*p0) - D(n - x, n*(1.0 - p0))
+    lc = stirling_err(n) - stirling_err(x) - stirling_err(n - x) - D(x, n*p) - D(n - x, n*(1.0 - p))
     return  T(lc + 0.5*log(n/(2π*x*(n - x))))
 end
