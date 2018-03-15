@@ -22,7 +22,7 @@ The remainder term after
 to [`lgamma`](@ref):
 
 ```math
-\log \Gamma(x) \approx x \log(x) - x + \log(2π/x)/2 = \log(x)*(x-1/2) + \log(2\pi)/2 - x
+\\log \\Gamma(x) \\approx x \\log(x) - x + \\log(2\\pi/x)/2 = \\log(x)*(x-1/2) + \\log(2\\pi)/2 - x
 ```
 
 In Julia syntax, this means:
@@ -33,7 +33,7 @@ For sufficiently large `x`, this can be approximated using the asymptotic
 _Stirling's series_ ([DLMF 5.11.1](https://dlmf.nist.gov/5.11.1)):
 
 ```math
-\frac{1}{12x} - \frac{1}{360x^3} + \frac{1}{1260x^5} - \frac{1}{1680x^7} + \ldots
+\\frac{1}{12x} - \\frac{1}{360x^3} + \\frac{1}{1260x^5} - \\frac{1}{1680x^7} + \\ldots
 ```
 
 The truncation error is bounded by the first omitted term, and is of the same sign.

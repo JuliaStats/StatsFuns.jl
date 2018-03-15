@@ -26,7 +26,7 @@ xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
 The [logistic](https://en.wikipedia.org/wiki/Logistic_function) sigmoid function mapping a real number to a value in the interval [0,1],
 ```math
-\sigma(x) = \frac{1}{e^{-x} + 1} = \frac{e^x}{1+e^x}.
+\\sigma(x) = \\frac{1}{e^{-x} + 1} = \\frac{e^x}{1+e^x}.
 ```
 
 Its inverse is the [`logit`](@ref) function.
@@ -38,7 +38,7 @@ logistic(x::Real) = inv(exp(-x) + one(x))
 
 The [logit](https://en.wikipedia.org/wiki/Logit) or log-odds transformation,
 ```math
-\log\left(\frac{x}{1-x}\right), \text{where} 0 < x < 1
+\\log\\left(\\frac{x}{1-x}\\right), \\text{where} 0 < x < 1
 ```
 Its inverse is the [`logistic`](@ref) function.
 """
