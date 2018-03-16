@@ -19,7 +19,7 @@ end
 @testset "binomlogpdf" begin
 for i = 1:length(N)
     for x = Int64(0):N[i]
-        val = abs(binomlogpdf(N[i], P[i], x) - Rmath.dbinom(x, N[i], P[i], true)/binomlogpdf(N[i], P[i], x)
+        val = abs(binomlogpdf(N[i], P[i], x) - Rmath.dbinom(x, N[i], P[i], true))/binomlogpdf(N[i], P[i], x)
         if isfinite(val) && binomlogpdf(N[i], P[i], x) != Rmath.dbinom(x, N[i], P[i], true)
             @test  val < 2.24e-14
         end
