@@ -1,7 +1,6 @@
-using StatsFuns
-using Base.Test
+using Compat, StatsFuns
+using Compat.Test
 import StatsFuns.RFunctions
-using Compat
 
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = statsfun(params..., a)
