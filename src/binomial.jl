@@ -33,34 +33,12 @@ function binompdf{ T <: Union{Float16, Float32, Float64} }(n::Integer, p::T, x::
     x == 0 && return exp(n*log1p(-p))
     x == n && return p^n
     p = Float64(p)
-    lc = stirling_err(n) - stirling_err(x) - stirling_err(n - x) -D(x, n*p) - D(n - x, n*(1 - p))
+    lc = lstirling_asym(n) - lstirling_asym(x) - lstirling_asym(n - x) -D(x, n*p) - D(n - x, n*(1 - p))
     return  T(exp(lc)*sqrt(n/(2π*x*(n - x))))
 end
 
-#
-const Stirlingerror = Float64[log(factorial(n)) - log(sqrt(2pi * n) * (n/Base.e)^n) for n in big(1):big(20)]
-function stirling_err(n)
-    n <= 20 && return Stirlingerror[n]
-    return lstirling_asym(n)
-end
 # Deviance term: D(x, np) = x*log(x/np) + np - x
-function D(x, np)
-    if abs(x - np) < 0.1*(x + np)
-        s = (x - np)*(x - np)/(x + np)
-        v = (x - np)/(x + np)
-        ej = 2*x*v
-        j = 1.0
-        s1 = 0.0
-        while true
-            ej *= v*v
-            s1 = s + ej/(2*j + 1)
-            if s1 == s return s1 end
-            s = s1
-            j += 1
-        end
-    end
-    return x*log(x/np) + np - x
-end
+D(x, np) = -x*logmxp1(np/x)
 
 # binomlogpdf(n, p, x) = log(binompdf(n, p, x))
 # We use the same strategy as above but do not exponentiate the final result
@@ -92,6 +70,6 @@ function binomlogpdf{ T <: Union{Float16, Float32, Float64} }(n::Integer, p::T, 
     x == n && return n*log(p)
     p = Float64(p)
     (n, x) = (Int64(n), Int64(x))
-    lc = stirling_err(n) - stirling_err(x) - stirling_err(n - x) - D(x, n*p) - D(n - x, n*(1.0 - p))
+    lc = lstirling_asym(n) - lstirling_asym(x) - lstirling_asym(n - x) - D(x, n*p) - D(n - x, n*(1.0 - p))
     return  T(lc + 0.5*log(n/(2π*x*(n - x))))
 end
