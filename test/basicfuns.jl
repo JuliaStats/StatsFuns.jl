@@ -59,10 +59,11 @@ end
 end
 
 @testset "logsumexp" begin
-    @test logsumexp(2.0, 3.0)     ≈ log(exp(2.0) + exp(3.0))
-    @test logsumexp(10002, 10003) ≈ 10000 + logsumexp(2.0, 3.0)
+    @test logaddexp(2.0, 3.0)     ≈ log(exp(2.0) + exp(3.0))
+    @test logaddexp(10002, 10003) ≈ 10000 + logaddexp(2.0, 3.0)
 
     @test logsumexp([1.0, 2.0, 3.0])          ≈ 3.40760596444438
+    @test logsumexp((1.0, 2.0, 3.0))          ≈ 3.40760596444438
     @test logsumexp([1.0, 2.0, 3.0] .+ 1000.) ≈ 1003.40760596444438
 
     let cases = [([-Inf, -Inf], -Inf),   # correct handling of all -Inf
@@ -76,8 +77,8 @@ end
                  ([NaN, -Inf], NaN), # NaN propagation
                  ([0, 0], log(2.0))] # non-float arguments
         for (arguments, result) in cases
+            @test logaddexp(arguments...) ≡ result
             @test logsumexp(arguments) ≡ result
-            @test logsumexp(arguments...) ≡ result
         end
     end
 end
