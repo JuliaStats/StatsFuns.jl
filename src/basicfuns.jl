@@ -164,33 +164,41 @@ end
 
 
 """
-    logsumexp(x::Real, y::Real)
+    logaddexp(x::Real, y::Real)
 
-Return `log(exp(x) + exp(y))`, avoiding intermediate overflow/undeflow.
+Return `log(exp(x) + exp(y))`, avoiding intermediate overflow/undeflow, and handling non-finite values.
 """
-function logsumexp(x::T, y::T) where T<:Real
-    x == y && abs(x) == Inf && return x
+function logaddexp(x::T, y::T) where T<:Real
+    # x or y is  NaN  =>  NaN
+    # x or y is +Inf  => +Inf
+    # x or y is -Inf  => other value
+    isfinite(x) && isfinite(y) || return max(x,y)   
     x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
 end
+logaddexp(x::Real, y::Real) = logaddexp(promote(x, y)...)
 
-logsumexp(x::Real, y::Real) = logsumexp(promote(x, y)...)
+Base.@deprecate logsumexp(x::Real, y::Real) logaddexp(x,y)
 
 """
-    logsumexp(x::AbstractArray{T}) where T<:Real
+    logsumexp(X)
 
-Return `log(sum(exp, x))`, evaluated avoiding intermediate overflow/undeflow.
+Compute `log(sum(exp, X))`, evaluated avoiding intermediate overflow/undeflow.
+
+`X` should be an iterator of real numbers.
 """
-function logsumexp(x::AbstractArray{T}) where T<:Real
-    S = typeof(exp(zero(T)))    # because of 0.4.0
-    isempty(x) && return -S(Inf)
-    u = maximum(x)
-    abs(u) == Inf && return any(isnan, x) ? S(NaN) : u
-    s = zero(S)
-    for i = 1:length(x)
-        @inbounds s += exp(x[i] - u)
-    end
-    log(s) + u
+function logsumexp(X)
+    isempty(X) && return log(sum(X))
+    reduce(logaddexp, X)
 end
+function logsumexp(X::AbstractArray{T}) where {T<:Real}
+    isempty(X) && return log(zero(T))
+    u = maximum(X)
+    isfinite(u) || return float(u)
+    let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
+        u + log(sum(x -> exp(x-u), X))
+    end
+end
+
 
 """
     softmax!(r::AbstractArray, x::AbstractArray)

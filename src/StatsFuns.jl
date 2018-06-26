@@ -44,7 +44,8 @@ export
     invsoftplus,    # alias of logexpm1
     log1pmx,        # log(1 + x) - x
     logmxp1,        # log(x) - x + 1
-    logsumexp,      # log(exp(x) + exp(y)) or log(sum(exp(x)))
+    logaddexp,      # log(exp(x) + exp(y))
+    logsumexp,      # log(sum(exp(x)))
     softmax,        # exp(x_i) / sum(exp(x)), for i
     softmax!,       # inplace softmax
 
