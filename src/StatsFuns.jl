@@ -4,6 +4,7 @@ module StatsFuns
 
 import Base: Math.@horner, @irrational
 using Compat
+using SpecialFunctions
 
 export
     # constants
@@ -228,7 +229,6 @@ include("misc.jl")
 include("rmath.jl")
 
 using .RFunctions
-using SpecialFunctions
 
 include(joinpath("distrs", "beta.jl"))
 include(joinpath("distrs", "binom.jl"))
