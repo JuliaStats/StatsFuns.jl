@@ -1,5 +1,4 @@
-using Compat, StatsFuns
-using Compat.Test
+using StatsFuns, Test
 
 @testset "xlogx & xlogy" begin
     @test iszero(xlogx(0))

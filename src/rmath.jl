@@ -2,7 +2,6 @@
 
 module RFunctions
 
-using Compat
 import Rmath: libRmath
 
 ### import macro
