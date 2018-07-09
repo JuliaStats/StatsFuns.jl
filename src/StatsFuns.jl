@@ -3,7 +3,6 @@ __precompile__(true)
 module StatsFuns
 
 import Base: Math.@horner, @irrational
-using Compat
 using SpecialFunctions
 
 export

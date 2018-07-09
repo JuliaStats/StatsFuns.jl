@@ -1,5 +1,4 @@
-using Compat, StatsFuns
-using Compat.Test
+using StatsFuns, Test
 import StatsFuns.RFunctions
 
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
@@ -24,7 +23,7 @@ function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
 end
 
 get_statsfun(fname) = eval(Symbol(fname))
-get_rmathfun(fname) = eval(parse(string("RFunctions.", fname)))
+get_rmathfun(fname) = eval(Meta.parse(string("RFunctions.", fname)))
 
 function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(eltype(X)))))
     pdf     = string(basename, "pdf")
