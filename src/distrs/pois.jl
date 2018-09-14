@@ -15,16 +15,11 @@ import .RFunctions:
 # generic versions
 poispdf(λ::Real, x::Real) = exp(poislogpdf(λ, x))
 
-poislogpdf(λ::T, x::T) where {T <: Real} = xlogy(x, λ) - λ - lgamma(x + 1)
+function poislogpdf(λ::T, x::T) where {T <: AbstractFloat}
+    λ < 0 && throw(ArgumentError("λ must be non-negative, got λ = $λ"))
+    isinteger(x) && 0 ≤ x || return T(-Inf)
+    iszero(λ) && return iszero(x) ? zero(T) : T(-Inf)
+    xlogy(x, λ) - λ - lgamma(x + 1)
+end    
 
-poislogpdf(λ::Number, x::Number) = poislogpdf(promote(float(λ), x)...)
-
-#=
-function poislogpdf(λ::Union{Float32,Float64}, x::Union{Float64,Float32,Integer})
-    if iszero(λ)
-        iszero(x) ? zero(λ) : oftype(λ, -Inf)
-    elseif iszero(x)
-        -λ
-    else
-        -lstirling_asym(x + 1)
-=#
+poislogpdf(λ::Real, x::Real) = poislogpdf(promote(float(λ), x)...)
