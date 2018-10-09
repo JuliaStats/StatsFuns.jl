@@ -43,6 +43,8 @@ log4π,      # log(4π)
 # basicfuns
 xlogx,          # x * log(x) for x > 0, or 0 when x == 0
 xlogy,          # x * log(y) for x > 0, or 0 when x == 0
+xexpx,          # x * exp(x) for x > -Inf, or 0 when x == -Inf
+xexpy,          # x * exp(y) for y > -Inf, or 0 when y == -Inf
 logistic,       # 1 / (1 + exp(-x))
 logit,          # log(x / (1 - x))
 log1psq,        # log(1 + x^2)

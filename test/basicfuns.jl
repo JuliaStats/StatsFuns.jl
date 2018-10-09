@@ -1,5 +1,36 @@
 using StatsFuns, Test
 
+@testset "xexpx" begin
+    @test iszero(xexpx(-Inf))
+    @test iszero(xexpx(0))
+    @test isnan(xexpx(NaN))
+    
+    @test xexpx(1) ≈ exp(1)
+    @test xexpx(2) ≈ 2exp(2)
+
+    @inferred xexpx(0)
+    @inferred xexpx(0.)
+    @inferred xexpx(0.0f0)
+end
+
+@testset "xexpy" begin
+    @test iszero(xexpy(Inf, -Inf))
+    
+    @test isnan(xexpy(NaN, -Inf))
+    @test isnan(xexpy(NaN, 1))
+    @test isnan(xexpy(0, NaN))
+
+    @inferred xexpy(0,-Inf)
+    @inferred xexpy(1,1)
+    @inferred xexpy(1.,-Inf)
+
+    @test xexpy(2,3) ≈ 2exp(3)
+
+    for x = -10:10, y = -10:10
+        @test xexpy(x,y) ≈ x * exp(y)
+    end
+end
+
 @testset "xlogx & xlogy" begin
     @test iszero(xlogx(0))
     @test xlogx(2) ≈ 2.0 * log(2.0)
