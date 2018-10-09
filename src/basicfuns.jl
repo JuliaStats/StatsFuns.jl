@@ -63,8 +63,8 @@ Return `log(1+exp(x))` evaluated carefully for largish `x`.
 This is also called the ["softplus"](https://en.wikipedia.org/wiki/Rectifier_(neural_networks))
 transformation, being a smooth approximation to `max(0,x)`. Its inverse is [`logexpm1`](@ref). 
 """
-log1pexp(x::Real) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : oftype(exp(-x), x)
-log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : oftype(exp(-x), x)
+log1pexp(x::Real) = x ≤ -37. ? exp(x) : x ≤ 18. ? log1p(exp(x)) : x ≤ 33.3 ? x + exp(-x) : float(x)
+log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : x
 
 """
     log1mexp(x::Real)

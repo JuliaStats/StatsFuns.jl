@@ -27,11 +27,13 @@ end
     @test log1pexp(-2.0)   ≈ log(1.0 + exp(-2.0))
     @test log1pexp(10000)  ≈ 10000.0
     @test log1pexp(-10000) ≈ 0.0
-
     @test log1pexp(2f0)      ≈ log(1f0 + exp(2f0))
     @test log1pexp(-2f0)     ≈ log(1f0 + exp(-2f0))
     @test log1pexp(10000f0)  ≈ 10000f0
     @test log1pexp(-10000f0) ≈ 0f0
+    @inferred log1pexp(0)
+    @inferred log1pexp(0.)
+    @inferred log1pexp(0.0f0)
 end
 
 @testset "log1mexp" begin
