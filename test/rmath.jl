@@ -5,20 +5,9 @@ function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = statsfun(params..., a)
     rv = rmathfun(params..., a)
     if isprob
-        rd = abs(v / rv - 1.0)
-        if rd > rtol
-            error("$fname deviates too much from Rmath at " *
-                "params = $params, $aname = $a:\n" *
-                "  v = $v (rv = $rv)\n  |v/rv - 1| = $rd > $rtol.")
-        end
+        @test v ≈ rv rtol=rtol nans=true
     else
-        τ = (1.0 + abs(rv)) * rtol
-        ad = abs(v - rv)
-        if ad > τ
-            error("$fname deviates too much from Rmath at " *
-                "params = $params, $aname = $a:\n" *
-                "  v = $v (rv = $rv)\n  |v - rv| = $ad > $τ.")
-        end
+        @test v ≈ rv atol=rtol rtol=rtol nans=true
     end
 end
 
@@ -67,8 +56,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
     end
     rmath_rand = has_rand ? get_rmathfun(rand) : nothing
 
-    for i = 1:length(X)
-        x = X[i]
+    for x in X
         check_rmath(pdf, stats_pdf, rmath_pdf,
             params, "x", x, true, rtol)
         check_rmath(logpdf, stats_logpdf, rmath_logpdf,
@@ -195,7 +183,8 @@ rmathcomp_tests("norm", [
     ((0.0, 0.5), -3.0:0.01:3.0),
     ((0, 1), -3.0:3.0),
     ((0, 1), -3.0:0.01:3.0),
-    ((0, 1), -3:3)
+    ((0, 1), -3:3),
+    ((0.0, 0.0), -6.0:0.1:6.0),
 ])
 
 rmathcomp_tests("ntdist", [
