@@ -48,7 +48,7 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     qtypes = Expr(:tuple, :Cdouble, _pts..., :Cint, :Cint)
     rtypes = Expr(:tuple, _pts...)
 
-    pdecls = [Expr(:(::), ps, :Real) for ps in pargs] # [:(p1::Real), :(p2::Real), ...]
+    pdecls = [Expr(:(::), ps, :(Union{Float64,Int})) for ps in pargs] # [:(p1::Union{Float64, Int}), :(p2::Union{...}), ...]
 
     # function implementation
     quote
@@ -58,28 +58,28 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
         $logpdf($(pdecls...), x::Union{Float64,Int}) =
             ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1)
 
-        $cdf($(pdecls...), x::Real) =
+        $cdf($(pdecls...), x::Union{Float64,Int}) =
             ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0)
 
-        $ccdf($(pdecls...), x::Real) =
+        $ccdf($(pdecls...), x::Union{Float64,Int}) =
             ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0)
 
-        $logcdf($(pdecls...), x::Real) =
+        $logcdf($(pdecls...), x::Union{Float64,Int}) =
             ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1)
 
-        $logccdf($(pdecls...), x::Real) =
+        $logccdf($(pdecls...), x::Union{Float64,Int}) =
             ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1)
 
-        $invcdf($(pdecls...), q::Real) =
+        $invcdf($(pdecls...), q::Union{Float64,Int}) =
             ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0)
 
-        $invccdf($(pdecls...), q::Real) =
+        $invccdf($(pdecls...), q::Union{Float64,Int}) =
             ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0)
 
-        $invlogcdf($(pdecls...), lq::Real) =
+        $invlogcdf($(pdecls...), lq::Union{Float64,Int}) =
             ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1)
 
-        $invlogccdf($(pdecls...), lq::Real) =
+        $invlogccdf($(pdecls...), lq::Union{Float64,Int}) =
             ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1)
 
         if $has_rand
