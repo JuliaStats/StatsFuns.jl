@@ -217,6 +217,18 @@ export
     tdistinvlogcdf,     # inverse-logcdf of student's t distribution
     tdistinvlogccdf,    # inverse-logccdf of student's t distribution
 
+    # distrs/srdist
+    srdistpdf,           # pdf of studentized range distribution
+    srdistlogpdf,        # logpdf of studentized range distribution
+    srdistcdf,           # cdf of studentized range distribution
+    srdistccdf,          # ccdf of studentized range distribution
+    srdistlogcdf,        # logcdf of studentized range distribution
+    srdistlogccdf,       # logccdf of studentized range distribution
+    srdistinvcdf,        # inverse-cdf of studentized range distribution
+    srdistinvccdf,       # inverse-ccdf of studentized range distribution
+    srdistinvlogcdf,     # inverse-logcdf of studentized range distribution
+    srdistinvlogccdf,    # inverse-logccdf of studentized range distribution
+
     # misc
     logmvgamma,         # logarithm of multivariate gamma function
     lstirling_asym
@@ -244,5 +256,6 @@ include(joinpath("distrs", "norm.jl"))
 include(joinpath("distrs", "ntdist.jl"))
 include(joinpath("distrs", "pois.jl"))
 include(joinpath("distrs", "tdist.jl"))
+include(joinpath("distrs", "srdist.jl"))
 
 end # module

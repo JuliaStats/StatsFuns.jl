@@ -34,9 +34,14 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     invlogcdf = Symbol(jname, "invlogcdf")
     invlogccdf = Symbol(jname, "invlogccdf")
 
+    has_density = true
+    if rname == :tukey
+        has_density = false
+    end
+
     rand = Symbol(jname, "rand")
     has_rand = true
-    if rname == :nbeta || rname == :nf || rname == :nt
+    if rname == :nbeta || rname == :nf || rname == :nt || rname == :tukey
         has_rand = false
     end
 
@@ -52,11 +57,13 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
 
     # function implementation
     quote
-        $pdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0)
+        if $has_density
+            $pdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0)
 
-        $logpdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1)
+            $logpdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1)
+        end
 
         $cdf($(pdecls...), x::Union{Float64,Int}) =
             ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0)
@@ -99,13 +106,14 @@ end
 @import_rmath beta beta α β
 @import_rmath binom binom n p
 @import_rmath chisq chisq k
-@import_rmath f fdist d1 d2
+@import_rmath f fdist ν1 ν2
 @import_rmath gamma gamma α β
 @import_rmath hyper hyper ms mf n
 @import_rmath norm norm μ σ
 @import_rmath nbinom nbinom r p
 @import_rmath pois pois λ
 @import_rmath t tdist k
+@import_rmath tukey srdist k ν
 
 @import_rmath nbeta nbeta α β λ
 @import_rmath nchisq nchisq k λ
