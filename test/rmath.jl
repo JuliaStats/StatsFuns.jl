@@ -15,6 +15,12 @@ get_statsfun(fname) = eval(Symbol(fname))
 get_rmathfun(fname) = eval(Meta.parse(string("RFunctions.", fname)))
 
 function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(eltype(X)))))
+    # tackle pdf specially
+    has_rmathpdf = true
+    if basename == "srdist"
+        has_rmathpdf = false
+    end
+
     pdf     = string(basename, "pdf")
     logpdf  = string(basename, "logpdf")
     cdf     = string(basename, "cdf")
@@ -27,8 +33,10 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
     invlogccdf = string(basename, "invlogccdf")
     rand       = string(basename, "rand")
 
-    stats_pdf     = get_statsfun(pdf)
-    stats_logpdf  = get_statsfun(logpdf)
+    if has_rmathpdf
+        stats_pdf     = get_statsfun(pdf)
+        stats_logpdf  = get_statsfun(logpdf)
+    end
     stats_cdf     = get_statsfun(cdf)
     stats_ccdf    = get_statsfun(ccdf)
     stats_logcdf  = get_statsfun(logcdf)
@@ -38,8 +46,10 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
     stats_invlogcdf  = get_statsfun(invlogcdf)
     stats_invlogccdf = get_statsfun(invlogccdf)
 
-    rmath_pdf     = get_rmathfun(pdf)
-    rmath_logpdf  = get_rmathfun(logpdf)
+    if has_rmathpdf
+        rmath_pdf     = get_rmathfun(pdf)
+        rmath_logpdf  = get_rmathfun(logpdf)
+    end
     rmath_cdf     = get_rmathfun(cdf)
     rmath_ccdf    = get_rmathfun(ccdf)
     rmath_logcdf  = get_rmathfun(logcdf)
@@ -51,16 +61,18 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
 
     # tackle rand specially
     has_rand = true
-    if basename == "nbeta" || basename == "nfdist" || basename == "ntdist"
+    if basename == "nbeta" || basename == "nfdist" || basename == "ntdist" || basename == "srdist"
         has_rand = false
     end
     rmath_rand = has_rand ? get_rmathfun(rand) : nothing
 
     for x in X
-        check_rmath(pdf, stats_pdf, rmath_pdf,
-            params, "x", x, true, rtol)
-        check_rmath(logpdf, stats_logpdf, rmath_logpdf,
-            params, "x", x, false, rtol)
+        if has_rmathpdf
+            check_rmath(pdf, stats_pdf, rmath_pdf,
+                params, "x", x, true, rtol)
+            check_rmath(logpdf, stats_logpdf, rmath_logpdf,
+                params, "x", x, false, rtol)
+        end
         check_rmath(cdf, stats_cdf, rmath_cdf,
             params, "x", x, true, rtol)
         check_rmath(ccdf, stats_ccdf, rmath_ccdf,
@@ -208,4 +220,12 @@ rmathcomp_tests("tdist", [
     ((2,), -5.0:0.1:5.0),
     ((5,), -5.0:0.1:5.0),
     ((5,), -5:5),
+])
+
+rmathcomp_tests("srdist", [
+    ((1,2), (0.0:0.1:5.0)),
+    ((2,2), (0.0:0.1:5.0)),
+    ((5,3), (0.0:0.1:5.0)),
+    ((10,2), (0.0:0.1:5.0)),
+    ((10,5), (0.0:0.1:5.0)),
 ])
