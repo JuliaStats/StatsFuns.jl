@@ -34,9 +34,9 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     invlogcdf = Symbol(jname, "invlogcdf")
     invlogccdf = Symbol(jname, "invlogccdf")
 
-    has_density = true
+    is_tukey = false
     if rname == :tukey
-        has_density = false
+        is_tukey = true
     end
 
     rand = Symbol(jname, "rand")
@@ -51,47 +51,75 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     dtypes = Expr(:tuple, :Cdouble, _pts..., :Cint)
     ptypes = Expr(:tuple, :Cdouble, _pts..., :Cint, :Cint)
     qtypes = Expr(:tuple, :Cdouble, _pts..., :Cint, :Cint)
+    tukeytypes = Expr(:tuple, :Cdouble, :Cdouble, _pts..., :Cint, :Cint)
     rtypes = Expr(:tuple, _pts...)
 
     pdecls = [Expr(:(::), ps, :(Union{Float64,Int})) for ps in pargs] # [:(p1::Union{Float64, Int}), :(p2::Union{...}), ...]
 
-    # function implementation
-    quote
-        if $has_density
+    # Function implementation
+    if is_tukey
+        pargs = reverse(pargs)
+        quote
+            $cdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($pfun, libRmath), Float64, $tukeytypes, x, 1, $(pargs...), 1, 0)
+
+            $ccdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($pfun, libRmath), Float64, $tukeytypes, x, 1, $(pargs...), 0, 0)
+
+            $logcdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($pfun, libRmath), Float64, $tukeytypes, x, 1, $(pargs...), 1, 1)
+
+            $logccdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($pfun, libRmath), Float64, $tukeytypes, x, 1, $(pargs...), 0, 1)
+
+            $invcdf($(pdecls...), q::Union{Float64,Int}) =
+                ccall(($qfun, libRmath), Float64, $tukeytypes, q, 1, $(pargs...), 1, 0)
+
+            $invccdf($(pdecls...), q::Union{Float64,Int}) =
+                ccall(($qfun, libRmath), Float64, $tukeytypes, q, 1, $(pargs...), 0, 0)
+
+            $invlogcdf($(pdecls...), lq::Union{Float64,Int}) =
+                ccall(($qfun, libRmath), Float64, $tukeytypes, lq, 1, $(pargs...), 1, 1)
+
+            $invlogccdf($(pdecls...), lq::Union{Float64,Int}) =
+                ccall(($qfun, libRmath), Float64, $tukeytypes, lq, 1, $(pargs...), 0, 1)
+        end
+    else
+        quote
             $pdf($(pdecls...), x::Union{Float64,Int}) =
                 ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0)
 
             $logpdf($(pdecls...), x::Union{Float64,Int}) =
                 ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1)
-        end
 
-        $cdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0)
+            $cdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0)
 
-        $ccdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0)
+            $ccdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0)
 
-        $logcdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1)
+            $logcdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1)
 
-        $logccdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1)
+            $logccdf($(pdecls...), x::Union{Float64,Int}) =
+                ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1)
 
-        $invcdf($(pdecls...), q::Union{Float64,Int}) =
-            ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0)
+            $invcdf($(pdecls...), q::Union{Float64,Int}) =
+                ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0)
 
-        $invccdf($(pdecls...), q::Union{Float64,Int}) =
-            ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0)
+            $invccdf($(pdecls...), q::Union{Float64,Int}) =
+                ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0)
 
-        $invlogcdf($(pdecls...), lq::Union{Float64,Int}) =
-            ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1)
+            $invlogcdf($(pdecls...), lq::Union{Float64,Int}) =
+                ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1)
 
-        $invlogccdf($(pdecls...), lq::Union{Float64,Int}) =
-            ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1)
+            $invlogccdf($(pdecls...), lq::Union{Float64,Int}) =
+                ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1)
 
-        if $has_rand
-            $rand($(pdecls...)) =
-                ccall(($rfun, libRmath), Float64, $rtypes, $(pargs...))
+            if $has_rand
+                $rand($(pdecls...)) =
+                    ccall(($rfun, libRmath), Float64, $rtypes, $(pargs...))
+            end
         end
     end
 end
@@ -113,7 +141,7 @@ end
 @import_rmath nbinom nbinom r p
 @import_rmath pois pois λ
 @import_rmath t tdist k
-@import_rmath tukey srdist k ν
+@import_rmath tukey srdist ν k
 
 @import_rmath nbeta nbeta α β λ
 @import_rmath nchisq nchisq k λ
