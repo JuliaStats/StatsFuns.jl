@@ -230,6 +230,7 @@ end
         ((10,2), (0.0:0.2:5.0)),
         ((10,5), (0.0:0.2:5.0))
     ])
+
     # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
     # Reduced df or k allows convergence. This test documents this behavior.
     x = 0.15
@@ -237,5 +238,4 @@ end
     rx = srdistinvcdf(10, 5, q)
     rtol = 100eps(1.0)
     @test_broken x ≈ rx atol=rtol rtol=rtol nans=true
-    ])
 end
