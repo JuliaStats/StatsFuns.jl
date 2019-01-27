@@ -25,7 +25,7 @@ function srdistpdf(ν::Real, k::Real, x::Number)
         return inner_part * y^ν * ϕ(y*√ν)
     end
     integral = quadgk(outer, 0.0, Inf)[1]
-    return integral * (√2π * k * (k-1) * ν^(ν/2)) / (gamma(ν/2) * 2^(ν/2 - 1))
+    return integral * (√(2π) * k * (k-1) * ν^(ν/2)) / (gamma(ν/2) * 2^(ν/2 - 1))
 end
 
 # logpdf for numbers with generic types
