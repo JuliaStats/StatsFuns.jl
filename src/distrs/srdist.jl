@@ -15,8 +15,8 @@ import .RFunctions:
 
 # pdf for numbers with generic types
 function srdistpdf(ν::Real, k::Real, x::Number)
-    Φ(x) = (1+erf(x / √2)) / 2
-    ϕ(x) = derivative(Φ, x)
+    Φ(x) = normcdf(x)
+    ϕ(x) = normpdf(x)
     function outer(y)
         inner(u) = ϕ(u) * ϕ(u - x*y) * (Φ(u) - Φ(u - x*y))^(k-2)
         inner_part = quadgk(inner, -Inf, Inf) |> first
