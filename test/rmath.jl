@@ -112,7 +112,7 @@ end
 
 ### Test cases
 
-@testset "Distributions" begin
+@testset "RMath" begin
     rmathcomp_tests("beta", [
         ((1.0, 1.0), 0.01:0.01:0.99),
         ((2.0, 3.0), 0.01:0.01:0.99),
