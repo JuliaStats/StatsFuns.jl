@@ -1,6 +1,5 @@
 # functions related to studentized range distribution
 
-using ForwardDiff: derivative
 using QuadGK: quadgk
 
 import .RFunctions:
