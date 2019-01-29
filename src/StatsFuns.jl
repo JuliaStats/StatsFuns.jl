@@ -218,8 +218,6 @@ export
     tdistinvlogccdf,    # inverse-logccdf of student's t distribution
 
     # distrs/srdist
-    srdistpdf,           # pdf of studentized range distribution
-    srdistlogpdf,        # logpdf of studentized range distribution
     srdistcdf,           # cdf of studentized range distribution
     srdistccdf,          # ccdf of studentized range distribution
     srdistlogcdf,        # logcdf of studentized range distribution

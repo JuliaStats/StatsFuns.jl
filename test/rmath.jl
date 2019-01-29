@@ -16,13 +16,15 @@ get_rmathfun(fname) = eval(Meta.parse(string("RFunctions.", fname)))
 
 function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(eltype(X)))))
     # tackle pdf specially
-    has_rmathpdf = true
+    has_pdf = true
     if basename == "srdist"
-        has_rmathpdf = false
+        has_pdf = false
     end
 
-    pdf     = string(basename, "pdf")
-    logpdf  = string(basename, "logpdf")
+    if has_pdf
+        pdf     = string(basename, "pdf")
+        logpdf  = string(basename, "logpdf")
+    end
     cdf     = string(basename, "cdf")
     ccdf    = string(basename, "ccdf")
     logcdf  = string(basename, "logcdf")
@@ -33,7 +35,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
     invlogccdf = string(basename, "invlogccdf")
     rand       = string(basename, "rand")
 
-    if has_rmathpdf
+    if has_pdf
         stats_pdf     = get_statsfun(pdf)
         stats_logpdf  = get_statsfun(logpdf)
     end
@@ -46,7 +48,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
     stats_invlogcdf  = get_statsfun(invlogcdf)
     stats_invlogccdf = get_statsfun(invlogccdf)
 
-    if has_rmathpdf
+    if has_pdf
         rmath_pdf     = get_rmathfun(pdf)
         rmath_logpdf  = get_rmathfun(logpdf)
     end
@@ -67,7 +69,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
     rmath_rand = has_rand ? get_rmathfun(rand) : nothing
 
     for x in X
-        if has_rmathpdf
+        if has_pdf
             check_rmath(pdf, stats_pdf, rmath_pdf,
                 params, "x", x, true, rtol)
             check_rmath(logpdf, stats_logpdf, rmath_logpdf,

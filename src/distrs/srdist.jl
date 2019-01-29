@@ -1,7 +1,5 @@
 # functions related to studentized range distribution
 
-using QuadGK: quadgk
-
 import .RFunctions:
     srdistcdf,
     srdistccdf,
@@ -11,19 +9,3 @@ import .RFunctions:
     srdistinvccdf,
     srdistinvlogcdf,
     srdistinvlogccdf
-
-# pdf for numbers with generic types
-function srdistpdf(ν::Real, k::Real, x::Number)
-    Φ(x) = normcdf(x)
-    ϕ(x) = normpdf(x)
-    function outer(y)
-        inner(u) = ϕ(u) * ϕ(u - x*y) * (Φ(u) - Φ(u - x*y))^(k-2)
-        inner_part = quadgk(inner, -Inf, Inf) |> first
-        return inner_part * y^ν * ϕ(y*√ν)
-    end
-    integral = quadgk(outer, 0.0, Inf) |> first
-    return integral * (√(2π) * k * (k-1) * ν^(ν/2)) / (gamma(ν/2) * 2^(ν/2 - 1))
-end
-
-# logpdf for numbers with generic types
-srdistlogpdf(ν::Real, k::Real, x::Number) = log(srdistpdf(ν, k, x))
