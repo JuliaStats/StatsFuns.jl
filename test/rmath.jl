@@ -15,8 +15,16 @@ get_statsfun(fname) = eval(Symbol(fname))
 get_rmathfun(fname) = eval(Meta.parse(string("RFunctions.", fname)))
 
 function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(eltype(X)))))
-    pdf     = string(basename, "pdf")
-    logpdf  = string(basename, "logpdf")
+    # tackle pdf specially
+    has_pdf = true
+    if basename == "srdist"
+        has_pdf = false
+    end
+
+    if has_pdf
+        pdf     = string(basename, "pdf")
+        logpdf  = string(basename, "logpdf")
+    end
     cdf     = string(basename, "cdf")
     ccdf    = string(basename, "ccdf")
     logcdf  = string(basename, "logcdf")
@@ -27,8 +35,10 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
     invlogccdf = string(basename, "invlogccdf")
     rand       = string(basename, "rand")
 
-    stats_pdf     = get_statsfun(pdf)
-    stats_logpdf  = get_statsfun(logpdf)
+    if has_pdf
+        stats_pdf     = get_statsfun(pdf)
+        stats_logpdf  = get_statsfun(logpdf)
+    end
     stats_cdf     = get_statsfun(cdf)
     stats_ccdf    = get_statsfun(ccdf)
     stats_logcdf  = get_statsfun(logcdf)
@@ -38,8 +48,10 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
     stats_invlogcdf  = get_statsfun(invlogcdf)
     stats_invlogccdf = get_statsfun(invlogccdf)
 
-    rmath_pdf     = get_rmathfun(pdf)
-    rmath_logpdf  = get_rmathfun(logpdf)
+    if has_pdf
+        rmath_pdf     = get_rmathfun(pdf)
+        rmath_logpdf  = get_rmathfun(logpdf)
+    end
     rmath_cdf     = get_rmathfun(cdf)
     rmath_ccdf    = get_rmathfun(ccdf)
     rmath_logcdf  = get_rmathfun(logcdf)
@@ -51,16 +63,18 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(elt
 
     # tackle rand specially
     has_rand = true
-    if basename == "nbeta" || basename == "nfdist" || basename == "ntdist"
+    if basename == "nbeta" || basename == "nfdist" || basename == "ntdist" || basename == "srdist"
         has_rand = false
     end
     rmath_rand = has_rand ? get_rmathfun(rand) : nothing
 
     for x in X
-        check_rmath(pdf, stats_pdf, rmath_pdf,
-            params, "x", x, true, rtol)
-        check_rmath(logpdf, stats_logpdf, rmath_logpdf,
-            params, "x", x, false, rtol)
+        if has_pdf
+            check_rmath(pdf, stats_pdf, rmath_pdf,
+                params, "x", x, true, rtol)
+            check_rmath(logpdf, stats_logpdf, rmath_logpdf,
+                params, "x", x, false, rtol)
+        end
         check_rmath(cdf, stats_cdf, rmath_cdf,
             params, "x", x, true, rtol)
         check_rmath(ccdf, stats_ccdf, rmath_ccdf,
@@ -100,112 +114,130 @@ end
 
 ### Test cases
 
-rmathcomp_tests("beta", [
-    ((1.0, 1.0), 0.01:0.01:0.99),
-    ((2.0, 3.0), 0.01:0.01:0.99),
-    ((10.0, 2.0), 0.01:0.01:0.99),
-    ((10, 2), 0.01:0.01:0.99),
-])
+@testset "RMath" begin
+    rmathcomp_tests("beta", [
+        ((1.0, 1.0), 0.01:0.01:0.99),
+        ((2.0, 3.0), 0.01:0.01:0.99),
+        ((10.0, 2.0), 0.01:0.01:0.99),
+        ((10, 2), 0.01:0.01:0.99),
+    ])
 
-rmathcomp_tests("binom", [
-    ((1, 0.5), 0.0:1.0),
-    ((1, 0.7), 0.0:1.0),
-    ((8, 0.6), 0.0:8.0),
-    ((20, 0.1), 0.0:20.0),
-    ((20, 0.9), 0.0:20.0),
-    ((20, 0.9), 0:20),
-])
+    rmathcomp_tests("binom", [
+        ((1, 0.5), 0.0:1.0),
+        ((1, 0.7), 0.0:1.0),
+        ((8, 0.6), 0.0:8.0),
+        ((20, 0.1), 0.0:20.0),
+        ((20, 0.9), 0.0:20.0),
+        ((20, 0.9), 0:20),
+    ])
 
-rmathcomp_tests("chisq", [
-    ((1,), 0.0:0.1:8.0),
-    ((4,), 0.0:0.1:8.0),
-    ((9,), 0.0:0.1:8.0),
-    ((9,), 0:8),
-])
+    rmathcomp_tests("chisq", [
+        ((1,), 0.0:0.1:8.0),
+        ((4,), 0.0:0.1:8.0),
+        ((9,), 0.0:0.1:8.0),
+        ((9,), 0:8),
+    ])
 
-rmathcomp_tests("fdist", [
-    ((1, 1), (0.0:0.1:5.0)),
-    ((2, 1), (0.0:0.1:5.0)),
-    ((5, 2), (0.0:0.1:5.0)),
-    ((10, 1), (0.0:0.1:5.0)),
-    ((10, 3), (0.0:0.1:5.0)),
-    ((10, 3), (0:5)),
-])
+    rmathcomp_tests("fdist", [
+        ((1, 1), (0.0:0.1:5.0)),
+        ((2, 1), (0.0:0.1:5.0)),
+        ((5, 2), (0.0:0.1:5.0)),
+        ((10, 1), (0.0:0.1:5.0)),
+        ((10, 3), (0.0:0.1:5.0)),
+        ((10, 3), (0:5)),
+    ])
 
-rmathcomp_tests("gamma", [
-    ((1.0, 1.0), (0.05:0.05:12.0)),
-    ((0.5, 1.0), (0.05:0.05:12.0)),
-    ((3.0, 1.0), (0.05:0.05:12.0)),
-    ((9.0, 1.0), (0.05:0.05:12.0)),
-    ((2.0, 3.0), (0.05:0.05:12.0)),
-    ((2, 3), (1:12)),
-])
+    rmathcomp_tests("gamma", [
+        ((1.0, 1.0), (0.05:0.05:12.0)),
+        ((0.5, 1.0), (0.05:0.05:12.0)),
+        ((3.0, 1.0), (0.05:0.05:12.0)),
+        ((9.0, 1.0), (0.05:0.05:12.0)),
+        ((2.0, 3.0), (0.05:0.05:12.0)),
+        ((2, 3), (1:12)),
+    ])
 
-rmathcomp_tests("hyper", [
-    ((2, 3, 4), 0.0:4.0),
-    ((2, 3, 4), 0:4)
-])
+    rmathcomp_tests("hyper", [
+        ((2, 3, 4), 0.0:4.0),
+        ((2, 3, 4), 0:4)
+    ])
 
-rmathcomp_tests("nbeta", [
-    ((1.0, 1.0, 0.0), 0.01:0.01:0.99),
-    ((2.0, 3.0, 0.0), 0.01:0.01:0.99),
-    ((1.0, 1.0, 2.0), 0.01:0.01:0.99),
-    ((3.0, 4.0, 2.0), 0.01:0.01:0.99),
-    ((3, 4, 2), 0.01:0.01:0.99),
-])
+    rmathcomp_tests("nbeta", [
+        ((1.0, 1.0, 0.0), 0.01:0.01:0.99),
+        ((2.0, 3.0, 0.0), 0.01:0.01:0.99),
+        ((1.0, 1.0, 2.0), 0.01:0.01:0.99),
+        ((3.0, 4.0, 2.0), 0.01:0.01:0.99),
+        ((3, 4, 2), 0.01:0.01:0.99),
+    ])
 
-rmathcomp_tests("nbinom", [
-    ((1, 0.5), 0.0:20.0),
-    ((3, 0.5), 0.0:20.0),
-    ((3, 0.2), 0.0:20.0),
-    ((3, 0.8), 0.0:20.0),
-    ((3, 0.8), 0:20),
-])
+    rmathcomp_tests("nbinom", [
+        ((1, 0.5), 0.0:20.0),
+        ((3, 0.5), 0.0:20.0),
+        ((3, 0.2), 0.0:20.0),
+        ((3, 0.8), 0.0:20.0),
+        ((3, 0.8), 0:20),
+    ])
 
-rmathcomp_tests("nchisq", [
-    ((2, 1), 0.0:0.2:8.0),
-    ((2, 3), 0.0:0.2:8.0),
-    ((4, 1), 0.0:0.2:8.0),
-    ((4, 3), 0.0:0.2:8.0),
-    ((4, 3), 0:8),
-])
+    rmathcomp_tests("nchisq", [
+        ((2, 1), 0.0:0.2:8.0),
+        ((2, 3), 0.0:0.2:8.0),
+        ((4, 1), 0.0:0.2:8.0),
+        ((4, 3), 0.0:0.2:8.0),
+        ((4, 3), 0:8),
+    ])
 
-rmathcomp_tests("nfdist", [
-    ((1.0, 1.0, 0.0), 0.1:0.1:10.0),
-    ((1.0, 1.0, 2.0), 0.1:0.1:10.0),
-    ((2.0, 3.0, 1.0), 0.1:0.1:10.0),
-    ((2, 3, 1), 1:10),
-])
+    rmathcomp_tests("nfdist", [
+        ((1.0, 1.0, 0.0), 0.1:0.1:10.0),
+        ((1.0, 1.0, 2.0), 0.1:0.1:10.0),
+        ((2.0, 3.0, 1.0), 0.1:0.1:10.0),
+        ((2, 3, 1), 1:10),
+    ])
 
-rmathcomp_tests("norm", [
-    ((0.0, 1.0), -6.0:0.01:6.0),
-    ((2.0, 1.0), -3.0:0.01:7.0),
-    ((0.0, 0.5), -3.0:0.01:3.0),
-    ((0, 1), -3.0:3.0),
-    ((0, 1), -3.0:0.01:3.0),
-    ((0, 1), -3:3),
-    ((0.0, 0.0), -6.0:0.1:6.0),
-])
+    rmathcomp_tests("norm", [
+        ((0.0, 1.0), -6.0:0.01:6.0),
+        ((2.0, 1.0), -3.0:0.01:7.0),
+        ((0.0, 0.5), -3.0:0.01:3.0),
+        ((0, 1), -3.0:3.0),
+        ((0, 1), -3.0:0.01:3.0),
+        ((0, 1), -3:3),
+        ((0.0, 0.0), -6.0:0.1:6.0),
+    ])
 
-rmathcomp_tests("ntdist", [
-    ((0, 1), -4.0:0.1:10.0),
-    ((0, 4), -4.0:0.1:10.0),
-    ((2, 1), -4.0:0.1:10.0),
-    ((2, 4), -4.0:0.1:10.0),
-    ((2, 4), -4:10),
-])
+    rmathcomp_tests("ntdist", [
+        ((0, 1), -4.0:0.1:10.0),
+        ((0, 4), -4.0:0.1:10.0),
+        ((2, 1), -4.0:0.1:10.0),
+        ((2, 4), -4.0:0.1:10.0),
+        ((2, 4), -4:10),
+    ])
 
-rmathcomp_tests("pois", [
-    ((0.5,), 0.0:20.0),
-    ((1.0,), 0.0:20.0),
-    ((2.0,), 0.0:20.0),
-    ((10.0,), 0.0:20.0),
-    ((10,), 0:20),
-])
+    rmathcomp_tests("pois", [
+        ((0.5,), 0.0:20.0),
+        ((1.0,), 0.0:20.0),
+        ((2.0,), 0.0:20.0),
+        ((10.0,), 0.0:20.0),
+        ((10,), 0:20),
+    ])
 
-rmathcomp_tests("tdist", [
-    ((1,), -5.0:0.1:5.0),
-    ((2,), -5.0:0.1:5.0),
-    ((5,), -5.0:0.1:5.0),
-    ((5,), -5:5),
-])
+    rmathcomp_tests("tdist", [
+        ((1,), -5.0:0.1:5.0),
+        ((2,), -5.0:0.1:5.0),
+        ((5,), -5.0:0.1:5.0),
+        ((5,), -5:5),
+    ])
+
+    rmathcomp_tests("srdist", [
+        ((1,2), (0.0:0.2:5.0)),
+        ((2,2), (0.0:0.2:5.0)),
+        ((5,3), (0.0:0.2:5.0)),
+        ((10,2), (0.0:0.2:5.0)),
+        ((10,5), (0.0:0.2:5.0))
+    ])
+
+    # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
+    # Reduced df or k allows convergence. This test documents this behavior.
+    x = 0.15
+    q = srdistcdf(10, 5, 0.15)
+    rx = srdistinvcdf(10, 5, q)
+    rtol = 100eps(1.0)
+    @test_broken x ≈ rx atol=rtol rtol=rtol nans=true
+end
