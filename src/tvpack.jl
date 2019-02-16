@@ -1,3 +1,5 @@
+export bvncdf
+
 # Written in Julia by Andreas Noack Jensen
 # January 2013
 #
@@ -39,11 +41,11 @@ function tvtcdf(nu::Int, h::Vector{Float64}, r::Vector{Float64})
 	if abs(h1) + abs(h2) + abs(h3) < eps()
 	   	tvt = (1.0 + (asin(r12) + asin(r13) + asin(r23)) / pt) * 0.125
 	elseif nu < 1 && abs(r12) + abs(r13) < eps()
-	   	tvt = cdf(Normal(), h1) * bvtcdf(nu, h2, h3, r23)
+	   	tvt = normcdf(h1) * bvtcdf(nu, h2, h3, r23)
 	elseif nu < 1 && abs(r13) + abs(r23) < eps()
-	   	tvt = cdf(Normal(), h3) * bvtcdf(nu, h1, h2, r12)
+	   	tvt = normcdf(h3) * bvtcdf(nu, h1, h2, r12)
 	elseif nu < 1 && abs(r12) + abs(r23) < eps()
-	   	tvt = cdf(Normal(), h2) * bvtcdf(nu, h1, h3, r13)
+	   	tvt = normcdf(h2) * bvtcdf(nu, h1, h3, r13)
 	elseif 1.0 - r23 < eps()
 	   	tvt = bvtcdf(nu, h1, min(h2, h3), r12)
 	elseif r23 + 1.0 < eps()
@@ -53,7 +55,7 @@ function tvtcdf(nu::Int, h::Vector{Float64}, r::Vector{Float64})
 	   	# Compute singular TVT value
 
 	   	if nu < 1
-	      	tvt = bvtcdf(nu, h2, h3, r23) * cdf(Normal(), h1)
+	      	tvt = bvtcdf(nu, h2, h3, r23) * normcdf(h1)
 	   	elseif r23 > 0
 	      	tvt = bvtcdf( nu, h1, min( h2, h3 ), 0.0)
 	   	elseif h2 > -h3
@@ -111,7 +113,7 @@ function pntgnd(nu::Int, ba::Float64, bb::Float64, bc::Float64, ra::Float64, rb:
    		if nu < 1
       		if bt > -10 && ft < 100
          		retval = exp(-ft * 0.5)
-         		if bt < 10; retval *= cdf(Normal(), bt) end
+         		if bt < 10; retval *= normcdf(bt) end
       		end
    		else
       		ft = sqrt(1.0 + ft / nu)
@@ -209,7 +211,7 @@ end
 
 function tcdf(nu::Int, t::Float64)
 	if nu < 1
-   		studnt = cdf(Normal(), t)
+   		studnt = normcdf(t)
 	elseif nu == 1
    		studnt = (1.0 + 2.0atan(t) / pi) * 0.5
 	elseif nu == 2
@@ -335,74 +337,95 @@ const bvncdf_x_array = [-0.9324695142031522e+00 -0.9815606342467191e+00 -0.99312
 						 0.0 				    0.0 				    -0.2277858511416451e+00;
 						 0.0 				    0.0 				    -0.7652652113349733e-01]
 
-function bvnuppercdf(dh::Float64, dk::Float64, r::Float64)
-	if abs(r) < 0.3
-	   ng = 1
-	   lg = 3
-	elseif abs(r) < 0.75
-	   ng = 2
-	   lg = 6
-	else
-	   ng = 3
-	   lg = 10
+function bvnuppercdf(dh::T, dk::T, r::T)::T where {T<:Float64}
+
+	if r < -one(T) || r > one(T)
+		throw(DomainError("r must be ∈ [-1,1]"))
 	end
-	h = dh
-	k = dk
-	hk = h*k
-	bvn = 0.0
-	if abs(r) < 0.925
-	   	if abs(r) > 0
-	      	hs = (h * h + k * k) * 0.5
-	      	asr = asin(r)
-	      	for i = 1:lg
-	         	for j = -1:2:1
-	            	sn = sin(asr * (j * bvncdf_x_array[i, ng] + 1.0) * 0.5)
-	            	bvn += bvncdf_w_array[i, ng] * exp((sn * hk - hs) / (1.0 - sn*sn))
-	        	end
-	      	end
-	      	bvn *= asr / (4.0pi)
-	   	end
-	   	bvn += cdf(Normal(), -h) * cdf(Normal(), -k)
+
+	if isfinite(dh) && isfinite(dk)
+		if abs(r) < 0.3
+		   ng = 1
+		   lg = 3
+		elseif abs(r) < 0.75
+		   ng = 2
+		   lg = 6
+		else
+		   ng = 3
+		   lg = 10
+		end
+		h = dh
+		k = dk
+		hk = h*k
+		bvn = 0.0
+		if abs(r) < 0.925
+		   	if abs(r) > 0
+		      	hs = (h * h + k * k) * 0.5
+		      	asr = asin(r)
+		      	for i = 1:lg
+		         	for j = -1:2:1
+		            	sn = sin(asr * (j * bvncdf_x_array[i, ng] + 1.0) * 0.5)
+		            	bvn += bvncdf_w_array[i, ng] * exp((sn * hk - hs) / (1.0 - sn*sn))
+		        	end
+		      	end
+		      	bvn *= asr / (4.0pi)
+		   	end
+		   	bvn += normcdf(-h) * normcdf(-k)
+		else
+		   	if r < 0
+		      	k = -k
+		      	hk = -hk
+		   	end
+		   	if abs(r) < 1
+		      	as = (1.0 - r) * (1.0 + r)
+		      	a = sqrt(as)
+		      	bs = (h - k)^2
+		      	c = (4.0 - hk) * 0.125
+		      	d = (12.0 - hk) * 0.0625
+		      	asr = -(bs / as + hk) * 0.5
+		      	if ( asr > -100 )
+		      		bvn = a * exp(asr) * (1.0 - c * (bs - as) * (1.0 - d * bs / 5.0) / 3.0 + c * d * as * as / 5.0)
+		      	end
+		      	if -hk < 100
+		         	b = sqrt(bs)
+		         	bvn -= exp(-hk * 0.5) * sqrt(2.0pi) * normcdf(-b / a) * b * (1.0 - c * bs * (1.0 - d * bs / 5.0) / 3.0)
+		      	end
+		     	a /= 2.0
+			    for i = 1:lg
+		         	for j = -1:2:1
+		            	xs = (a * (j*bvncdf_x_array[i, ng] + 1.0))^2
+		            	rs = sqrt(1.0 - xs)
+		            	asr = -(bs / xs + hk) * 0.5
+		            	if asr > -100
+		               		bvn += a * bvncdf_w_array[i, ng] * exp(asr) * (exp(-hk * (1.0 - rs) / (2.0 * (1.0 + rs))) / rs - (1.0 + c * xs * (1.0 + d * xs)))
+		            	end
+		         	end
+		        end
+		      	bvn /= -2.0pi
+		   	end
+		   	if r > 0
+		      	bvn += normcdf(-max(h, k))
+		   	else
+		      	bvn = -bvn
+		      	if k > h
+		      		bvn += normcdf(k) - normcdf(h)
+		      	end
+			end
+		end
+		return bvn
+
+	# here we either have 0 or the marginal
 	else
-	   	if r < 0
-	      	k = -k
-	      	hk = -hk
-	   	end
-	   	if abs(r) < 1
-	      	as = (1.0 - r) * (1.0 + r)
-	      	a = sqrt(as)
-	      	bs = (h - k)^2
-	      	c = (4.0 - hk) * 0.125
-	      	d = (12.0 - hk) * 0.0625
-	      	asr = -(bs / as + hk) * 0.5
-	      	if ( asr > -100 )
-	      		bvn = a * exp(asr) * (1.0 - c * (bs - as) * (1.0 - d * bs / 5.0) / 3.0 + c * d * as * as / 5.0)
-	      	end
-	      	if -hk < 100
-	         	b = sqrt(bs)
-	         	bvn -= exp(-hk * 0.5) * sqrt(2.0pi) * cdf(Normal(), -b / a) * b * (1.0 - c * bs * (1.0 - d * bs / 5.0) / 3.0)
-	      	end
-	     	a /= 2.0
-		    for i = 1:lg
-	         	for j = -1:2:1
-	            	xs = (a * (j*bvncdf_x_array[i, ng] + 1.0))^2
-	            	rs = sqrt(1.0 - xs)
-	            	asr = -(bs / xs + hk) * 0.5
-	            	if asr > -100
-	               		bvn += a * bvncdf_w_array[i, ng] * exp(asr) * (exp(-hk * (1.0 - rs) / (2.0 * (1.0 + rs))) / rs - (1.0 + c * xs * (1.0 + d * xs)))
-	            	end
-	         	end
-	        end
-	      	bvn /= -2.0pi
-	   	end
-	   	if r > 0
-	      	bvn += cdf(Normal(), -max(h, k))
-	   	else
-	      	bvn = -bvn
-	      	if k > h
-	      		bvn += cdf(Normal(), k) - cdf(Normal(), h)
-	      	end
+		if dh == typemax(T) || dk == typemax(T)
+			return zero(T)
+		elseif dh == typemin(T)
+			return normcdf(-dk)
+		elseif dk == typemin(T)
+			return normcdf(-dh)
+		else
+			thow(error())
 		end
 	end
-	return bvn
 end
+
+bvncdf(dh, dk, r) = bvnuppercdf(-dh, -dk, r)
