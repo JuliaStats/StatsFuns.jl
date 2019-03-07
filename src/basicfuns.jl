@@ -190,7 +190,13 @@ function logsumexp(X)
     isempty(X) && return log(sum(X))
     reduce(logaddexp, X)
 end
-function logsumexp(X::AbstractArray{T}) where {T<:Real}
+function logsumexp(X::AbstractArray{T}; dims=nothing) where {T<:Real}
+    dims isa Nothing && return _logsumexp(X)
+    isempty(X) && return log(zero(T))
+    u = maximum(X; dims=dims)
+    return log.(sum(exp.(X .- u); dims=dims)) .+ u
+end
+function _logsumexp(X::AbstractArray{T}) where {T<:Real}
     isempty(X) && return log(zero(T))
     u = maximum(X)
     isfinite(u) || return float(u)
@@ -198,7 +204,6 @@ function logsumexp(X::AbstractArray{T}) where {T<:Real}
         u + log(sum(x -> exp(x-u), X))
     end
 end
-
 
 """
     softmax!(r::AbstractArray, x::AbstractArray)

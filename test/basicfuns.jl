@@ -89,6 +89,9 @@ end
             @test logsumexp(arguments) ≡ result
         end
     end
+
+    x = randn(5, 1)
+    @test logsumexp(x) == logsumexp(x; dims=1)[1]
 end
 
 @testset "softmax" begin
