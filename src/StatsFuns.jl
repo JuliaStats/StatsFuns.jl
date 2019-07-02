@@ -229,6 +229,7 @@ export
 
     # misc
     logmvgamma,         # logarithm of multivariate gamma function
+    logmvbeta,          # logarithm of multivariate beta function
     lstirling_asym
 
 

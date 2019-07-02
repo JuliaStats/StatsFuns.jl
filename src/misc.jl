@@ -15,6 +15,13 @@ function logmvgamma(p::Int, a::Real)
 end
 
 """
+    logmvbeta(p::Int, a::Real, b::Real)
+
+Return the logarithm of the multivariate beta function ([DLMF 35.3.7](https://dlmf.nist.gov/35.3#E7)).
+"""
+logmvbeta(p::Int, a::Real, b::Real) = logmvgamma(p, a) + logmvgamma(p, b) - logmvgamma(p, a + b)
+
+"""
     lstirling_asym(x)
 
 The remainder term after
@@ -47,7 +54,7 @@ which is < 1/2 ulp for x >= 10.0, and total numeric error appears to be < 2 ulps
 * Temme, N. (1996) Special functions: An introduction to the classical functions of
    mathematical physics, Wiley, New York, ISBN: 0-471-11313-1, Chapter 3.6, pp 61-65.
 * Weisstein, Eric W. ["Stirling's Series."](http://mathworld.wolfram.com/StirlingsSeries.html).
-  MathWorld. 
+  MathWorld.
 * [OEIS A046968](http://oeis.org/A046968) and [OEIS A046969](http://oeis.org/A046969)
   for the series coefficients
 """
