@@ -42,7 +42,7 @@ end
             a = rand(eltya)
             b = rand(eltyb)
             @test logmvbeta(1, a, b) ≈ lgamma(a) + lgamma(b) - lgamma(a + b)
-            #  Change to logbeta calls after next SpecialFunctions release
+            #@test logmvbeta(1, a, b) ≈ logbeta(a, b)  #  Whenever SpecialFunctions.jl updates
         end
     end
 
