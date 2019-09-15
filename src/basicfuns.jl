@@ -190,18 +190,11 @@ function logsumexp(X)
     isempty(X) && return log(sum(X))
     reduce(logaddexp, X)
 end
-function logsumexp(X::AbstractVector{T}) where {T<:Real}
-    isempty(X) && return log(zero(T))
-    u = maximum(X)
-    isfinite(u) || return float(u)
-    let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
-        u + log(sum(x -> exp(x-u), X))
-    end
-end
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     isempty(X) && return log(zero(T))
     u = maximum(X; dims=dims)
-    let u=u
+    u isa AbstractArray || isfinite(u) || return float(u)
+    let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
         u .+ log.(sum(exp.(X .- u); dims=dims))
     end
 end
