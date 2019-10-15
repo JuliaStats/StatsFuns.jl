@@ -190,12 +190,16 @@ function logsumexp(X)
     isempty(X) && return log(sum(X))
     reduce(logaddexp, X)
 end
-function logsumexp(X::AbstractArray{T}) where {T<:Real}
-    isempty(X) && return log(zero(T))
-    u = maximum(X)
-    isfinite(u) || return float(u)
+function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
+    u = reduce(max, X, dims=dims, init=log(zero(T)))
+    u isa AbstractArray || isfinite(u) || return float(u)
     let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
-        u + log(sum(x -> exp(x-u), X))
+        # TODO: remove the branch when JuliaLang/julia#31020 is merged.
+        if u isa AbstractArray
+            u .+ log.(sum(exp.(X .- u); dims=dims))
+        else
+            u + log(sum(x -> exp(x-u), X))
+        end
     end
 end
 
