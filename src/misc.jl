@@ -53,7 +53,7 @@ which is < 1/2 ulp for x >= 10.0, and total numeric error appears to be < 2 ulps
 """
 function lstirling_asym end
 
-lstirling_asym(x::BigFloat) = lgamma(x) + x - log(x)*(x - big(0.5)) - log2π/big(2)
+lstirling_asym(x::BigFloat) = (logabsgamma(x))[1] + x - log(x)*(x - big(0.5)) - log2π/big(2)
 
 lstirling_asym(x::Integer) = lstirling_asym(float(x))
 
