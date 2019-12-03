@@ -1,6 +1,6 @@
 name = "StatsFuns"
 uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
-version = "0.9.0"
+version = "0.9.1"
 
 [deps]
 Rmath = "79098fc4-a85e-5d69-aa6a-4863f24498fa"
