@@ -26,7 +26,7 @@ end
 
 @testset "logmvbeta" begin
     @testset "symmetry" for eltya in (Float32, Float64)
-                            for eltyb in (Float32, Float64)
+                        for eltyb in (Float32, Float64)
             #  Bᵢ(a, b) = Bᵢ(b, a)
             for p in 1:50
                 a = rand(eltya)
@@ -37,7 +37,7 @@ end
     end
 
     @testset "consistent with logbeta" for eltya in (Float32, Float64)
-                                           for eltyb in (Float32, Float64)
+                                       for eltyb in (Float32, Float64)
             #  B₁(a, b) = B(a, b)
             a = rand(eltya)
             b = rand(eltyb)
@@ -47,7 +47,7 @@ end
     end
 
     @testset "type promotion behaves" for eltya in (Float32, Float64)
-                                          for eltyb in (Float32, Float64)
+                                      for eltyb in (Float32, Float64)
             a = rand(eltya)
             b = rand(eltyb)
             T = Base.promote_eltype(eltya, eltyb)
