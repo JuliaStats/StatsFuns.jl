@@ -9,7 +9,7 @@ function logmvgamma(p::Int, a::Real)
     # NOTE: one(a) factors are here to prevent unnecessary promotion of Float32
     res = p * (p - 1) * log(pi * one(a)) / 4
     for ii in 1:p
-        res += lgamma(a + (1 - ii) * one(a)/ 2)
+        res += loggamma(a + (1 - ii) * one(a) / 2)
     end
     return res
 end
@@ -26,7 +26,7 @@ logmvbeta(p::Int, a::Real, b::Real) = logmvgamma(p, a) + logmvgamma(p, b) - logm
 
 The remainder term after
 [Stirling's approximation](https://en.wikipedia.org/wiki/Stirling%27s_approximation)
-to [`lgamma`](@ref):
+to [`loggamma`](@ref):
 
 ```math
 \\log \\Gamma(x) \\approx x \\log(x) - x + \\log(2\\pi/x)/2 = \\log(x)*(x-1/2) + \\log(2\\pi)/2 - x
@@ -34,7 +34,7 @@ to [`lgamma`](@ref):
 
 In Julia syntax, this means:
 
-    lstirling_asym(x) = lgamma(x) + x - (x-0.5)*log(x) - 0.5*log(2π)
+    lstirling_asym(x) = loggamma(x) + x - (x-0.5)*log(x) - 0.5*log(2π)
 
 For sufficiently large `x`, this can be approximated using the asymptotic
 _Stirling's series_ ([DLMF 5.11.1](https://dlmf.nist.gov/5.11.1)):
@@ -60,7 +60,7 @@ which is < 1/2 ulp for x >= 10.0, and total numeric error appears to be < 2 ulps
 """
 function lstirling_asym end
 
-lstirling_asym(x::BigFloat) = lgamma(x) + x - log(x)*(x - big(0.5)) - log2π/big(2)
+lstirling_asym(x::BigFloat) = loggamma(x) + x - log(x)*(x - big(0.5)) - log2π/big(2)
 
 lstirling_asym(x::Integer) = lstirling_asym(float(x))
 
