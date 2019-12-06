@@ -30,8 +30,8 @@ end
                         for eltyb in (Float32, Float64)
             #  Bᵢ(a, b) = Bᵢ(b, a)
             for p in 1:50
-                a = rand(eltya)
-                b = rand(eltyb)
+                a = rand(eltya) + p
+                b = rand(eltyb) + p
                 @test logmvbeta(p, a, b) ≈ logmvbeta(p, b, a)
             end
         end
