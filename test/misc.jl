@@ -42,8 +42,7 @@ end
             #  B₁(a, b) = B(a, b)
             a = rand(eltya)
             b = rand(eltyb)
-            @test logmvbeta(1, a, b) ≈ lgamma(a) + lgamma(b) - lgamma(a + b)
-            #@test logmvbeta(1, a, b) ≈ logbeta(a, b)  #  Whenever SpecialFunctions.jl updates
+            @test logmvbeta(1, a, b) ≈ logbeta(a, b)
         end
     end
 
