@@ -50,18 +50,18 @@ logit(x::Real) = log(x / (one(x) - x))
 Return `log(1+x^2)` evaluated carefully for `abs(x)` very small or very large.
 """
 log1psq(x::Real) = log1p(abs2(x))
-function log1psq(x::Union{Float32,Float64}) 
+function log1psq(x::Union{Float32,Float64})
     ax = abs(x)
     ax < maxintfloat(x) ? log1p(abs2(ax)) : 2 * log(ax)
 end
 
 """
     log1pexp(x::Real)
-    
+
 Return `log(1+exp(x))` evaluated carefully for largish `x`.
 
 This is also called the ["softplus"](https://en.wikipedia.org/wiki/Rectifier_(neural_networks))
-transformation, being a smooth approximation to `max(0,x)`. Its inverse is [`logexpm1`](@ref). 
+transformation, being a smooth approximation to `max(0,x)`. Its inverse is [`logexpm1`](@ref).
 """
 log1pexp(x::Real) = x < 18.0 ? log1p(exp(x)) : x < 33.3 ? x + exp(-x) : oftype(exp(-x), x)
 log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : oftype(exp(-x), x)
@@ -72,7 +72,7 @@ log1pexp(x::Float32) = x < 9.0f0 ? log1p(exp(x)) : x < 16.0f0 ? x + exp(-x) : of
 Return `log(1 - exp(x))`
 
 See:
- * Martin Maechler (2012) "Accurately Computing log(1 − exp(− |a|))", 
+ * Martin Maechler (2012) "Accurately Computing log(1 − exp(− |a|))",
    http://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf
 
 Note: different than Maechler (2012), no negation inside parentheses
@@ -88,7 +88,7 @@ log2mexp(x::Real) = log1p(-expm1(x))
 
 """
     logexpm1(x::Real)
-    
+
 Return `log(exp(x) - 1)` or the "invsoftplus" function.
 It is the inverse of [`log1pexp`](@ref) (aka "softplus").
 """
@@ -172,7 +172,7 @@ function logaddexp(x::T, y::T) where T<:Real
     # x or y is  NaN  =>  NaN
     # x or y is +Inf  => +Inf
     # x or y is -Inf  => other value
-    isfinite(x) && isfinite(y) || return max(x,y)   
+    isfinite(x) && isfinite(y) || return max(x,y)
     x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
 end
 logaddexp(x::Real, y::Real) = logaddexp(promote(x, y)...)
@@ -191,7 +191,7 @@ function logsumexp(X)
     reduce(logaddexp, X)
 end
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
-    u = reduce(max, X, dims=dims, init=log(zero(T)))
+    u = reduce(max, X, dims=dims, init=zero(T))
     u isa AbstractArray || isfinite(u) || return float(u)
     let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
         # TODO: remove the branch when JuliaLang/julia#31020 is merged.
