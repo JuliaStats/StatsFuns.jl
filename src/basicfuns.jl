@@ -191,6 +191,7 @@ function logsumexp(X)
     reduce(logaddexp, X)
 end
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
+    # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
     u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
     u isa AbstractArray || isfinite(u) || return float(u)
     let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
