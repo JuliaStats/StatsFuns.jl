@@ -191,8 +191,7 @@ function logsumexp(X)
     reduce(logaddexp, X)
 end
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
-    isempty(X) && return log(zero(T))
-    u = reduce(max, X, dims=dims)
+    u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
     u isa AbstractArray || isfinite(u) || return float(u)
     let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
         # TODO: remove the branch when JuliaLang/julia#31020 is merged.
