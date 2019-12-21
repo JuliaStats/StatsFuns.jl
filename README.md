@@ -63,6 +63,8 @@ lstirling_asym
 
 ## Distribution-related functions
 
+Do note that this package only provides low-level distribution functions.We recommend using the [Distributions.jl](https://github.com/JuliaStats/Distributions.jl/) package for a more convenient interface.
+
 ```julia
 # distrs/beta
 betapdf,            # pdf of beta distribution
