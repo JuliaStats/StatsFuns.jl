@@ -18,7 +18,7 @@ xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(log(x))
 
 Return `x * log(y)` for `y > 0` with correct limit at `x = 0`.
 """
-xlogy(x::T, y::T) where {T<:Real} = x > zero(T) ? x * log(y) : zero(log(y))
+xlogy(x::T, y::T) where {T<:Real} = x > zero(T) ? x * log(y) : zero(log(x))
 xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
 """
