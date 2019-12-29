@@ -62,7 +62,6 @@ end
         for p in push!(rand(50), [0, 1]...)
             for n in rand(0:50)
                 for k in push!(range(-50:50), randn(10)...)
-                    true
                     @test binomlogpdf(n, Float32(p), k) ≈ log(pdf(Binomial(n, p), k))
                 end
             end
