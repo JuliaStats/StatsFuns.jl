@@ -11,7 +11,7 @@ julia> StatsFuns.xlogx(0)
 0.0
 ```
 """
-xlogx(x::Real) = x != zero(x) ? x * log(x) : zero(log(x))
+xlogx(x::Real) = !iszero(x) ? x * log(x) : zero(log(x))
 
 """
     xlogy(x::Real, y::Real)
