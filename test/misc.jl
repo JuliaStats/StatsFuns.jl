@@ -62,7 +62,8 @@ end
         for p in [rand(50); 0; 1]
             for n in 0:50
                 for k in Any[-50:50; randn(10)]
-                    @test binomlogpdf(n, Float32(p), k) ≈ log(binomlogpdf(n, p, k))
+                    # testing genetic Julia binompdf against Rmath version.
+                    @test binomlogpdf(n, Float32(p), k) ≈ log(binompdf(n, p, k))
                 end
             end
         end
