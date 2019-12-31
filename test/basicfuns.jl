@@ -8,9 +8,9 @@ using StatsFuns, Test
     @test xlogy(2, 3) ≈ 2.0 * log(3.0)
 
     @test xlogy(-2, Base.MathConstants.e) ≈ -2
-    @test xlogy(0, 1) ≈ 0
-    @test xlogy(-1, 1) ≈ 0
-    @test xlogy(0, 0) ≈ 0
+    @test xlogy(0, 1) == 0
+    @test xlogy(-1, 1) == 0
+    @test xlogy(0, 0) == 0
 end
 
 @testset "logistic & logit" begin
