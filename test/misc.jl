@@ -59,7 +59,7 @@ end
 @testset "binomlogpdf" begin
     @testset "identity" begin
 
-        for p in push!(rand(50), [0, 1]...)
+        for p in [rand(50); 0; 1]
             for n in 0:50
                 for k in push!(collect(Any, -50:50), randn(10)...)
                     @test binomlogpdf(n, Float32(p), k) ≈ log(pdf(Binomial(n, p), k))
