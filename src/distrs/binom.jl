@@ -24,5 +24,5 @@ function binomlogpdf(n::Real, p::Real, k::Real)
         x = -Inf
     end
 
-    return oftype(float(promote(n, p, k)), x)
+    return convert(float(promote_type(typeof(n), typeof(p), typeof(k))), x)
 end
