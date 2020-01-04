@@ -62,7 +62,7 @@ end
             for n in 0:50
                 for k in [-50:50; randn(10)]
                     # testing genetic Julia binompdf against Rmath version.
-                    @test binomlogpdf(n, Float32(p), k) ≈ log(binompdf(n, p, k))
+                    @test Float32(binomlogpdf(n, Float32(p), k)) ≈ Float32(log(binompdf(n, p, k)))
                 end
             end
         end
