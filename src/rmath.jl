@@ -116,7 +116,7 @@ end
 @import_rmath binom binom n p
 @import_rmath chisq chisq k
 @import_rmath f fdist ν1 ν2
-@import_rmath gamma gamma α β
+@import_rmath gamma gamma k θ
 @import_rmath hyper hyper ms mf n
 @import_rmath norm norm μ σ
 @import_rmath nbinom nbinom r p
