@@ -10,6 +10,10 @@ end
 
 @testset "logistic & logit" begin
     @test logistic(2)        ≈ 1.0 / (1.0 + exp(-2.0))
+    @test logistic(-750.0) === 0.0
+    @test logistic(-740.0) > 0.0
+    @test logistic(+36.0) < 1.0
+    @test logistic(+750.0) === 1.0
     @test iszero(logit(0.5))
     @test logit(logistic(2)) ≈ 2.0
 end
