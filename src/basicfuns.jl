@@ -21,6 +21,20 @@ Return `x * log(y)` for `y > 0` with correct limit at `x = 0`.
 xlogy(x::T, y::T) where {T<:Real} = x > zero(T) ? x * log(y) : zero(log(x))
 xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
+# The following bounds are precomputed versions of the following abstract
+# function, but the implicit interface for AbstractFloat doesn't uniformly
+# enforce that all floating point types implement nextfloat and prevfloat.
+# @inline function _logistic_bounds(x::AbstractFloat)
+#     (
+#         logit(nextfloat(zero(float(x)))),
+#         logit(prevfloat(one(float(x)))),
+#     )
+# end
+
+@inline _logistic_bounds(x::Float16) = (Float16(-16.64), Float16(7.625))
+@inline _logistic_bounds(x::Float32) = (-103.27893f0, 16.635532f0)
+@inline _logistic_bounds(x::Float64) = (-744.4400719213812, 36.7368005696771)
+
 """
     logistic(x::Real)
 
@@ -32,6 +46,20 @@ The [logistic](https://en.wikipedia.org/wiki/Logistic_function) sigmoid function
 Its inverse is the [`logit`](@ref) function.
 """
 logistic(x::Real) = inv(exp(-x) + one(x))
+
+function logistic(x::Union{Float16, Float32, Float64})
+    e = exp(x)
+    lower, upper = _logistic_bounds(x)
+    ifelse(
+        x < lower,
+        zero(x),
+        ifelse(
+            x > upper,
+            one(x),
+            e / (one(x) + e)
+        )
+    )
+end
 
 """
     logit(p::Real)
