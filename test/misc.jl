@@ -55,3 +55,16 @@ end
         end
     end
 end
+
+@testset "binomlogpdf" begin
+    @testset "identity" begin
+        for p in [rand(50); 0; 1]
+            for n in 0:50
+                for k in [-50:50; randn(10)]
+                    # testing genetic Julia binompdf against Rmath version.
+                    @test Float32(binomlogpdf(n, Float32(p), k)) ≈ Float32(binomlogpdf(n, p, k))
+                end
+            end
+        end
+    end
+end

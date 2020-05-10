@@ -11,14 +11,15 @@ julia> StatsFuns.xlogx(0)
 0.0
 ```
 """
-xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(log(x))
+xlogx(x::Real) = !iszero(x) ? x * log(x) : zero(log(x))
 
 """
     xlogy(x::Real, y::Real)
 
-Return `x * log(y)` for `y > 0` with correct limit at `x = 0`.
+Return `x * log(y)` for `y ≥ 0`, or `0` when `x == 0` (consistent with the limit
+when ```x \\to 0``` from above, including by extension when `y == 0`).
 """
-xlogy(x::T, y::T) where {T<:Real} = x > zero(T) ? x * log(y) : zero(log(x))
+xlogy(x::T, y::T) where {T<:Real} = !iszero(x) ? x * log(y) : zero(log(y))
 xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
 
 # The following bounds are precomputed versions of the following abstract
