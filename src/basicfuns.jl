@@ -2,6 +2,31 @@
 
 # scalar functions
 """
+    xexpx(x::Real)
+
+Return `x * exp(x)` for `x > -Inf`, handling `x = -Inf` by taking the downward limit.
+
+```jldoctest
+julia> StatsFuns.xexpx(-Inf)
+0.0
+```
+"""
+xexpx(x::Real) = isfinite(x) ? x * exp(x) : exp(x)
+
+"""
+    xexpy(x::Real, y::Real)
+
+Return `x * exp(y)` for `y > -Inf`, handling `y = -Inf` by taking the downward limit.
+
+```jldoctest
+julia> StatsFuns.xexpy(1.0, -Inf)
+0.0
+```
+"""
+xexpy(x::T, y::T) where {T<:Real} = isnan(x) || isfinite(y) ? x * exp(y) : exp(y)
+xexpy(x::Real, y::Real) = xexpy(promote(x, y)...)
+
+"""
     xlogx(x::Real)
 
 Return `x * log(x)` for `x ≥ 0`, handling `x = 0` by taking the downward limit.
