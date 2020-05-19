@@ -11,15 +11,20 @@ julia> StatsFuns.xlogx(0)
 0.0
 ```
 """
-xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(log(x))
+function xlogx(x)
+    result = x * log(x)
+    ifelse(x > zero(x), result, zero(result))
+end
 
 """
     xlogy(x::Real, y::Real)
 
 Return `x * log(y)` for `y > 0` with correct limit at `x = 0`.
 """
-xlogy(x::T, y::T) where {T<:Real} = x > zero(T) ? x * log(y) : zero(log(x))
-xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
+function xlogy(x, y)
+    result = x * log(y)
+    ifelse(x > zero(x), result, zero(result))
+end
 
 # The following bounds are precomputed versions of the following abstract
 # function, but the implicit interface for AbstractFloat doesn't uniformly
