@@ -201,16 +201,8 @@ end
 
 Return `log(exp(x) + exp(y))`, avoiding intermediate overflow/undeflow, and handling non-finite values.
 """
-function logaddexp(x::T, y::T) where T<:Real
-    # x or y is  NaN  =>  NaN
-    # x or y is +Inf  => +Inf
-    # x or y is -Inf  => other value
-    isfinite(x) && isfinite(y) || return max(x,y)
-    x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
-end
-logaddexp(x::Real, y::Real) = logaddexp(promote(x, y)...)
-
-Base.@deprecate logsumexp(x::Real, y::Real) logaddexp(x,y)
+logaddexp(x::Real, y::Real) = max(x,y) + log1pexp(-ifelse(x == y, zero(x - y), abs(x - y)))
+Base.@deprecate logsumexp(x::Real, y::Real) logaddexp(x, y)
 
 """
     logsumexp(X)

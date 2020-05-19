@@ -88,15 +88,19 @@ end
                  ([-Inf, Inf], Inf),
                  ([-Inf, 9.0], 9.0),
                  ([Inf, 9.0], Inf),
-                 ([NaN, 9.0], NaN),  # NaN propagation
-                 ([NaN, Inf], NaN),  # NaN propagation
-                 ([NaN, -Inf], NaN), # NaN propagation
                  ([0, 0], log(2.0))] # non-float arguments
         for (arguments, result) in cases
-            @test logaddexp(arguments...) ≡ result
-            @test logsumexp(arguments) ≡ result
+            @test logaddexp(arguments...) == result
+            @test logsumexp(arguments) == result
         end
     end
+    let nan_cases = [[NaN, 9.0], [NaN, Inf], [NaN, -Inf]] # NaN propagation
+        for args in nan_cases
+            @test isnan(logaddexp(args...))
+            @test isnan(logsumexp(args))
+        end
+    end
+
 end
 
 @testset "softmax" begin
