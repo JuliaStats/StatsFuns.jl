@@ -8,6 +8,8 @@ using StatsFuns, Test
     @test iszero(xlogy(0, 1))
     @test xlogy(2, 3) ≈ 2.0 * log(3.0)
     @test_throws DomainError xlogy(1, -1)
+    # we allow negative `x`, https://github.com/JuliaStats/StatsFuns.jl/pull/95#discussion_r427558736
+    @test xlogy(-2, 3) == -xlogy(2, 3)
 end
 
 @testset "logistic & logit" begin
