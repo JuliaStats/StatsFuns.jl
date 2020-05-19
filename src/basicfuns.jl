@@ -201,7 +201,12 @@ end
 
 Return `log(exp(x) + exp(y))`, avoiding intermediate overflow/undeflow, and handling non-finite values.
 """
-logaddexp(x::Real, y::Real) = max(x,y) + log1pexp(-ifelse(x == y, zero(x - y), abs(x - y)))
+function logaddexp(x::Real, y::Real)
+    # ensure Δ = 0 if x = y = Inf
+    Δ = ifelse(x == y, zero(x - y), abs(x - y))
+    max(x, y) + log1pexp(-Δ)
+end
+
 Base.@deprecate logsumexp(x::Real, y::Real) logaddexp(x, y)
 
 """
