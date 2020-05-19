@@ -3,9 +3,11 @@ using StatsFuns, Test
 @testset "xlogx & xlogy" begin
     @test iszero(xlogx(0))
     @test xlogx(2) ≈ 2.0 * log(2.0)
+    @test_throws DomainError xlogx(-1)
 
     @test iszero(xlogy(0, 1))
     @test xlogy(2, 3) ≈ 2.0 * log(3.0)
+    @test_throws DomainError xlogy(1, -1)
 end
 
 @testset "logistic & logit" begin
@@ -94,7 +96,7 @@ end
             @test logsumexp(arguments) ≡ result
         end
     end
-    
+
     @test isnan(logsubexp(Inf, Inf))
     @test isnan(logsubexp(-Inf, -Inf))
     @test logsubexp(Inf, 9.0) ≡ Inf

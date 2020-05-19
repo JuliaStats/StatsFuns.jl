@@ -13,7 +13,7 @@ julia> StatsFuns.xlogx(0)
 """
 function xlogx(x)
     result = x * log(x)
-    ifelse(x > zero(x), result, zero(result))
+    ifelse(iszero(x), zero(result), result)
 end
 
 """
@@ -23,7 +23,7 @@ Return `x * log(y)` for `y > 0` with correct limit at `x = 0`.
 """
 function xlogy(x, y)
     result = x * log(y)
-    ifelse(x > zero(x), result, zero(result))
+    ifelse(iszero(x), zero(result), result)
 end
 
 # The following bounds are precomputed versions of the following abstract
