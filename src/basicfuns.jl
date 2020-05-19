@@ -205,6 +205,13 @@ logaddexp(x::Real, y::Real) = max(x,y) + log1pexp(-ifelse(x == y, zero(x - y), a
 Base.@deprecate logsumexp(x::Real, y::Real) logaddexp(x, y)
 
 """
+    logsubexp(x, y)
+
+Return `log(abs(e^x - e^y))`, preserving numerical accuracy.
+"""
+logsubexp(x::Real, y::Real) = max(x, y) + log1mexp(-abs(x - y))
+
+"""
     logsumexp(X)
 
 Compute `log(sum(exp, X))`, evaluated avoiding intermediate overflow/undeflow.
