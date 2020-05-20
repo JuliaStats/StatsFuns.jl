@@ -4,7 +4,7 @@
 """
     xlogx(x::Real)
 
-Computes `x * log(x)`, with the correct limit at `x = 0`.
+Compute `x * log(x)`, with the correct limit at `x = 0`.
 
 ```jldoctest
 julia> StatsFuns.xlogx(0)
@@ -19,7 +19,7 @@ end
 """
     xlogy(x::Real, y::Real)
 
-Computes `x * log(y)`, with the correct limit at `x = 0`.
+Compute `x * log(y)`, with the correct limit at `x = 0`.
 
 ```jldoctest
 julia> StatsFuns.xlogy(0, 0)

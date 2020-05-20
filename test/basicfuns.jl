@@ -9,14 +9,29 @@ using StatsFuns, Test
     @test iszero(xlogy(0, 1))
     @test xlogy(2, 3) ≈ 2.0 * log(3.0)
     @test_throws DomainError xlogy(1, -1)
-    # we allow negative `x`, https://github.com/JuliaStats/StatsFuns.jl/pull/95#discussion_r427558736
-    @test xlogy(-2, 3) == -xlogy(2, 3)
     @test isnan(xlogy(NaN, 2))
     @test isnan(xlogy(2, NaN))
+    @test isnan(xlogy(0, NaN))
+
+    # Since we allow complex/negative values, test for them. See comments in:
+    # https://github.com/JuliaStats/StatsFuns.jl/pull/95
+
+    @test xlogx(1 + im) == (1 + im) * log(1 + im)
+    @test isnan(xlogx(NaN + im))
+    @test isnan(xlogx(1 + NaN * im))
+
+    @test xlogy(-2, 3) == -xlogy(2, 3)
+    @test xlogy(1 + im, 3) == (1 + im) * log(3)
+    @test xlogy(1 + im, 2 + im) == (1 + im) * log(2 + im)
+    @test isnan(xlogy(1 + NaN * im, -1 + im))
+    @test isnan(xlogy(0, -1 + NaN * im))
+    @test isnan(xlogy(Inf + im * NaN, 1))
+    @test isnan(xlogy(0 + im * 0, NaN))
+    @test iszero(xlogy(0 + im * 0, 0 + im * Inf))
 end
 
 @testset "logistic & logit" begin
-    @test logistic(2)        ≈ 1.0 / (1.0 + exp(-2.0))
+    @test logistic(2) ≈ 1.0 / (1.0 + exp(-2.0))
     @test logistic(-750.0) === 0.0
     @test logistic(-740.0) > 0.0
     @test logistic(+36.0) < 1.0
