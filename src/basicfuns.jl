@@ -11,7 +11,7 @@ julia> StatsFuns.xlogx(0)
 0.0
 ```
 """
-function xlogx(x)
+function xlogx(x::Number)
     result = x * log(x)
     ifelse(iszero(x), zero(result), result)
 end
@@ -26,7 +26,7 @@ julia> StatsFuns.xlogy(0, 0)
 0.0
 ```
 """
-function xlogy(x, y)
+function xlogy(x::Number, y::Number)
     result = x * log(y)
     ifelse(iszero(x) && !isnan(y), zero(result), result)
 end
