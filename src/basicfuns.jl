@@ -28,7 +28,7 @@ julia> StatsFuns.xlogy(0, 0)
 """
 function xlogy(x, y)
     result = x * log(y)
-    ifelse(iszero(x), zero(result), result)
+    ifelse(iszero(x) && !isnan(y), zero(result), result)
 end
 
 # The following bounds are precomputed versions of the following abstract
