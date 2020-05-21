@@ -4,22 +4,32 @@
 """
     xlogx(x::Real)
 
-Return `x * log(x)` for `x ≥ 0`, handling `x = 0` by taking the downward limit.
+Compute `x * log(x)`, returning zero if `x = 0`.
 
 ```jldoctest
 julia> StatsFuns.xlogx(0)
 0.0
 ```
 """
-xlogx(x::Real) = x > zero(x) ? x * log(x) : zero(log(x))
+function xlogx(x::Number)
+    result = x * log(x)
+    ifelse(iszero(x), zero(result), result)
+end
 
 """
     xlogy(x::Real, y::Real)
 
-Return `x * log(y)` for `y > 0` with correct limit at `x = 0`.
+Compute `x * log(y)`, returning zero if `x = 0`.
+
+```jldoctest
+julia> StatsFuns.xlogy(0, 0)
+0.0
+```
 """
-xlogy(x::T, y::T) where {T<:Real} = x > zero(T) ? x * log(y) : zero(log(x))
-xlogy(x::Real, y::Real) = xlogy(promote(x, y)...)
+function xlogy(x::Number, y::Number)
+    result = x * log(y)
+    ifelse(iszero(x) && !isnan(y), zero(result), result)
+end
 
 # The following bounds are precomputed versions of the following abstract
 # function, but the implicit interface for AbstractFloat doesn't uniformly
@@ -196,16 +206,20 @@ end
 
 Return `log(exp(x) + exp(y))`, avoiding intermediate overflow/undeflow, and handling non-finite values.
 """
-function logaddexp(x::T, y::T) where T<:Real
-    # x or y is  NaN  =>  NaN
-    # x or y is +Inf  => +Inf
-    # x or y is -Inf  => other value
-    isfinite(x) && isfinite(y) || return max(x,y)
-    x > y ? x + log1p(exp(y - x)) : y + log1p(exp(x - y))
+function logaddexp(x::Real, y::Real)
+    # ensure Δ = 0 if x = y = Inf
+    Δ = ifelse(x == y, zero(x - y), abs(x - y))
+    max(x, y) + log1pexp(-Δ)
 end
-logaddexp(x::Real, y::Real) = logaddexp(promote(x, y)...)
 
-Base.@deprecate logsumexp(x::Real, y::Real) logaddexp(x,y)
+Base.@deprecate logsumexp(x::Real, y::Real) logaddexp(x, y)
+
+"""
+    logsubexp(x, y)
+
+Return `log(abs(e^x - e^y))`, preserving numerical accuracy.
+"""
+logsubexp(x::Real, y::Real) = max(x, y) + log1mexp(-abs(x - y))
 
 """
     logsumexp(X)

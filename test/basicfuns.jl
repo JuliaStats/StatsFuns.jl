@@ -3,13 +3,35 @@ using StatsFuns, Test
 @testset "xlogx & xlogy" begin
     @test iszero(xlogx(0))
     @test xlogx(2) ≈ 2.0 * log(2.0)
+    @test_throws DomainError xlogx(-1)
+    @test isnan(xlogx(NaN))
 
     @test iszero(xlogy(0, 1))
     @test xlogy(2, 3) ≈ 2.0 * log(3.0)
+    @test_throws DomainError xlogy(1, -1)
+    @test isnan(xlogy(NaN, 2))
+    @test isnan(xlogy(2, NaN))
+    @test isnan(xlogy(0, NaN))
+
+    # Since we allow complex/negative values, test for them. See comments in:
+    # https://github.com/JuliaStats/StatsFuns.jl/pull/95
+
+    @test xlogx(1 + im) == (1 + im) * log(1 + im)
+    @test isnan(xlogx(NaN + im))
+    @test isnan(xlogx(1 + NaN * im))
+
+    @test xlogy(-2, 3) == -xlogy(2, 3)
+    @test xlogy(1 + im, 3) == (1 + im) * log(3)
+    @test xlogy(1 + im, 2 + im) == (1 + im) * log(2 + im)
+    @test isnan(xlogy(1 + NaN * im, -1 + im))
+    @test isnan(xlogy(0, -1 + NaN * im))
+    @test isnan(xlogy(Inf + im * NaN, 1))
+    @test isnan(xlogy(0 + im * 0, NaN))
+    @test iszero(xlogy(0 + im * 0, 0 + im * Inf))
 end
 
 @testset "logistic & logit" begin
-    @test logistic(2)        ≈ 1.0 / (1.0 + exp(-2.0))
+    @test logistic(2) ≈ 1.0 / (1.0 + exp(-2.0))
     @test logistic(-750.0) === 0.0
     @test logistic(-740.0) > 0.0
     @test logistic(+36.0) < 1.0
@@ -88,15 +110,33 @@ end
                  ([-Inf, Inf], Inf),
                  ([-Inf, 9.0], 9.0),
                  ([Inf, 9.0], Inf),
-                 ([NaN, 9.0], NaN),  # NaN propagation
-                 ([NaN, Inf], NaN),  # NaN propagation
-                 ([NaN, -Inf], NaN), # NaN propagation
                  ([0, 0], log(2.0))] # non-float arguments
         for (arguments, result) in cases
             @test logaddexp(arguments...) ≡ result
             @test logsumexp(arguments) ≡ result
         end
     end
+
+    @test isnan(logsubexp(Inf, Inf))
+    @test isnan(logsubexp(-Inf, -Inf))
+    @test logsubexp(Inf, 9.0) ≡ Inf
+    @test logsubexp(-Inf, 9.0) ≡ 9.0
+    @test logsubexp(1f2, 1f2) ≡ -Inf32
+    @test logsubexp(0, 0) ≡ -Inf
+    @test logsubexp(3, 2) ≈ 2.541324854612918108978
+
+    # NaN propagation
+    @test isnan(logaddexp(NaN, 9.0))
+    @test isnan(logaddexp(NaN, Inf))
+    @test isnan(logaddexp(NaN, -Inf))
+
+    @test isnan(logsubexp(NaN, 9.0))
+    @test isnan(logsubexp(NaN, Inf))
+    @test isnan(logsubexp(NaN, -Inf))
+
+    @test isnan(logsumexp([NaN, 9.0]))
+    @test isnan(logsumexp([NaN, Inf]))
+    @test isnan(logsumexp([NaN, -Inf]))
 end
 
 @testset "softmax" begin
