@@ -39,8 +39,8 @@ log4π,      # log(4π)
 
 ```julia
 # basicfuns
-xlogx,          # x * log(x) for x > 0, or 0 when x == 0
-xlogy,          # x * log(y) for x > 0, or 0 when x == 0
+xlogx,          # x * log(x), or 0 when x is zero
+xlogy,          # x * log(y), or 0 when x is zero
 logistic,       # 1 / (1 + exp(-x))
 logit,          # log(x / (1 - x))
 log1psq,        # log(1 + x^2)
@@ -52,7 +52,9 @@ softplus,       # alias of log1pexp
 invsoftplus,    # alias of logexpm1
 log1pmx,        # log(1 + x) - x
 logmxp1,        # log(x) - x + 1
-logsumexp,      # log(exp(x) + exp(y)) or log(sum(exp(x)))
+logaddexp,      # log(exp(x) + exp(y))
+logsubexp,      # log(abs(exp(x) - exp(y)))
+logsumexp,      # log(sum(exp(x)))
 softmax,        # exp(x_i) / sum(exp(x)), for i
 softmax!,       # inplace softmax
 
