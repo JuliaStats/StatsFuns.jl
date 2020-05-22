@@ -17,7 +17,7 @@ function xlogx(x::Number)
 end
 
 """
-    xlogy(x, y)
+    xlogy(x::Number, y::Number)
 
 Compute `x * log(y)`, returning zero if `x` is zero.
 
