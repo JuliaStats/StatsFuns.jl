@@ -2,7 +2,7 @@
 
 # scalar functions
 """
-    xlogx(x)
+    xlogx(x::Number)
 
 Compute `x * log(x)`, returning zero if `x` is zero.
 
