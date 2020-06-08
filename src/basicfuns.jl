@@ -207,7 +207,7 @@ end
 Return `log(exp(x) + exp(y))`, avoiding intermediate overflow/undeflow, and handling non-finite values.
 """
 function logaddexp(x::Real, y::Real)
-    # ensure Δ = 0 if x = y = Inf
+    # ensure Δ = 0 if x = y = ± Inf
     Δ = ifelse(x == y, zero(x - y), abs(x - y))
     max(x, y) + log1pexp(-Δ)
 end
@@ -224,14 +224,14 @@ logsubexp(x::Real, y::Real) = max(x, y) + log1mexp(-abs(x - y))
 """
     logsumexp(X)
 
-Compute `log(sum(exp, X))`, evaluated avoiding intermediate overflow/undeflow.
+Compute `log(sum(exp, X))` in a numerically stable way that avoids intermediate over- and
+underflow.
 
 `X` should be an iterator of real numbers.
+
+See also: [`logsumexp_onepass`](@ref)
 """
-function logsumexp(X)
-    isempty(X) && return log(sum(X))
-    reduce(logaddexp, X)
-end
+logsumexp(X) = logsumexp_onepass(X)
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
     u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
@@ -246,6 +246,45 @@ function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     end
 end
 
+"""
+    logsumexp_onepass(X)
+
+Compute `log(sum(exp, X))` in a numerically stable way that avoids intermediate under- and
+overflow.
+
+In contrast to [`logsumexp`](@ref) the result is computed using a single pass over the data.
+`X` should be an iterator of real numbers.
+
+# References
+
+[Sebastian Nowozin: Streaming Log-sum-exp Computation.](http://www.nowozin.net/sebastian/blog/streaming-log-sum-exp-computation.html)
+"""
+function logsumexp_onepass(X)
+    isempty(X) && return log(sum(X))
+
+    # initialize maximum value and accumulated sum for the first iterate
+    x, state = iterate(X)
+    xmax = x
+    r = exp(zero(x))
+    r_one = r
+
+    # for all other iterates
+    while (next = iterate(X, state)) !== nothing
+        x, state = next
+
+        # update maximum value and accumulated sum
+        if x < xmax
+            r += exp(x - xmax)
+        elseif x > xmax
+            r = r_one + r * exp(xmax - x)
+            xmax = x
+        else # ensure finite values if x = xmax = ± Inf
+            r += r_one
+        end
+    end
+
+    return xmax + log(r)
+end
 
 """
     softmax!(r::AbstractArray, x::AbstractArray)
