@@ -1,4 +1,5 @@
 using StatsFuns, Test
+using StatsFuns: logsumexp_onepass
 
 @testset "xlogx & xlogy" begin
     @test iszero(xlogx(0))
@@ -97,8 +98,10 @@ end
     @test logaddexp(10002, 10003) ≈ 10000 + logaddexp(2.0, 3.0)
 
     @test logsumexp([1.0, 2.0, 3.0])          ≈ 3.40760596444438
+    @test logsumexp_onepass([1.0, 2.0, 3.0])  ≈ 3.40760596444438
     @test logsumexp((1.0, 2.0, 3.0))          ≈ 3.40760596444438
     @test logsumexp([1.0, 2.0, 3.0] .+ 1000.) ≈ 1003.40760596444438
+    @test logsumexp_onepass([1.0, 2.0, 3.0] .+ 1000.) ≈ 1003.40760596444438
 
     @test logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.]; dims=1) ≈ [3.40760596444438 1003.40760596444438]
     @test logsumexp([[1.0 2.0 3.0]; [1.0 2.0 3.0] .+ 1000.]; dims=2) ≈ [3.40760596444438, 1003.40760596444438]
@@ -114,6 +117,7 @@ end
         for (arguments, result) in cases
             @test logaddexp(arguments...) ≡ result
             @test logsumexp(arguments) ≡ result
+            @test logsumexp_onepass(arguments) ≡ result
         end
     end
 
@@ -137,6 +141,10 @@ end
     @test isnan(logsumexp([NaN, 9.0]))
     @test isnan(logsumexp([NaN, Inf]))
     @test isnan(logsumexp([NaN, -Inf]))
+
+    @test isnan(logsumexp_onepass([NaN, 9.0]))
+    @test isnan(logsumexp_onepass([NaN, Inf]))
+    @test isnan(logsumexp_onepass([NaN, -Inf]))
 end
 
 @testset "softmax" begin
