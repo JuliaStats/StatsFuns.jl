@@ -232,20 +232,34 @@ function logsumexp(X)
     isempty(X) && return log(sum(X))
     reduce(logaddexp, X)
 end
+
+"""
+    logsumexp(X::AbstractArray, [W]; dims=:)
+
+Compute `log(sum((x,w) -> w * exp(x), zip(X, W)))`, evaluated avoiding intermediate overflow/undeflow along the specified dimension. `W` is an optional array of weights to apply to the sum.
+"""
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
     u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
     u isa AbstractArray || isfinite(u) || return float(u)
-    let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
-        # TODO: remove the branch when JuliaLang/julia#31020 is merged.
-        if u isa AbstractArray
-            u .+ log.(sum(exp.(X .- u); dims=dims))
-        else
-            u + log(sum(x -> exp(x-u), X))
-        end
+    if u isa AbstractArray
+        u .+ log.(sum(exp.(X .- u); dims=dims))
+    else
+        u + log(sum(x -> exp(x-u), X))
     end
 end
 
+function logsumexp(X::AbstractArray{T}, W::AbstractArray{T}; dims=:) where {T<:Real}
+    # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
+    u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
+    u isa AbstractArray || isfinite(u) || return float(u)
+    if u isa AbstractArray
+        u .+ log.(sum(W .* exp.(X .- u); dims=dims))
+    else
+        u + log(sum(q -> last(q) * exp(first(q)-u), zip(X,W)))
+    end
+end
+logsumexp(X::AbstractArray{T}, W::AbstractArray{S}; kwargs...) where {T,S} = logsumexp(promote(X, W)...; kwargs...)
 
 """
     softmax!(r::AbstractArray, x::AbstractArray)
