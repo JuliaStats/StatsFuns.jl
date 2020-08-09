@@ -236,7 +236,24 @@ end
 """
     logsumexp(X::AbstractArray, [W]; dims=:)
 
-Compute `log(sum(exp, X))`, evaluated avoiding intermediate overflow/undeflow along the specified dimension. `W` is an optional array of weights to apply to the sum, effectively `log(sum((x,w) -> w * exp(x), zip(X,W)))`.
+Compute `log(sum(exp, X))`, evaluated avoiding intermediate overflow/undeflow along the
+specified dimension. `W` is an optional collection of weights to apply to the sum, effectively
+`log(sum((x,w) -> w * exp(x), zip(X,W)))`. If `W` is an array, it must match the dimensions
+of `X`, be broadcastable across `dims`, or else undefined behavior may occur due to the usage
+of `zip(X, W)`.
+
+# Examples
+```jldoctest
+julia> logsumexp([1.0, 2.0, 3.0])
+3.4076059644443806
+
+julia> logsumexp([1.0, 2.0, 3.0], [0.5, 1, 0])
+2.168847623498306
+
+julia> logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.], [1 0.5]; dims=1)
+1×2 Array{Float64,2}:
+ 3.40761  1002.71
+```
 """
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
