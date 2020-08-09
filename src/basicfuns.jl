@@ -236,7 +236,7 @@ end
 """
     logsumexp(X::AbstractArray, [W]; dims=:)
 
-Compute `log(sum((x,w) -> w * exp(x), zip(X, W)))`, evaluated avoiding intermediate overflow/undeflow along the specified dimension. `W` is an optional array of weights to apply to the sum.
+Compute `log(sum(exp, X))`, evaluated avoiding intermediate overflow/undeflow along the specified dimension. `W` is an optional array of weights to apply to the sum, effectively `log(sum((x,w) -> w * exp(x), zip(X,W)))`.
 """
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
@@ -249,17 +249,16 @@ function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     end
 end
 
-function logsumexp(X::AbstractArray{T}, W::AbstractArray{T}; dims=:) where {T<:Real}
+function logsumexp(X::AbstractArray{T}, W; dims=:) where {T<:Real}
     # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
     u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
     u isa AbstractArray || isfinite(u) || return float(u)
     if u isa AbstractArray
         u .+ log.(sum(W .* exp.(X .- u); dims=dims))
     else
-        u + log(sum(q -> last(q) * exp(first(q)-u), zip(X,W)))
+        u + log(sum(((x,w),) -> w * exp(x-u), zip(X,W)))
     end
 end
-logsumexp(X::AbstractArray{T}, W::AbstractArray{S}; kwargs...) where {T,S} = logsumexp(promote(X, W)...; kwargs...)
 
 """
     softmax!(r::AbstractArray, x::AbstractArray)
