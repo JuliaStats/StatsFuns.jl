@@ -232,9 +232,12 @@ underflow.
 See also: [`logsumexp_onepass`](@ref)
 """
 logsumexp(X) = logsumexp_onepass(X)
-function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
-    # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
-    u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
+logsumexp(X::AbstractArray{<:Real}; dims=:) = _logsumexp(X, dims)
+
+_logsumexp(X::AbstractArray{<:Real}, ::Colon) = logsumexp_onepass(X)
+function _logsumexp(X::AbstractArray{<:Real}, dims)
+    # Do not use log(zero(eltype(X))) directly to avoid issues with ForwardDiff (#82)
+    u = reduce(max, X, dims=dims, init=oftype(log(zero(eltype(X))), -Inf))
     u isa AbstractArray || isfinite(u) || return float(u)
     let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
         # TODO: remove the branch when JuliaLang/julia#31020 is merged.
@@ -260,30 +263,51 @@ In contrast to [`logsumexp`](@ref) the result is computed using a single pass ov
 [Sebastian Nowozin: Streaming Log-sum-exp Computation.](http://www.nowozin.net/sebastian/blog/streaming-log-sum-exp-computation.html)
 """
 function logsumexp_onepass(X)
+    # fallback for empty collections
     isempty(X) && return log(sum(X))
 
-    # initialize maximum value and accumulated sum for the first iterate
-    x, state = iterate(X)
-    xmax = x
-    r = exp(zero(x))
-    r_one = r
-
-    # for all other iterates
-    while (next = iterate(X, state)) !== nothing
-        x, state = next
-
-        # update maximum value and accumulated sum
-        if x < xmax
-            r += exp(x - xmax)
-        elseif x > xmax
-            r = r_one + r * exp(xmax - x)
-            xmax = x
-        else # ensure finite values if x = xmax = ± Inf
-            r += r_one
-        end
-    end
+    # perform single pass over the data
+    xmax, r = _logsumexp_onepass(X, Base.IteratorEltype(X))
 
     return xmax + log(r)
+end
+
+# with initial element: required by CUDA
+function _logsumexp_onepass(X, ::Base.HasEltype)
+    # compute initial element
+    FT = float(eltype(X))
+    init = (FT(-Inf), zero(FT))
+    r_one = one(FT)
+
+    # perform single pass over the data
+    return mapreduce(_logsumexp_onepass_op, X; init=init) do x
+        return float(x), r_one
+    end
+end
+
+# without initial element
+function _logsumexp_onepass(X, ::Base.EltypeUnknown)
+    return mapreduce(_logsumexp_onepass_op, X) do x
+        _x = float(x)
+        return _x, one(_x)
+    end
+end
+
+function _logsumexp_onepass_op((xmax1, r1)::T, (xmax2, r2)::T) where {T<:Tuple}
+    if xmax1 < xmax2
+        xmax = xmax2
+        a = exp(xmax1 - xmax2)
+        r = r2 + ifelse(isone(r1), a, r1 * a)
+    elseif xmax1 > xmax2
+        xmax = xmax1
+        a = exp(xmax2 - xmax1)
+        r = r1 + ifelse(isone(r2), a, r2 * a)
+    else # ensure finite values if x = xmax = ± Inf
+        xmax = ifelse(isnan(xmax1), xmax1, xmax2)
+        r = r1 + r2
+    end
+
+    return xmax, r
 end
 
 """
