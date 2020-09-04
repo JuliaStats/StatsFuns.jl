@@ -145,6 +145,11 @@ end
     @test isnan(logsumexp_onepass([NaN, 9.0]))
     @test isnan(logsumexp_onepass([NaN, Inf]))
     @test isnan(logsumexp_onepass([NaN, -Inf]))
+
+    # issue #63
+    a = logsumexp(i for i in range(-500, stop = 10, length = 1000) if true)
+    b = logsumexp(range(-500, stop = 10, length = 1000))
+    @test a == b
 end
 
 @testset "softmax" begin
