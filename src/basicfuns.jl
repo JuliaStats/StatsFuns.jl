@@ -227,11 +227,27 @@ logsubexp(x::Real, y::Real) = max(x, y) + log1mexp(-abs(x - y))
 Compute `log(sum(exp, X))` in a numerically stable way that avoids intermediate over- and
 underflow.
 
-`X` should be an iterator of real numbers.
+`X` should be an iterator of real numbers. The result is computed using a single pass over
+the data.
 
-See also: [`logsumexp_onepass`](@ref)
+# References
+
+[Sebastian Nowozin: Streaming Log-sum-exp Computation.](http://www.nowozin.net/sebastian/blog/streaming-log-sum-exp-computation.html)
 """
 logsumexp(X) = logsumexp_onepass(X)
+
+"""
+    logsumexp(X::AbstractArray{<:Real}[; dims=:])
+
+Compute `log.(sum(exp.(X); dims=dims))` in a numerically stable way that avoids
+intermediate over- and underflow.
+
+If `dims = :`, then the result is computed using a single pass over the data.
+
+# References
+
+[Sebastian Nowozin: Streaming Log-sum-exp Computation.](http://www.nowozin.net/sebastian/blog/streaming-log-sum-exp-computation.html)
+"""
 logsumexp(X::AbstractArray{<:Real}; dims=:) = _logsumexp(X, dims)
 
 _logsumexp(X::AbstractArray{<:Real}, ::Colon) = logsumexp_onepass(X)
@@ -241,19 +257,6 @@ function _logsumexp(X::AbstractArray{<:Real}, dims)
     return u .+ log.(sum(exp.(X .- u); dims=dims))
 end
 
-"""
-    logsumexp_onepass(X)
-
-Compute `log(sum(exp, X))` in a numerically stable way that avoids intermediate under- and
-overflow.
-
-In contrast to [`logsumexp`](@ref) the result is computed using a single pass over the data.
-`X` should be an iterator of real numbers.
-
-# References
-
-[Sebastian Nowozin: Streaming Log-sum-exp Computation.](http://www.nowozin.net/sebastian/blog/streaming-log-sum-exp-computation.html)
-"""
 function logsumexp_onepass(X)
     # fallback for empty collections
     isempty(X) && return log(sum(X))
