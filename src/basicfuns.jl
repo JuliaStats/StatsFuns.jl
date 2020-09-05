@@ -258,7 +258,6 @@ function logsumexp_onepass(X)
     # fallback for empty collections
     isempty(X) && return log(sum(X))
 
-    # perform single pass over the data
     xmax, r = _logsumexp_onepass(X, Base.IteratorEltype(X))
 
     return xmax + log(r)
