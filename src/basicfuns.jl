@@ -238,15 +238,7 @@ _logsumexp(X::AbstractArray{<:Real}, ::Colon) = logsumexp_onepass(X)
 function _logsumexp(X::AbstractArray{<:Real}, dims)
     # Do not use log(zero(eltype(X))) directly to avoid issues with ForwardDiff (#82)
     u = reduce(max, X, dims=dims, init=oftype(log(zero(eltype(X))), -Inf))
-    u isa AbstractArray || isfinite(u) || return float(u)
-    let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
-        # TODO: remove the branch when JuliaLang/julia#31020 is merged.
-        if u isa AbstractArray
-            u .+ log.(sum(exp.(X .- u); dims=dims))
-        else
-            u + log(sum(x -> exp(x-u), X))
-        end
-    end
+    return u .+ log.(sum(exp.(X .- u); dims=dims))
 end
 
 """
