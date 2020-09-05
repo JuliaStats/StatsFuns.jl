@@ -98,10 +98,8 @@ end
     @test logaddexp(10002, 10003) ≈ 10000 + logaddexp(2.0, 3.0)
 
     @test logsumexp([1.0, 2.0, 3.0])          ≈ 3.40760596444438
-    @test logsumexp_onepass([1.0, 2.0, 3.0])  ≈ 3.40760596444438
     @test logsumexp((1.0, 2.0, 3.0))          ≈ 3.40760596444438
     @test logsumexp([1.0, 2.0, 3.0] .+ 1000.) ≈ 1003.40760596444438
-    @test logsumexp_onepass([1.0, 2.0, 3.0] .+ 1000.) ≈ 1003.40760596444438
 
     @test logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.]; dims=1) ≈ [3.40760596444438 1003.40760596444438]
     @test logsumexp([[1.0 2.0 3.0]; [1.0 2.0 3.0] .+ 1000.]; dims=2) ≈ [3.40760596444438, 1003.40760596444438]
@@ -117,7 +115,6 @@ end
         for (arguments, result) in cases
             @test logaddexp(arguments...) ≡ result
             @test logsumexp(arguments) ≡ result
-            @test logsumexp_onepass(arguments) ≡ result
         end
     end
 
@@ -141,10 +138,6 @@ end
     @test isnan(logsumexp([NaN, 9.0]))
     @test isnan(logsumexp([NaN, Inf]))
     @test isnan(logsumexp([NaN, -Inf]))
-
-    @test isnan(logsumexp_onepass([NaN, 9.0]))
-    @test isnan(logsumexp_onepass([NaN, Inf]))
-    @test isnan(logsumexp_onepass([NaN, -Inf]))
 
     # issue #63
     a = logsumexp(i for i in range(-500, stop = 10, length = 1000) if true)
