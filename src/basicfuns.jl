@@ -268,6 +268,10 @@ end
 
 # with initial element: required by CUDA
 function _logsumexp_onepass(X, ::Base.HasEltype)
+    # do not perform type computations if element type is abstract
+    T = eltype(X)
+    isconcretetype(T) || return _logsumexp_onepass(X, Base.EltypeUnknown())
+
     # compute initial element
     FT = float(eltype(X))
     init = (FT(-Inf), zero(FT))
