@@ -266,7 +266,7 @@ function logsumexp_onepass(X)
     return xmax + log(r)
 end
 
-# with initial element: required by CUDA
+# initial element is required by CUDA (ideally we would never use this method)
 function _logsumexp_onepass(X, ::Base.HasEltype)
     # do not perform type computations if element type is abstract
     T = eltype(X)
@@ -277,13 +277,12 @@ function _logsumexp_onepass(X, ::Base.HasEltype)
     init = (FT(-Inf), zero(FT))
     r_one = one(FT)
 
-    # perform single pass over the data
     return mapreduce(_logsumexp_onepass_op, X; init=init) do x
         return float(x), r_one
     end
 end
 
-# without initial element
+# without initial element (ideally we would always use this method)
 function _logsumexp_onepass(X, ::Base.EltypeUnknown)
     return mapreduce(_logsumexp_onepass_op, X) do x
         _x = float(x)
@@ -291,17 +290,19 @@ function _logsumexp_onepass(X, ::Base.EltypeUnknown)
     end
 end
 
+# all inputs are provided as floating point numbers
+# `r1` and `r2` are one if `xmax1` and `xmax2` are new elements (no partial sums)
 function _logsumexp_onepass_op((xmax1, r1)::T, (xmax2, r2)::T) where {T<:Tuple}
     if xmax1 < xmax2
         xmax = xmax2
         a = exp(xmax1 - xmax2)
-        r = r2 + ifelse(isone(r1), a, r1 * a)
+        r = r2 + (isone(r1) ? a : r1 * a) # avoid expensive multiplication for new elements
     elseif xmax1 > xmax2
         xmax = xmax1
         a = exp(xmax2 - xmax1)
-        r = r1 + ifelse(isone(r2), a, r2 * a)
+        r = r1 + (isone(r2) ? a : r2 * a) # avoid expensive multiplication for new elements
     else # ensure finite values if x = xmax = ± Inf
-        xmax = ifelse(isnan(xmax1), xmax1, xmax2)
+        xmax = isnan(xmax1) ? xmax1 : xmax2
         r = r1 + r2
     end
 
