@@ -237,7 +237,7 @@ the data.
 logsumexp(X) = logsumexp_onepass(X)
 
 """
-    logsumexp(X::AbstractArray{<:Real}[; dims=:])
+    logsumexp(X::AbstractArray{<:Real}; dims=:)
 
 Compute `log.(sum(exp.(X); dims=dims))` in a numerically stable way that avoids
 intermediate over- and underflow.

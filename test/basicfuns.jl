@@ -1,5 +1,4 @@
 using StatsFuns, Test
-using StatsFuns: logsumexp_onepass
 
 @testset "xlogx & xlogy" begin
     @test iszero(xlogx(0))
@@ -139,10 +138,9 @@ end
     @test isnan(logsumexp([NaN, Inf]))
     @test isnan(logsumexp([NaN, -Inf]))
 
-    # issue #63
-    a = logsumexp(i for i in range(-500, stop = 10, length = 1000) if true)
-    b = logsumexp(range(-500, stop = 10, length = 1000))
-    @test a == b
+    # logsumexp with general iterables (issue #63)
+    xs = range(-500, stop = 10, length = 1000)
+    @test logsumexp(x for x in xs) == logsumexp(xs)
 end
 
 @testset "softmax" begin
