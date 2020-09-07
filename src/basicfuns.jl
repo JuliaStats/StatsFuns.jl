@@ -261,22 +261,25 @@ end
 function _logsumexp_onepass(X)
     # fallback for empty collections
     isempty(X) && return log(sum(X))
-    xmax, r = _logsumexp_onepass(X, Base.IteratorEltype(X))
-    return xmax + log1p(r)
+    return _logsumexp_onepass_result(_logsumexp_onepass_reduce(X, Base.IteratorEltype(X)))
 end
 
-# initial element is required by CUDA (otherwise we could remove this method)
-function _logsumexp_onepass(X, ::Base.HasEltype)
+# function barrier for reductions with single element and without initial element
+_logsumexp_onepass_result(x) = float(x)
+_logsumexp_onepass_result((xmax, r)::Tuple) = xmax + log1p(r)
+
+# iterables with known element type
+function _logsumexp_onepass_reduce(X, ::Base.HasEltype)
     # do not perform type computations if element type is abstract
     T = eltype(X)
-    isconcretetype(T) || return _logsumexp_onepass(X, Base.EltypeUnknown())
+    isconcretetype(T) || return _logsumexp_onepass_reduce(X, Base.EltypeUnknown())
 
     FT = float(T)
     return reduce(_logsumexp_onepass_op, X; init=(FT(-Inf), zero(FT)))
 end
 
-# without initial element (without CUDA support we could always use this method)
-_logsumexp_onepass(X, ::Base.EltypeUnknown)::Tuple = reduce(_logsumexp_onepass_op, X)
+# iterables without known element type
+_logsumexp_onepass_reduce(X, ::Base.EltypeUnknown) = reduce(_logsumexp_onepass_op, X)
 
 ## Reductions for one-pass algorithm: avoid expensive multiplications if numbers are reduced
 
