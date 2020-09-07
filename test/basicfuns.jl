@@ -96,13 +96,18 @@ end
     @test logaddexp(2.0, 3.0)     ≈ log(exp(2.0) + exp(3.0))
     @test logaddexp(10002, 10003) ≈ 10000 + logaddexp(2.0, 3.0)
 
-    @test logsumexp([1.0, 2.0, 3.0])          ≈ 3.40760596444438
-    @test logsumexp((1.0, 2.0, 3.0))          ≈ 3.40760596444438
+    @test @inferred(logsumexp([1.0])) == 1.0
+    @test @inferred(logsumexp((x for x in [1.0]))) == 1.0
+    @test @inferred(logsumexp([1.0, 2.0, 3.0])) ≈ 3.40760596444438
+    @test @inferred(logsumexp((1.0, 2.0, 3.0))) ≈ 3.40760596444438
     @test logsumexp([1.0, 2.0, 3.0] .+ 1000.) ≈ 1003.40760596444438
 
-    @test logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.]; dims=1) ≈ [3.40760596444438 1003.40760596444438]
-    @test logsumexp([[1.0 2.0 3.0]; [1.0 2.0 3.0] .+ 1000.]; dims=2) ≈ [3.40760596444438, 1003.40760596444438]
-    @test logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.]; dims=[1,2]) ≈ [1003.4076059644444]
+    @test @inferred(logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.]; dims=1)) ≈ [3.40760596444438 1003.40760596444438]
+    @test @inferred(logsumexp([[1.0 2.0 3.0]; [1.0 2.0 3.0] .+ 1000.]; dims=2)) ≈ [3.40760596444438, 1003.40760596444438]
+    @test @inferred(logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.]; dims=[1,2])) ≈ [1003.4076059644444]
+
+    # check underflow
+    @test logsumexp([1e-20, log(1e-20)]) ≈ 2e-20
 
     let cases = [([-Inf, -Inf], -Inf),   # correct handling of all -Inf
                  ([-Inf, -Inf32], -Inf), # promotion
@@ -140,7 +145,7 @@ end
 
     # logsumexp with general iterables (issue #63)
     xs = range(-500, stop = 10, length = 1000)
-    @test logsumexp(x for x in xs) == logsumexp(xs)
+    @test @inferred(logsumexp(x for x in xs)) == logsumexp(xs)
 end
 
 @testset "softmax" begin
