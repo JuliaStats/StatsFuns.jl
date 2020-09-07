@@ -234,7 +234,7 @@ the data.
 
 [Sebastian Nowozin: Streaming Log-sum-exp Computation.](http://www.nowozin.net/sebastian/blog/streaming-log-sum-exp-computation.html)
 """
-logsumexp(X) = logsumexp_onepass(X)
+logsumexp(X) = _logsumexp_onepass(X)
 
 """
     logsumexp(X::AbstractArray{<:Real}; dims=:)
@@ -242,7 +242,7 @@ logsumexp(X) = logsumexp_onepass(X)
 Compute `log.(sum(exp.(X); dims=dims))` in a numerically stable way that avoids
 intermediate over- and underflow.
 
-If `dims = :`, then the result is computed using a single pass over the data.
+The result is computed using a single pass over the data.
 
 # References
 
@@ -250,62 +250,68 @@ If `dims = :`, then the result is computed using a single pass over the data.
 """
 logsumexp(X::AbstractArray{<:Real}; dims=:) = _logsumexp(X, dims)
 
-_logsumexp(X::AbstractArray{<:Real}, ::Colon) = logsumexp_onepass(X)
+_logsumexp(X::AbstractArray{<:Real}, ::Colon) = _logsumexp_onepass(X)
 function _logsumexp(X::AbstractArray{<:Real}, dims)
     # Do not use log(zero(eltype(X))) directly to avoid issues with ForwardDiff (#82)
-    u = reduce(max, X, dims=dims, init=oftype(log(zero(eltype(X))), -Inf))
-    return u .+ log.(sum(exp.(X .- u); dims=dims))
+    FT = float(eltype(X))
+    xmax_r = reduce(_logsumexp_onepass_op, X; dims=dims, init=(FT(-Inf), zero(FT)))
+    return @. first(xmax_r) + log1p(last(xmax_r))
 end
 
-function logsumexp_onepass(X)
+function _logsumexp_onepass(X)
     # fallback for empty collections
     isempty(X) && return log(sum(X))
-
     xmax, r = _logsumexp_onepass(X, Base.IteratorEltype(X))
-
-    return xmax + log(r)
+    return xmax + log1p(r)
 end
 
-# initial element is required by CUDA (ideally we would never use this method)
+# initial element is required by CUDA (otherwise we could remove this method)
 function _logsumexp_onepass(X, ::Base.HasEltype)
     # do not perform type computations if element type is abstract
     T = eltype(X)
     isconcretetype(T) || return _logsumexp_onepass(X, Base.EltypeUnknown())
 
-    # compute initial element
-    FT = float(eltype(X))
-    init = (FT(-Inf), zero(FT))
-    r_one = one(FT)
-
-    return mapreduce(_logsumexp_onepass_op, X; init=init) do x
-        return float(x), r_one
-    end
+    FT = float(T)
+    return reduce(_logsumexp_onepass_op, X; init=(FT(-Inf), zero(FT)))
 end
 
-# without initial element (ideally we would always use this method)
-function _logsumexp_onepass(X, ::Base.EltypeUnknown)
-    return mapreduce(_logsumexp_onepass_op, X) do x
-        _x = float(x)
-        return _x, one(_x)
-    end
+# without initial element (without CUDA support we could always use this method)
+_logsumexp_onepass(X, ::Base.EltypeUnknown)::Tuple = reduce(_logsumexp_onepass_op, X)
+
+## Reductions for one-pass algorithm: avoid expensive multiplications if numbers are reduced
+
+# reduce two numbers
+function _logsumexp_onepass_op(x1, x2)
+    a = x1 == x2 ? zero(x1 - x2) : -abs(x1 - x2)
+    xmax = x1 > x2 ? oftype(a, x1) : oftype(a, x2)
+    r = exp(a)
+    return xmax, r
 end
 
-# all inputs are provided as floating point numbers
-# `r1` and `r2` are one if `xmax1` and `xmax2` are new elements (no partial sums)
-function _logsumexp_onepass_op((xmax1, r1)::T, (xmax2, r2)::T) where {T<:Tuple}
-    if xmax1 < xmax2
-        xmax = xmax2
-        a = exp(xmax1 - xmax2)
-        r = r2 + (isone(r1) ? a : r1 * a) # avoid expensive multiplication for new elements
-    elseif xmax1 > xmax2
-        xmax = xmax1
-        a = exp(xmax2 - xmax1)
-        r = r1 + (isone(r2) ? a : r2 * a) # avoid expensive multiplication for new elements
-    else # ensure finite values if x = xmax = ± Inf
-        xmax = isnan(xmax1) ? xmax1 : xmax2
-        r = r1 + r2
+# reduce a number and a partial sum
+function _logsumexp_onepass_op(x, (xmax, r)::Tuple)
+    a = x == xmax ? zero(x - xmax) : -abs(x - xmax)
+    if x > xmax
+        _xmax = oftype(a, x)
+        _r = (r + one(r)) * exp(a)
+    else
+        _xmax = oftype(a, xmax)
+        _r = r + exp(a)
     end
+    return _xmax, _r
+end
+_logsumexp_onepass_op(xmax_r::Tuple, x) = _logsumexp_onepass_op(x, xmax_r)
 
+# reduce two partial sums
+function _logsumexp_onepass_op((xmax1, r1)::Tuple, (xmax2, r2)::Tuple)
+    a = xmax1 == xmax2 ? zero(xmax1 - xmax2) : -abs(xmax1 - xmax2)
+    if xmax1 > xmax2
+        xmax = oftype(a, xmax1)
+        r = r1 + (r2 + one(r2)) * exp(a)
+    else
+        xmax = oftype(a, xmax2)
+        r = r2 + (r1 + one(r1)) * exp(a)
+    end
     return xmax, r
 end
 
