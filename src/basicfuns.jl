@@ -232,20 +232,49 @@ function logsumexp(X)
     isempty(X) && return log(sum(X))
     reduce(logaddexp, X)
 end
+
+"""
+    logsumexp(X::AbstractArray, [W]; dims=:)
+
+Compute `log(sum(exp, X))`, evaluated avoiding intermediate overflow/undeflow along the
+specified dimension. `W` is an optional array of weights to apply to the sum, effectively
+`log(sum((x,w) -> w * exp(x), zip(X,W)))`.
+
+# Examples
+```jldoctest
+julia> logsumexp([1.0, 2.0, 3.0])
+3.4076059644443806
+
+julia> logsumexp([1.0, 2.0, 3.0], [0.5, 1, 0])
+2.168847623498306
+
+julia> logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.], repeat([1 0.5], 3); dims=1)
+1×2 Array{Float64,2}:
+ 3.40761  1002.71
+```
+"""
 function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
     u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
     u isa AbstractArray || isfinite(u) || return float(u)
-    let u=u # avoid https://github.com/JuliaLang/julia/issues/15276
-        # TODO: remove the branch when JuliaLang/julia#31020 is merged.
-        if u isa AbstractArray
-            u .+ log.(sum(exp.(X .- u); dims=dims))
-        else
-            u + log(sum(x -> exp(x-u), X))
-        end
+    if u isa AbstractArray
+        u .+ log.(sum(exp.(X .- u); dims=dims))
+    else
+        u + log(sum(x -> exp(x-u), X))
     end
 end
 
+function logsumexp(X::AbstractArray{T}, W::AbstractArray; dims=:) where {T<:Real}
+    size(X) === size(W) || error("weights must match the size of values")
+    # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
+    u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
+    u isa AbstractArray || isfinite(u) || return float(u)
+    if u isa AbstractArray
+        u .+ log.(sum(W .* exp.(X .- u); dims=dims))
+    else
+        u + log(sum(((x,w),) -> w * exp(x-u), zip(X,W)))
+    end
+end
 
 """
     softmax!(r::AbstractArray, x::AbstractArray)
