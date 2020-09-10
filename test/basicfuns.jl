@@ -109,8 +109,12 @@ end
     @test logsumexp([1.0, 2.0, 3.0], [0.0, 0.0, 0.0]) ≡ -Inf
     @test logsumexp([1.0, 2.0, 3.0], [0.5, 1.0, 0.0]) ≈ 2.168847623498306
 
-    @test logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.], [1.0]; dims=1) ≈ [3.40760596444438 1003.40760596444438]
-    @test logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.], [1.0 0.0]; dims=1) ≈ [3.40760596444438 -Inf]
+    weights = fill(1.0, 3, 2)
+    @test logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.], weights; dims=1) ≈ [3.40760596444438 1003.40760596444438]
+    weights[:, 2] .= 0.0
+    @test logsumexp([[1.0, 2.0, 3.0] [1.0, 2.0, 3.0] .+ 1000.], weights; dims=1) ≈ [3.40760596444438 -Inf]
+
+    @test_throws ErrorException logsumexp([1 2 3], [1, 2, 3]) # weights have different size
 
     let cases = [([-Inf, -Inf], -Inf),   # correct handling of all -Inf
                  ([-Inf, -Inf32], -Inf), # promotion

@@ -237,10 +237,8 @@ end
     logsumexp(X::AbstractArray, [W]; dims=:)
 
 Compute `log(sum(exp, X))`, evaluated avoiding intermediate overflow/undeflow along the
-specified dimension. `W` is an optional collection of weights to apply to the sum, effectively
-`log(sum((x,w) -> w * exp(x), zip(X,W)))`. If `W` is an array, it must match the dimensions
-of `X`, be broadcastable across `dims`, or else undefined behavior may occur due to the usage
-of `zip(X, W)`.
+specified dimension. `W` is an optional array of weights to apply to the sum, effectively
+`log(sum((x,w) -> w * exp(x), zip(X,W)))`.
 
 # Examples
 ```jldoctest
@@ -266,7 +264,8 @@ function logsumexp(X::AbstractArray{T}; dims=:) where {T<:Real}
     end
 end
 
-function logsumexp(X::AbstractArray{T}, W; dims=:) where {T<:Real}
+function logsumexp(X::AbstractArray{T}, W::AbstractArray; dims=:) where {T<:Real}
+    size(X) === size(W) || error("weights must match the size of values")
     # Do not use log(zero(T)) directly to avoid issues with ForwardDiff (#82)
     u = reduce(max, X, dims=dims, init=oftype(log(zero(T)), -Inf))
     u isa AbstractArray || isfinite(u) || return float(u)
