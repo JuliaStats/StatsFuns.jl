@@ -2,8 +2,7 @@
 
 Mathematical functions related to statistics.
 
-[![Travis](https://travis-ci.org/JuliaStats/StatsFuns.jl.svg?branch=master)](https://travis-ci.org/JuliaStats/StatsFuns.jl)
-[![Appveyor](https://ci.appveyor.com/api/projects/status/andreasnoack/statsfuns-jl?branch=master&svg=true)](https://ci.appveyor.com/project/andreasnoack/statsfuns-jl)
+[![Travis](https://travis-ci.com/JuliaStats/StatsFuns.jl.svg?branch=master)](https://travis-ci.com/JuliaStats/StatsFuns.jl)
 [![Coveralls](https://coveralls.io/repos/github/JuliaStats/StatsFuns.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaStats/StatsFuns.jl?branch=master)
 
 This package provides a collection of mathematical constants and numerical functions for statistical computing.
