@@ -28,3 +28,9 @@ function poislogpdf(λ::Union{Float32,Float64}, x::Union{Float64,Float32,Integer
     else
         -lstirling_asym(x + 1)
 =#
+
+# ChainRules adjoints
+ChainRulesCore.@scalar_rule(
+    poislogpdf(λ::Number, x::Number),
+    (x / λ - 1, log(λ) - digamma(x + 1)),
+)

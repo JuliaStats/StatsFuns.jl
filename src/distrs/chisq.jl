@@ -21,5 +21,15 @@ end
 # logpdf for numbers with generic types
 function chisqlogpdf(k::Real, x::Number)
   hk = k / 2  # half k
-  -hk * log(oftype(hk, 2)) - loggamma(hk) + (hk - 1) * log(x) - x / 2
+  -hk * logtwo - loggamma(hk) + (hk - 1) * log(x) - x / 2
 end
+
+# ChainRules adjoint
+ChainRulesCore.@scalar_rule(
+    chisqlogpdf(k::Real, x::Number),
+    @setup(hk = k / 2),
+    (
+        (log(x) - logtwo - digamma(hk)) / 2,
+        (hk - 1) / x - one(hk) / 2,
+    ),
+)

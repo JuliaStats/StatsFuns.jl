@@ -4,6 +4,7 @@ module StatsFuns
 
 import Base: Math.@horner, @irrational
 using SpecialFunctions
+import ChainRulesCore
 
 export
     # constants
