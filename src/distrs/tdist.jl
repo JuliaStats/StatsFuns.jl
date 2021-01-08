@@ -17,19 +17,3 @@ tdistpdf(ν::Real, x::Number) = gamma((ν + 1) / 2) / (sqrt(ν * pi) * gamma(ν 
 
 # logpdf for numbers with generic types
 tdistlogpdf(ν::Real, x::Number) = loggamma((ν + 1) / 2) - log(ν * pi) / 2 - loggamma(ν / 2) + (-(ν + 1) / 2) * log1p(x^2 / ν)
-
-# ChainRules adjoints
-ChainRulesCore.@scalar_rule(
-    tdistlogpdf(ν::Real, x::Number),
-    @setup(
-        νp1 = ν + 1,
-        xsq = x^2,
-        invν = inv(ν),
-        a = xsq * invν,
-        b = νp1 / (ν + xsq),
-    ),
-    (
-        (digamma(νp1 / 2) - digamma(ν / 2) + a * b - log1p(a) - invν) / 2,
-        - x * b,
-    ),
-)

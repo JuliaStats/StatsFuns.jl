@@ -259,4 +259,6 @@ include(joinpath("distrs", "pois.jl"))
 include(joinpath("distrs", "tdist.jl"))
 include(joinpath("distrs", "srdist.jl"))
 
+include("chainrules.jl")
+
 end # module
