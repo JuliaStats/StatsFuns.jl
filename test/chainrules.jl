@@ -2,9 +2,6 @@ using StatsFuns, Test
 using ChainRulesTestUtils
 using Random
 
-# move upstream?
-ChainRulesTestUtils.rand_tangent(rng::Random.AbstractRNG, x::BigFloat) = big(randn(rng))
-
 @testset "chainrules" begin
     x = exp(randn())
     y = exp(randn())
