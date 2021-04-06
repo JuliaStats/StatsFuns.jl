@@ -22,7 +22,7 @@ poislogpdf(λ::Number, x::Number) = poislogpdf(promote(float(λ), x)...)
 poislogpdf(λ::Number, x::Number) = poislogpdf(promote(float(λ), x)...)
 
 function poislogcdf(λ::Number, x::Number)
-    return SpecialFunctions.loggamma(Int(x) + 1, λ) - SpecialFunctions.logfactorial(Int(x))
+    return SpecialFunctions.loggamma(Int(x) + 1, float(λ)) - SpecialFunctions.logfactorial(Int(x))
 end
 
 poiscdf(λ::Number, x::Number) = exp(poislogcdf(λ, x))
