@@ -210,7 +210,6 @@ export
 
 # reexports
 using LogExpFunctions
-using LogExpFunctions: loghalf, logtwo, logπ, log2π, log4π, softplus, invsoftplus
 
 export
     loghalf,        # log(1 / 2)
