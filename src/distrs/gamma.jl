@@ -1,8 +1,8 @@
 # functions related to gamma distribution
 
 import .RFunctions:
-    gammapdf,
-    gammalogpdf,
+    # gammapdf,
+    # gammalogpdf,
     gammacdf,
     gammaccdf,
     gammalogcdf,
