@@ -1,8 +1,9 @@
 # functions related to chi-square distribution
 
 # R implementations
-# For pdf and logpdf we use the Julia implementation
 using .RFunctions:
+    # chisqpdf,
+    # chisqlogpdf,
     chisqcdf,
     chisqccdf,
     chisqlogcdf,

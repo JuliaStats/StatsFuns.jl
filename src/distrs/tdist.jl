@@ -1,8 +1,9 @@
 # functions related to student's T distribution
 
 # R implementations
-# For pdf and logpdf we use the Julia implementation
 using .RFunctions:
+    # tdistpdf,
+    # tdistlogpdf,
     tdistcdf,
     tdistccdf,
     tdistlogcdf,

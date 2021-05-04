@@ -1,8 +1,9 @@
 # functions related to Poisson distribution
 
 # R implementations
-# For pdf and logpdf we use the Julia implementation
 using .RFunctions:
+    # poispdf,
+    # poislogpdf,
     poiscdf,
     poisccdf,
     poislogcdf,

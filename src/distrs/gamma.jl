@@ -1,8 +1,9 @@
 # functions related to gamma distribution
 
 # R implementations
-# For pdf and logpdf we use the Julia implementation
 using .RFunctions:
+    # gammapdf,
+    # gammalogpdf,
     gammacdf,
     gammaccdf,
     gammalogcdf,

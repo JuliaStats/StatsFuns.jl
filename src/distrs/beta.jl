@@ -1,8 +1,9 @@
 # functions related to beta distributions
 
 # R implementations
-# For pdf and logpdf we use the Julia implementation
 using .RFunctions:
+    # betapdf,
+    # betalogpdf,
     betacdf,
     betaccdf,
     betalogcdf,

@@ -1,8 +1,9 @@
 # functions related to binomial distribution
 
 # R implementations
-# For pdf and logpdf we use the Julia implementation
 using .RFunctions:
+    # binompdf,
+    # binomlogpdf,
     binomcdf,
     binomccdf,
     binomlogcdf,
