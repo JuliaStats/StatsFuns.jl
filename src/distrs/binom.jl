@@ -4,10 +4,10 @@
 using .RFunctions:
     # binompdf,
     # binomlogpdf,
-    binomcdf,
-    binomccdf,
-    binomlogcdf,
-    binomlogccdf,
+    # binomcdf,
+    # binomccdf,
+    # binomlogcdf,
+    # binomlogccdf,
     binominvcdf,
     binominvccdf,
     binominvlogcdf,
@@ -23,3 +23,11 @@ function binomlogpdf(n::T, p::T, k::T) where {T<:Real}
     val = min(0, betalogpdf(m + 1, n - m + 1, p) - log(n + 1))
     return 0 <= k <= n && isinteger(k) ? val : oftype(val, -Inf)
 end
+
+binomcdf(n::Real, p::Real, k::Real) = betaccdf(k + 1, n - k, p)
+
+binomccdf(n::Real, p::Real, k::Real) = betacdf(k + 1, n - k, p)
+
+binomlogcdf(n::Real, p::Real, k::Real) = betalogccdf(k + 1, n - k, p)
+
+binomlogccdf(n::Real, p::Real, k::Real) = betalogcdf(k + 1, n - k, p)
