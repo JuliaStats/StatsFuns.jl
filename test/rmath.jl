@@ -79,61 +79,59 @@ function rmathcomp(basename, params, X::AbstractArray, rtol)
     end
     rmath_rand = has_rand ? get_rmathfun(rand) : nothing
 
-    # for x in X
-        if has_pdf
-            @testset "pdf" begin
-                check_rmath.(pdf, stats_pdf, rmath_pdf,
-                    Ref(params), "x", X, true, rtol)
-            end
-            @testset "logpdf" begin
-                check_rmath.(logpdf, stats_logpdf, rmath_logpdf,
-                    Ref(params), "x", X, false, rtol)
-            end
+    if has_pdf
+        @testset "pdf with x=$x" for x in X
+            check_rmath(pdf, stats_pdf, rmath_pdf,
+                params, "x", x, true, rtol)
         end
-        @testset "cdf" begin
-            check_rmath.(cdf, stats_cdf, rmath_cdf,
-                Ref(params), "x", X, true, rtol)
+        @testset "logpdf with x=$x" for x in X
+            check_rmath(logpdf, stats_logpdf, rmath_logpdf,
+                params, "x", x, false, rtol)
         end
-        @testset "ccdf" begin
-            check_rmath.(ccdf, stats_ccdf, rmath_ccdf,
-                Ref(params), "x", X, true, rtol)
-        end
-        @testset "logcdf" begin
-            check_rmath.(logcdf, stats_logcdf, rmath_logcdf,
-                Ref(params), "x", X, false, rtol)
-        end
-        @testset "logccdf" begin
-            check_rmath.(logccdf, stats_logccdf, rmath_logccdf,
-                Ref(params), "x", X, false, rtol)
-        end
+    end
+    @testset "cdf with x=$x" for x in X
+        check_rmath(cdf, stats_cdf, rmath_cdf,
+            params, "x", x, true, rtol)
+    end
+    @testset "ccdf with x=$x" for x in X
+        check_rmath(ccdf, stats_ccdf, rmath_ccdf,
+            params, "x", x, true, rtol)
+    end
+    @testset "logcdf with x=$x" for x in X
+        check_rmath(logcdf, stats_logcdf, rmath_logcdf,
+            params, "x", x, false, rtol)
+    end
+    @testset "logccdf with x=$x" for x in X
+        check_rmath(logccdf, stats_logccdf, rmath_logccdf,
+            params, "x", x, false, rtol)
+    end
 
-        p = rmath_cdf.(params..., X)
-        cp = rmath_ccdf.(params..., X)
-        lp = rmath_logcdf.(params..., X)
-        lcp = rmath_logccdf.(params..., X)
+    p = rmath_cdf.(params..., X)
+    cp = rmath_ccdf.(params..., X)
+    lp = rmath_logcdf.(params..., X)
+    lcp = rmath_logccdf.(params..., X)
 
-        @testset "invcdf" begin
-            check_rmath.(invcdf, stats_invcdf, rmath_invcdf,
-                Ref(params), "q", p, false, rtol)
-        end
-        @testset "invccdf" begin
-            check_rmath.(invccdf, stats_invccdf, rmath_invccdf,
-                Ref(params), "q", cp, false, rtol)
-        end
-        @testset "invlogcdf" begin
-            check_rmath.(invlogcdf, stats_invlogcdf, rmath_invlogcdf,
-                Ref(params), "lq", lp, false, rtol)
-        end
-        @testset "invlogccdf" begin
-            check_rmath.(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
-                Ref(params), "lq", lcp, false, rtol)
-        end
+    @testset "invcdf with q=$_p" for _p in p
+        check_rmath(invcdf, stats_invcdf, rmath_invcdf,
+            params, "q", _p, false, rtol)
+    end
+    @testset "invccdf with q=$_p" for _p in cp
+        check_rmath(invccdf, stats_invccdf, rmath_invccdf,
+            params, "q", _p, false, rtol)
+    end
+    @testset "invlogcdf with log(q)=$_p" for _p in lp
+        check_rmath(invlogcdf, stats_invlogcdf, rmath_invlogcdf,
+            params, "lq", _p, false, rtol)
+    end
+    @testset "invlogccdf with log(q)=$_p" for _p in lcp
+        check_rmath(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
+            params, "lq", _p, false, rtol)
+    end
 
-        # make sure that rand works
-        if has_rand
-            rmath_rand(params...)
-        end
-    # end
+    # make sure that rand works
+    if has_rand
+        rmath_rand(params...)
+    end
 end
 
 function rmathcomp_tests(basename, configs)
@@ -160,6 +158,21 @@ end
         ((10, 2), [0, 1]),
         ((10, 2), 0//1:1//100:1//1),
     ])
+    # It is not possible to maintain a rtol of 1e-14 for the cdf when there is such a large difference
+    # in the magnitude of the parameters. At least not with the current parameters. Furthermore, it
+    # seems that Rmath is actually less accurate than we are but since we are comparing against Rmath
+    # we have to use rtol=1e-12 although we are probably only off by around 1e-13.
+    @testset "param: (1000, 2)" begin
+        rmathcomp(
+            "beta",
+            (1000, 2),
+            # We have to drop the 0.48 value since the R quantile function fails while we succeed.
+            # It's tested separate below.
+            setdiff(collect(0.0:0.01:1.0), 0.48),
+            1e-12)
+        # Test p=0.48 separately since R fails. (It's pretty slow, though, caused by the cdf being 9.0797754e-317)
+        @test betainvcdf(1000, 2, betacdf(1000, 2, 0.48)) ≈ 0.48
+    end
 
     # We test the following extreme parameters separately since
     # a slightly larger tolerance is needed.
