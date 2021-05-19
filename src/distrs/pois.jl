@@ -4,10 +4,10 @@
 using .RFunctions:
     # poispdf,
     # poislogpdf,
-    poiscdf,
-    poisccdf,
-    poislogcdf,
-    poislogccdf,
+    # poiscdf,
+    # poisccdf,
+    # poislogcdf,
+    # poislogccdf,
     poisinvcdf,
     poisinvccdf,
     poisinvlogcdf,
@@ -21,3 +21,12 @@ function poislogpdf(λ::T, x::T) where {T <: Real}
     val = xlogy(x, λ) - λ - loggamma(x + 1)
     return x >= 0 && isinteger(x) ? val : oftype(val, -Inf)
 end
+
+# Just use the Gamma definitions
+poiscdf(λ::Real, x::Real) = gammaccdf(floor(x + 1), 1, λ)
+
+poisccdf(λ::Real, x::Real) = gammacdf(floor(x + 1), 1, λ)
+
+poislogcdf(λ::Real, x::Real) = gammalogccdf(floor(x + 1), 1, λ)
+
+poislogccdf(λ::Real, x::Real) = gammalogcdf(floor(x + 1), 1, λ)
