@@ -13,7 +13,6 @@ using .RFunctions:
     binominvlogcdf,
     binominvlogccdf
 
-
 # Julia implementations
 binompdf(n::Real, p::Real, k::Real) = exp(binomlogpdf(n, p, k))
 
