@@ -39,15 +39,15 @@ function normlogpdf(μ::Real, σ::Real, x::Number)
         z = zval(μ, σ, x)
     end
     normlogpdf(z) - log(σ)
-end            
+end
 
 # cdf
 normcdf(z::Number) = erfc(-z * invsqrt2)/2
 function normcdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
-    else        
-        z = zval(μ, σ, x)        
+    else
+        z = zval(μ, σ, x)
     end
     normcdf(z)
 end
@@ -56,8 +56,8 @@ normccdf(z::Number) = erfc(z * invsqrt2)/2
 function normccdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
-    else        
-        z = zval(μ, σ, x)        
+    else
+        z = zval(μ, σ, x)
     end
     normccdf(z)
 end
@@ -69,8 +69,8 @@ normlogcdf(z::Number) = z < -1.0 ?
 function normlogcdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
-    else        
-        z = zval(μ, σ, x)        
+    else
+        z = zval(μ, σ, x)
     end
     normlogcdf(z)
 end
@@ -82,8 +82,8 @@ normlogccdf(z::Number) = z > 1.0 ?
 function normlogccdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
-    else        
-        z = zval(μ, σ, x)        
+    else
+        z = zval(μ, σ, x)
     end
     normlogccdf(z)
 end
