@@ -33,7 +33,7 @@ betacdf(k::T, x::T) where T = throw(MethodError(betacdf, (α, β, x)))
 
 betaccdf(α::Float64, β::Float64, x::Float64) = last(beta_inc(α, β, x))
 betaccdf(α::Real, β::Real, x::Real) = betaccdf(promote(float(α), β, x)...)
-betaccdf(k::T, x::T) where T = throw(MethodError(betaccdf, (α, β, x)))
+betaccdf(α::T, β::T, x::T) where T = throw(MethodError(betaccdf, (α, β, x)))
 
 # The log version is currently based on non-log version. When the cdf is very small we shift
 # to a implementation based on the hypergeometric function ₂F₁ to avoid underflow.
