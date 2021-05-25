@@ -47,7 +47,7 @@ end
 betalogcdf(α::Real, β::Real, x::Real) = betalogcdf(promote(float(α), β, x)...)
 betalogcdf(k::T, x::T) where T = throw(MethodError(betalogcdf, (α, β, x)))
 
-function betalogccdf(α::Float64, β::Float64, x::Float64)
+function betalogccdf(α::Real, β::Real, x::Real)
     p, q = beta_inc(α, β, x)
     if q < 0.7
         return log(q)
@@ -55,8 +55,6 @@ function betalogccdf(α::Float64, β::Float64, x::Float64)
         return log1p(-p)
     end
 end
-betalogccdf(α::Real, β::Real, x::Real) = betalogccdf(promote(float(α), β, x)...)
-betalogccdf(α::T, β::T, x::T) where T = throw(MethodError(betalogccdf, (α, β, x)))
 
 betainvcdf(α::Float64, β::Float64, p::Float64) = first(beta_inc_inv(α, β, p, 1 - p))
 betainvcdf(α::Real, β::Real, p::Real) = betainvcdf(promote(float(α), β, p)...)
