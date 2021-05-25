@@ -27,13 +27,9 @@ function betalogpdf(α::T, β::T, x::T) where T<:Real
 end
 betalogpdf(α::Real, β::Real, x::Real) = betalogpdf(promote(α, β, x)...)
 
-betacdf(α::Float64, β::Float64, x::Float64) = first(beta_inc(α, β, x))
-betacdf(α::Real, β::Real, x::Real) = betacdf(promote(float(α), β, x)...)
-betacdf(α::T, β::T, x::T) where T = throw(MethodError(betacdf, (α, β, x)))
+betacdf(α::Real, β::Real, x::Real) = first(beta_inc(α, β, x))
 
-betaccdf(α::Float64, β::Float64, x::Float64) = last(beta_inc(α, β, x))
-betaccdf(α::Real, β::Real, x::Real) = betaccdf(promote(float(α), β, x)...)
-betaccdf(α::T, β::T, x::T) where T = throw(MethodError(betaccdf, (α, β, x)))
+betaccdf(α::Real, β::Real, x::Real) = last(beta_inc(α, β, x))
 
 # The log version is currently based on non-log version. When the cdf is very small we shift
 # to a implementation based on the hypergeometric function ₂F₁ to avoid underflow.
