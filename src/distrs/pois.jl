@@ -1,30 +1,27 @@
 # functions related to Poisson distribution
 
 import .RFunctions:
-    poispdf,
-    poislogpdf,
-    poiscdf,
-    poisccdf,
-    poislogcdf,
-    poislogccdf,
+    # poispdf,
+    # poislogpdf,
+    # poiscdf,
+    # poisccdf,
+    # poislogcdf,
+    # poislogccdf,
     poisinvcdf,
     poisinvccdf,
     poisinvlogcdf,
     poisinvlogccdf
 
-# generic versions
 poispdf(λ::Real, x::Real) = exp(poislogpdf(λ, x))
 
 poislogpdf(λ::T, x::T) where {T <: Real} = xlogy(x, λ) - λ - loggamma(x + 1)
+poislogpdf(λ::Real, x::Real) = poislogpdf(promote(float(λ), x)...)
 
-poislogpdf(λ::Number, x::Number) = poislogpdf(promote(float(λ), x)...)
+# Just use the Gamma definitions
+poiscdf(λ::Real, x::Real) = gammaccdf(floor(x + 1), 1, λ)
 
-#=
-function poislogpdf(λ::Union{Float32,Float64}, x::Union{Float64,Float32,Integer})
-    if iszero(λ)
-        iszero(x) ? zero(λ) : oftype(λ, -Inf)
-    elseif iszero(x)
-        -λ
-    else
-        -lstirling_asym(x + 1)
-=#
+poisccdf(λ::Real, x::Real) = gammacdf(floor(x + 1), 1, λ)
+
+poislogcdf(λ::Real, x::Real) = gammalogccdf(floor(x + 1), 1, λ)
+
+poislogccdf(λ::Real, x::Real) = gammalogcdf(floor(x + 1), 1, λ)
