@@ -21,5 +21,5 @@ end
 # logpdf for numbers with generic types
 function chisqlogpdf(k::Real, x::Number)
   hk = k / 2  # half k
-  -hk * log(oftype(hk, 2)) - loggamma(hk) + (hk - 1) * log(x) - x / 2
+  -hk * logtwo - loggamma(hk) + (hk - 1) * log(x) - x / 2
 end

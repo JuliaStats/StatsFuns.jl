@@ -4,6 +4,7 @@ module StatsFuns
 
 import Base: Math.@horner, @irrational
 using SpecialFunctions
+import ChainRulesCore
 
 export
     # constants
@@ -258,5 +259,7 @@ include(joinpath("distrs", "ntdist.jl"))
 include(joinpath("distrs", "pois.jl"))
 include(joinpath("distrs", "tdist.jl"))
 include(joinpath("distrs", "srdist.jl"))
+
+include("chainrules.jl")
 
 end # module
