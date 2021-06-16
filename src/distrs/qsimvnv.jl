@@ -51,7 +51,7 @@ using Primes
 using Random
 using LinearAlgebra
 
-function qsimvnv(Σ::AbstractPDMat,a::AbstractVector{<:Real},b::AbstractVector{<:Real};m::Integer=nothing)
+function qsimvnv(Σ::AbstractArray,a::AbstractVector{<:Real},b::AbstractVector{<:Real};m::Integer=0)
 	#= rev 1.14
 
     This function uses an algorithm given in the paper
@@ -107,7 +107,7 @@ function qsimvnv(Σ::AbstractPDMat,a::AbstractVector{<:Real},b::AbstractVector{<
 
 	=#
 
-	if isnothing(m)
+	if m==0
 		m = 1000*size(Σ,1)  # default is 1000 * dimension
 	end
 
@@ -336,7 +336,7 @@ bp = [1, 2, 4]
 	mvn_cdf - multivariate Normal CDF function makes use of this function
 
 """
-function _chlrdr(Σ::AbstractPDMat,a::AbstractVector,b::AbstractVector)
+function _chlrdr(Σ::AbstractArray,a::AbstractVector,b::AbstractVector)
 
     # Rev 1.14
 
