@@ -2,7 +2,8 @@
     qsimvnv(Σ,a,b;m=iterations)
 Computes the Multivariate Normal probability integral using a quasi-random rule
 with m points for positive definite covariance matrix Σ, mean [0,...], with lower
-integration limit vector a and upper integration limit vector b.
+integration limit vector a and upper integration limit vector b. If m is not given, 
+it defaults to 1000 * number of dimensions. 
 
 ```math
 \\Phi_k(\\mathbf{a},\\mathbf{b},\\mathbf{\\Sigma} ) = \\frac{1}{\\sqrt{\\left | \\mathbf{\\Sigma}  \\right |{(2\\pi )^k}}}\\int_{a_1}^{b_1}\\int_{a_2}^{b_2}\\begin{align*}
@@ -12,7 +13,7 @@ integration limit vector a and upper integration limit vector b.
 Probability p is output with error estimate e.
 
 # Arguments
-- `Σ::AbstractPDMat`:  positive-definite covariance matrix of MVN distribution
+- `Σ::AbstractArray`:  positive-definite covariance matrix of MVN distribution
 - `a::AbstractVector`: lower integration limit column vector
 - `b::AbstractVector`: upper integration limit column vector
 - `m::Integer`:        number of integration points (default 1000*dimension)
@@ -46,12 +47,13 @@ julia> (p,e) = qsimvnv(Σ,a-μ,b-μ)
 """
 # Julia dependencies
 using Distributions
-using PDMats
 using Primes
 using Random
 using LinearAlgebra
+using StatsBase
+using Statistics 
 
-function qsimvnv(Σ::AbstractArray,a::AbstractVector{<:Real},b::AbstractVector{<:Real};m::Integer=0)
+function qsimvnv(Σ::AbstractArray{<:Real},a::AbstractVector{<:Real},b::AbstractVector{<:Real};m::Integer=0)
 	#= rev 1.14
 
     This function uses an algorithm given in the paper
@@ -100,14 +102,15 @@ function qsimvnv(Σ::AbstractArray,a::AbstractVector{<:Real},b::AbstractVector{<
 
 	Julia dependencies
 	Distributions
-	PDMats
 	Primes
 	Random
 	LinearAlgebra
+	StatsBase
+	Statistics 
 
 	=#
 
-	if m==0
+	if m ≤ 0 
 		m = 1000*size(Σ,1)  # default is 1000 * dimension
 	end
 
@@ -157,17 +160,36 @@ function qsimvnv(Σ::AbstractArray,a::AbstractVector{<:Real},b::AbstractVector{<
 	end
 
 	# check input Σ, a, b are floats; otherwise, convert them
-	if eltype(Σ)<:Signed
+	# don't expect any AbstractIrrationals will be input 
+	if !(eltype(Σ)<:AbstractFloat)
 		Σ = float(Σ)
 	end
 
-	if eltype(a)<:Signed
+	if !(eltype(a)<:AbstractFloat)
 		a = float(a)
 	end
 
-	if eltype(b)<:Signed
+	if !(eltype(b)<:AbstractFloat)
 		b = float(b)
 	end
+
+	# check if Σ, a, b are BigFloat type; if yes, print an warning and convert to Float64 
+	# BigFloat is an AbstractFloat type, but the function will never finish
+	if eltype(Σ)<:BigFloat 
+		@warn "Do not use BigFloat type for covariance matrix Σ -- the function will never finish. Converting to Float64"
+		Σ = convert.(Float64,Σ)
+	end 
+
+	if eltype(a)<:BigFloat 
+		@warn "Do not use BigFloat type for lower integration vector (a) -- the function will never finish. Converting to Float64"
+		a = convert.(Float64,a)
+	end 
+
+	if eltype(b)<:BigFloat 
+		@warn "Do not use BigFloat type for upper integration vector (b) -- the function will never finish. Converting to Float64"
+		a = convert.(Float64,b)
+	end 
+
 
 	##################################################################
 	#
@@ -294,6 +316,7 @@ function qsimvnv(Σ::AbstractArray,a::AbstractVector{<:Real},b::AbstractVector{<
 
 end # function qsimvnv
 
+#=
 """
 Computes permuted lower Cholesky factor c for R which may be singular,
   also permuting integration limit vectors a and b.
@@ -336,6 +359,8 @@ bp = [1, 2, 4]
 	mvn_cdf - multivariate Normal CDF function makes use of this function
 
 """
+=#
+
 function _chlrdr(Σ::AbstractArray,a::AbstractVector,b::AbstractVector)
 
     # Rev 1.14

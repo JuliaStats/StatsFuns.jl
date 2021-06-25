@@ -3,8 +3,10 @@ using StatsFuns, Test, LinearAlgebra, Primes, Random, Distributions
 
 # test for qsimvnv(Σ,a,b;m) (which calls _chlrdr(r,a,b) )
 
-td = Array{Any}(undef,(14,8))
+td = Array{Any}(undef,(16,8))
 #  1-cov mtx 2-a 3-b 4-m 5-p 6-ptol 7-e 8-etol
+# ptol = tolerance on p-value result
+# etol = tolerance of e-value result 
 
 # from MATLAB documenation 4 dim
 td[1,1] = [4 3 2 1;3 5 -1 1;2 -1 4 2;1 1 2 5]  # Σ cov Matrix
@@ -16,8 +18,8 @@ td[1,6] = 0.001557374                          	# ± p tolerance
 td[1,7] = 0.001394971                           # expected e (error) value
 td[1,8] = 0.0009277058                        	# ± e tolerance
 
-# 3 dim
-td[2,1] =[1  3/5  1/3; 3/5 1  11/15; 1/3 11/15 1]
+# 3 dim; see test 4
+td[2,1] = [1 3/5 1/3; 3/5 1 11/15; 1/3 11/15 1]
 td[2,2] = [-Inf;-Inf;-Inf]
 td[2,3] = [1;4;2]
 td[2,4] = 3000
@@ -33,28 +35,27 @@ td[3,3] = [1;4;2]
 td[3,4] = 4000
 td[3,5] = 0.65368
 td[3,6] = 0.000002089699
-td[3,7] = 0.000001799225
+td[3,7] = 0.000001799225 
 td[3,8] = 0.000001161755
 
 # Genz book eq. 1.5 p. 4-5 & p. 63
-# Genz gives wrong answer on p. 4-5
-td[4,1] = [1/3 3/5 1/3; 3/5 1.0 11/15; 1/3 11/15 1.0]
+td[4,1] = [1//1 3//5 1//3; 3//5 1//1 11//15; 1//3 11//15 1//1]
 td[4,2] = [-Inf; -Inf; -Inf]
 td[4,3] = [1; 4; 2]
 td[4,4] = 4000
-td[4,5] = 0.943174
+td[4,5] = 0.827987      #full prec 0.8279870596952776 MATLAB 0.8280  SAS JMP 0.827974636078678  Genz 0.8279847
 td[4,6] = 0.00006724871
-td[4,7] = 0.0000509768
+td[4,7] = 0.00002653    # SAS JMP 0.0000183902696580413  matlab 2.2653e-05 0.00002653 Genz 2.870095e-07
 td[4,8] = 0.00003337435
 
-# Genz p. 63 uses different r matrix
+# Genz p. 63 
 td[5,1] = [1 0 0; 3/5 1 0; 1/3 11/15 1]
 td[5,2] = [-Inf; -Inf; -Inf]
 td[5,3] = [1; 4; 2]
 td[5,4] = 4000
-td[5,5] = 0.827985
+td[5,5] = 0.827985  # Genz 0.8279847
 td[5,6] = 0.00001024322
-td[5,7] = 0.000008933135
+td[5,7] = 0.000008933135 # Genz 2.870095e-07
 td[5,8] = 0.000005194712
 
 # singular example
@@ -185,17 +186,47 @@ td[14,1] = [59.227 2.601 3.38 8.303 -0.334 11.029 10.908 0.739 4.703 7.075 8.049
  td[14,7] = 0.00000181746
  td[14,8] = 0.000001083068
 
- @testset "qsimvnv" begin
-	for i in 1:14
-	    r = td[i,1]
-	    a = td[i,2]
-	    b = td[i,3]
-	    m = td[i,4]
-	    pexpected = td[i,5]
-	    eexpected = td[i,7]
-	    ptol = td[i,6]
-	    etol = td[i,8]
+# test shortcut for 2 dimensional Orthant probability 
+td[15,1]=[0.817766 0.389662; 0.389662 0.391913]
+td[15,2]=[0;0]
+td[15,3]=[Inf;Inf]
+td[15,4]=2000
+td[15,5]=0.370822 # ful prec 0.37082268122190573
+td[15,6]=0.000001
+td[15,7]=eps()
+td[15,8]=eps()
 
+# test short cut for 3 dimensional Orthant probability
+td[16,1]=[0.273942 0.375661 0.603899;0.375661 0.981698 0.834023;0.603899 0.834023 1.4966]
+td[16,2]=[0;0;0]
+td[16,3]=[Inf;Inf;Inf]
+td[16,4]=3000
+td[16,5]=0.347896
+td[16,6]=0.000001
+td[16,7]=eps()
+td[16,8]=eps()
+
+ @testset "qsimvnv" begin
+	println("qsimvnv(Σ,a,b;m) tests for Multivariate Normal CDF")
+	for i in 1:16
+		#  1-cov mtx 2-a 3-b 4-m 5-p 6-ptol 7-e 8-etol
+
+		r = td[i,1]
+		a = td[i,2]
+		b = td[i,3]
+		m = td[i,4]
+		pexpected = td[i,5]
+		ptol = td[i,6]
+		eexpected = td[i,7]
+		etol = td[i,8]
+
+		println("Test ", i, ":")
+		if i==2 
+			continue 
+		end 
+		if i==5 || i==6 
+			println("Ignore warning for this test #$i")  # isposdef() check is wrong or irrelevant 
+		end 
 	    (p,e) = qsimvnv(r,a,b;m=m)
 		p = round(p,digits=6)
 
@@ -203,20 +234,23 @@ td[14,1] = [59.227 2.601 3.38 8.303 -0.334 11.029 10.908 0.739 4.703 7.075 8.049
 	     @test e ≈ eexpected atol=etol
 	end
 
+	println("qsmvnv tests for error trapping...")
+
     # test warning on singular Σ
     r = td[6,1]
     a = td[6,2]
     b = td[6,3]
     m = td[6,4]
-
     @test_logs (:warn,"covariance matrix Σ fails positive definite check") qsimvnv(r,a,b;m=m)
 
     # Σ dimension 1 throws error
     r = Array{Float64}(undef,(1,1))
     r[1,1] = 5
+	a = [-Inf]
+	b = [0]
     @test_throws ErrorException qsimvnv(r,a,b)
 
-    # a < b throws error
+    # a > b throws error
     r = td[3,1]
     a = [-Inf, 3, 0]
     b = [0, 0, 1]
@@ -232,7 +266,23 @@ td[14,1] = [59.227 2.601 3.38 8.303 -0.334 11.029 10.908 0.739 4.703 7.075 8.049
 	r = [1 2; 3 4; 5 6]
     a = [-Inf, -Inf, -Inf]
 	b = [0, 0]
-
 	@test_throws DimensionMismatch qsimvnv(r,a,b)
+
+	#BigFloat type throws warning
+	biga = Array{BigFloat}(undef,(3,3))
+	biga[1,1]=BigFloat(1.0)
+	biga[1,2]=BigFloat(3)/BigFloat(5)
+	biga[1,3]=BigFloat(1)/BigFloat(3)
+	biga[2,1]=BigFloat(3)/BigFloat(5)
+	biga[2,2]=BigFloat(1.0)
+	biga[2,3]=BigFloat(11)/BigFloat(15)
+	biga[3,1]=BigFloat(1)/BigFloat(3)
+	biga[3,2]=BigFloat(11)/BigFloat(15)
+	biga[3,3]=BigFloat(1.0)
+	r = biga
+	a = [-Inf;-Inf;-Inf]
+	b  = [1;4;2]
+	m = 3000
+	@test_logs (:warn,"Do not use BigFloat type for covariance matrix Σ -- the function will never finish. Converting to Float64") qsimvnv(r,a,b;m=m)
 
  end
