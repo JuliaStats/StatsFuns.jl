@@ -4,6 +4,7 @@ module StatsFuns
 
 import Base: Math.@horner, @irrational
 using SpecialFunctions
+using IrrationalConstants
 
 export
     # constants
@@ -237,7 +238,6 @@ export
     softmax!       # inplace softmax
 
 ## source files
-include("constants.jl")
 include("misc.jl")
 include("rmath.jl")
 
