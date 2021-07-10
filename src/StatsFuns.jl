@@ -4,6 +4,7 @@ module StatsFuns
 
 import Base: Math.@horner, @irrational
 using SpecialFunctions
+using IrrationalConstants
 
 export
     # constants
@@ -235,7 +236,6 @@ export
 
 
 ## source files
-include("constants.jl")
 include("basicfuns.jl")
 include("misc.jl")
 include("rmath.jl")
