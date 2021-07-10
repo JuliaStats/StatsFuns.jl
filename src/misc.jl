@@ -7,7 +7,7 @@ Return the logarithm of [multivariate gamma function](https://en.wikipedia.org/w
 """
 function logmvgamma(p::Int, a::Real)
     # NOTE: one(a) factors are here to prevent unnecessary promotion of Float32
-    res = p * (p - 1) * log(pi * one(a)) / 4
+    res = p * (p - 1) * (logπ * one(a)) / 4
     for ii in 1:p
         res += loggamma(a + (1 - ii) * one(a) / 2)
     end
