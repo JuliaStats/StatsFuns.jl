@@ -11,7 +11,7 @@ Rmath = "79098fc4-a85e-5d69-aa6a-4863f24498fa"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
-ChainRulesCore = "0.9, 0.10"
+ChainRulesCore = "0.9, 0.10, 1"
 IrrationalConstants = "0.1"
 LogExpFunctions = "0.3"
 Reexport = "1"
