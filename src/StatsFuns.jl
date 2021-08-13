@@ -2,12 +2,12 @@ __precompile__(true)
 
 module StatsFuns
 
-import Base: Math.@horner, @irrational
+using Base: Math.@horner
+using Reexport
 using SpecialFunctions
-using IrrationalConstants
 
-export
-    # constants
+# reexports
+@reexport using IrrationalConstants:
     twoπ,       # 2π
     fourπ,      # 4π
     halfπ,      # π / 2
@@ -25,7 +25,31 @@ export
     sqrthalfπ,  # √(π / 2)
     invsqrt2,   # 1 / √2
     invsqrt2π,  # 1 / √2π
+    loghalf,    # log(1 / 2)
+    logtwo,     # log(2)
+    logπ,       # log(π)
+    log2π,      # log(2π)
+    log4π       # log(4π)
 
+@reexport using LogExpFunctions:
+    xlogx,          # x * log(x) for x > 0, or 0 when x == 0
+    xlogy,          # x * log(y) for x > 0, or 0 when x == 0
+    log1psq,        # log(1 + x^2)
+    log1pexp,       # log(1 + exp(x))
+    log1mexp,       # log(1 - exp(x))
+    log2mexp,       # log(2 - exp(x))
+    logexpm1,       # log(exp(x) - 1)
+    softplus,       # alias of log1pexp
+    invsoftplus,    # alias of logexpm1
+    log1pmx,        # log(1 + x) - x
+    logmxp1,        # log(x) - x + 1
+    logaddexp,      # log(exp(x) + exp(y))
+    logsubexp,      # log(abs(e^x - e^y))
+    logsumexp,      # log(sum(exp(x)))
+    softmax,        # exp(x_i) / sum(exp(x)), for i
+    softmax!        # inplace softmax
+
+export
     # distrs/beta
     betapdf,            # pdf of beta distribution
     betalogpdf,         # logpdf of beta distribution
@@ -208,34 +232,6 @@ export
     logmvgamma,         # logarithm of multivariate gamma function
     logmvbeta,          # logarithm of multivariate beta function
     lstirling_asym
-
-# reexports
-using LogExpFunctions
-
-export
-    loghalf,        # log(1 / 2)
-    logtwo,         # log(2)
-    logπ,           # log(π)
-    log2π,          # log(2π)
-    log4π,          # log(4π)
-    xlogx,          # x * log(x) for x > 0, or 0 when x == 0
-    xlogy,          # x * log(y) for x > 0, or 0 when x == 0
-    logistic,       # 1 / (1 + exp(-x))
-    logit,          # log(x / (1 - x))
-    log1psq,        # log(1 + x^2)
-    log1pexp,       # log(1 + exp(x))
-    log1mexp,       # log(1 - exp(x))
-    log2mexp,       # log(2 - exp(x))
-    logexpm1,       # log(exp(x) - 1)
-    softplus,       # alias of log1pexp
-    invsoftplus,    # alias of logexpm1
-    log1pmx,        # log(1 + x) - x
-    logmxp1,        # log(x) - x + 1
-    logaddexp,      # log(exp(x) + exp(y))
-    logsubexp,      # log(abs(e^x - e^y))
-    logsumexp,      # log(sum(exp(x)))
-    softmax,        # exp(x_i) / sum(exp(x)), for i
-    softmax!       # inplace softmax
 
 ## source files
 include("misc.jl")
