@@ -34,6 +34,8 @@ using SpecialFunctions
 @reexport using LogExpFunctions:
     xlogx,          # x * log(x) for x > 0, or 0 when x == 0
     xlogy,          # x * log(y) for x > 0, or 0 when x == 0
+    logistic,       # 1 / (1 + exp(-x))
+    logit,          # log(x / (1 - x))
     log1psq,        # log(1 + x^2)
     log1pexp,       # log(1 + exp(x))
     log1mexp,       # log(1 - exp(x))
