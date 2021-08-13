@@ -59,7 +59,7 @@ ChainRulesCore.@scalar_rule(
 
 ChainRulesCore.@scalar_rule(
     poislogpdf(λ::Number, x::Number),
-    (x / λ - 1, log(λ) - digamma(x + 1)),
+    ((iszero(x) && iszero(λ) ? zero(x / λ) : x / λ) - 1, log(λ) - digamma(x + 1)),
 )
 
 ChainRulesCore.@scalar_rule(

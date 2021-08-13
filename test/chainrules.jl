@@ -1,4 +1,5 @@
 using StatsFuns, Test
+using ChainRulesCore
 using ChainRulesTestUtils
 using Random
 
@@ -44,4 +45,12 @@ using Random
     y = BigFloat(rand(1:100))
     test_frule(poislogpdf, x, y)
     test_rrule(poislogpdf, x, y)
+
+    # test special case λ = 0
+    _, pb = rrule(StatsFuns.poislogpdf, 0.0, 0.0)
+    _, x̄1, _ = pb(1)
+    @test x̄1 == -1
+    _, pb = rrule(StatsFuns.poislogpdf, 0.0, 1.0)
+    _, x̄1, _ = pb(1)
+    @test x̄1 == Inf
 end
