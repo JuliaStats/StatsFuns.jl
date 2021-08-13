@@ -7,7 +7,7 @@ Return the logarithm of [multivariate gamma function](https://en.wikipedia.org/w
 """
 function logmvgamma(p::Int, a::Real)
     # NOTE: one(a) factors are here to prevent unnecessary promotion of Float32
-    res = p * (p - 1) * log(pi * one(a)) / 4
+    res = p * (p - 1) * (logπ * one(a)) / 4
     for ii in 1:p
         res += loggamma(a + (1 - ii) * one(a) / 2)
     end
@@ -19,7 +19,8 @@ end
 
 Return the logarithm of the multivariate beta function ([DLMF 35.3.7](https://dlmf.nist.gov/35.3#E7)).
 """
-logmvbeta(p::Int, a::Real, b::Real) = logmvgamma(p, a) + logmvgamma(p, b) - logmvgamma(p, a + b)
+logmvbeta(p::Int, a::T, b::T) where {T<:Real} = logmvgamma(p, a) + logmvgamma(p, b) - logmvgamma(p, a + b)
+logmvbeta(p::Int, a::Real, b::Real) = logmvbeta(p, promote(a, b)...)
 
 """
     lstirling_asym(x)
