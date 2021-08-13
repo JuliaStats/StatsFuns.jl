@@ -19,7 +19,8 @@ end
 
 Return the logarithm of the multivariate beta function ([DLMF 35.3.7](https://dlmf.nist.gov/35.3#E7)).
 """
-logmvbeta(p::Int, a::Real, b::Real) = logmvgamma(p, a) + logmvgamma(p, b) - logmvgamma(p, a + b)
+logmvbeta(p::Int, a::T, b::T) where {T<:Real} = logmvgamma(p, a) + logmvgamma(p, b) - logmvgamma(p, a + b)
+logmvbeta(p::Int, a::Real, b::Real) = logmvbeta(p, promote(a, b)...)
 
 """
     lstirling_asym(x)
