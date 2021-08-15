@@ -1,4 +1,3 @@
-
 name: CompatHelper
 on:
   schedule:
@@ -13,6 +12,7 @@ jobs:
           import Pkg
           ENV["JULIA_PKG_SERVER"] = ""
           Pkg.Registry.add("General")
+        shell: julia --color=yes {0}
       - name: "Install CompatHelper"
         run: |
           import Pkg
