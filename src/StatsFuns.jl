@@ -5,6 +5,7 @@ module StatsFuns
 using Base: Math.@horner
 using Reexport
 using SpecialFunctions
+import ChainRulesCore
 
 # reexports
 @reexport using IrrationalConstants:
@@ -256,5 +257,7 @@ include(joinpath("distrs", "ntdist.jl"))
 include(joinpath("distrs", "pois.jl"))
 include(joinpath("distrs", "tdist.jl"))
 include(joinpath("distrs", "srdist.jl"))
+
+include("chainrules.jl")
 
 end # module
