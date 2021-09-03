@@ -6,6 +6,8 @@ import Rmath: libRmath
 
 ### import macro
 
+const FloatOrInt = Union{Float16,Float32,Float64,Int}
+
 function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     # C function names
     if rname == :norm
@@ -57,7 +59,7 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
         rtypes = Expr(:tuple, _pts...)
     end
 
-    pdecls = [Expr(:(::), ps, :(Union{Float64,Int})) for ps in pargs] # [:(p1::Union{Float64, Int}), :(p2::Union{...}), ...]
+    pdecls = [Expr(:(::), ps, :FloatOrInt) for ps in pargs] # [:(p1::FloatOrInt), :(p2::FloatOrInt), ...]
 
     if is_tukey
         # ptukey and qtukey have an extra literal 1 argument
@@ -67,36 +69,56 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     # Function implementation
     quote
         if $(!is_tukey)
-            $pdf($(pdecls...), x::Union{Float64,Int}) =
-                ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0)
+            function $pdf($(pdecls...), x::FloatOrInt)
+                T = float(Base.promote_typeof($(pargs...), x))
+                return convert(T, ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0))
+            end
 
-            $logpdf($(pdecls...), x::Union{Float64,Int}) =
-                ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1)
+            function $logpdf($(pdecls...), x::FloatOrInt)
+                T = float(Base.promote_typeof($(pargs...), x))
+                return convert(T, ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1))
+            end
         end
 
-        $cdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0)
+        function $cdf($(pdecls...), x::FloatOrInt)
+            T = float(Base.promote_typeof($(pargs...), x))
+            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0))
+        end
 
-        $ccdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0)
+        function $ccdf($(pdecls...), x::FloatOrInt)
+            T = float(Base.promote_typeof($(pargs...), x))
+            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0))
+        end
 
-        $logcdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1)
+        function $logcdf($(pdecls...), x::FloatOrInt)
+            T = float(Base.promote_typeof($(pargs...), x))
+            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1))
+        end
 
-        $logccdf($(pdecls...), x::Union{Float64,Int}) =
-            ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1)
+        function $logccdf($(pdecls...), x::FloatOrInt)
+            T = float(Base.promote_typeof($(pargs...), x))
+            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1))
+        end
 
-        $invcdf($(pdecls...), q::Union{Float64,Int}) =
-            ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0)
+        function $invcdf($(pdecls...), q::FloatOrInt)
+            T = float(Base.promote_typeof($(pargs...), q))
+            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0))
+        end
 
-        $invccdf($(pdecls...), q::Union{Float64,Int}) =
-            ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0)
+        function $invccdf($(pdecls...), q::FloatOrInt)
+            T = float(Base.promote_typeof($(pargs...), q))
+            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0))
+        end
 
-        $invlogcdf($(pdecls...), lq::Union{Float64,Int}) =
-            ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1)
+        function $invlogcdf($(pdecls...), lq::FloatOrInt)
+            T = float(Base.promote_typeof($(pargs...), lq))
+            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1))
+        end
 
-        $invlogccdf($(pdecls...), lq::Union{Float64,Int}) =
-            ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1)
+        function $invlogccdf($(pdecls...), lq::FloatOrInt)
+            T = float(Base.promote_typeof($(pargs...), lq))
+            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1))
+        end
 
         if $has_rand
             $rand($(pdecls...)) =
