@@ -4,6 +4,7 @@ import StatsFuns.RFunctions
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = @inferred(statsfun(params..., a))
     rv = @inferred(rmathfun(params..., a))
+    @test v isa float(Base.promote_typeof(params..., a))
     @test rv isa float(Base.promote_typeof(params..., a))
     if isprob
         @test v ≈ rv rtol=rtol nans=true
