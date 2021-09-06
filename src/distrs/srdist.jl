@@ -1,6 +1,7 @@
 # functions related to studentized range distribution
 
-import .RFunctions:
+# R implementations
+using .RFunctions:
     srdistcdf,
     srdistccdf,
     srdistlogcdf,

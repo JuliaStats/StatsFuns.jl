@@ -1,6 +1,7 @@
 # functions related to noncentral T distribution
 
-import .RFunctions:
+# R implementations
+using .RFunctions:
     ntdistpdf,
     ntdistlogpdf,
     ntdistcdf,

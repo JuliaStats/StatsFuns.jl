@@ -40,6 +40,7 @@ log4π,      # log(4π)
 # basicfuns
 xlogx,          # x * log(x), or 0 when x is zero
 xlogy,          # x * log(y), or 0 when x is zero
+xlog1py,        # x * log(1 + y) for x > 0, or 0 when x == 0
 logistic,       # 1 / (1 + exp(-x))
 logit,          # log(x / (1 - x))
 log1psq,        # log(1 + x^2)

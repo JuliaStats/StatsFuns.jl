@@ -1,6 +1,7 @@
 # functions related to noncentral chi-square distribution
 
-import .RFunctions:
+# R implementations
+using .RFunctions:
     nchisqpdf,
     nchisqlogpdf,
     nchisqcdf,

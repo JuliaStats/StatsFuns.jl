@@ -1,5 +1,6 @@
-using StatsFuns, Test
-import StatsFuns.RFunctions
+using StatsFuns
+using StatsFuns: RFunctions
+using Test
 
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = @inferred(statsfun(params..., a))
@@ -118,15 +119,32 @@ end
 
 @testset "RMath" begin
     rmathcomp_tests("beta", [
-        ((1.0, 1.0), 0.01:0.01:0.99),
-        ((2.0, 3.0), 0.01:0.01:0.99),
-        ((10.0, 2.0), 0.01:0.01:0.99),
-        ((10, 2), 0.01:0.01:0.99),
-        ((1f0, 1f0), 0.01f0:0.01f0:0.99f0),
-        ((1.0, 1.0), 0.01f0:0.01f0:0.99f0),
-        ((Float16(1), Float16(1)), Float16(0.01):Float16(0.01):Float16(0.99)),
-        ((1f0, 1f0), Float16(0.01):Float16(0.01):Float16(0.99)),
+        ((0.1, 1.0), 0.0:0.01:1.0),
+        ((1.0, 1.0), 0.0:0.01:1.0),
+        ((2.0, 3.0), 0.0:0.01:1.0),
+        ((10.0, 2.0), 0.0:0.01:1.0),
+        ((10, 2), 0.0:0.01:1.0),
+        ((1f0, 1f0), 0f0:0.01f0:1f0),
+        ((1.0, 1.0), 0f0:0.01f0:1f0),
+        ((Float16(1), Float16(1)), Float16(0):Float16(0.01):Float16(1)),
+        ((1f0, 1f0), Float16(0):Float16(0.01):Float16(1)),
     ])
+
+    # We test the following extreme parameters separately since
+    # a slightly larger tolerance is needed.
+    #
+    # For `betapdf(1000, 2, 0.58)`:
+    # StatsFuns:   1.9419987107407202e-231
+    # Rmath:       1.941998710740941e-231
+    # Mathematica: 1.941998710742487e-231
+    # For `betapdf(1000, 2, 0.68)`:
+    # StatsFuns:   1.5205049885199752e-162
+    # Rmath:       1.5205049885200616e-162
+    # Mathematica: 1.520504988521358e-162
+    @testset "Beta(1000, 2)" begin
+        rmathcomp("beta", (1000, 2), setdiff(0.0:0.01:1.0, (0.58, 0.68)))
+        rmathcomp("beta", (1000, 2), [0.58, 0.68], 1e-12)
+    end
 
     rmathcomp_tests("binom", [
         ((1, 0.5), 0.0:1.0),
@@ -162,16 +180,16 @@ end
     ])
 
     rmathcomp_tests("gamma", [
-        ((1.0, 1.0), (0.05:0.05:12.0)),
-        ((0.5, 1.0), (0.05:0.05:12.0)),
-        ((3.0, 1.0), (0.05:0.05:12.0)),
-        ((9.0, 1.0), (0.05:0.05:12.0)),
-        ((2.0, 3.0), (0.05:0.05:12.0)),
-        ((2, 3), (1:12)),
-        ((1f0, 1f0), (0.05f0:0.05f0:12f0)),
-        ((1.0, 1.0), (0.05f0:0.05f0:12f0)),
-        ((Float16(1), Float16(1)), (Float16(0.05):Float16(0.05):Float16(12))),
-        ((1f0, 1f0), (Float16(0.05):Float16(0.05):Float16(12))),
+        ((1.0, 1.0), (0.0:0.05:12.0)),
+        ((0.5, 1.0), (0.0:0.05:12.0)),
+        ((3.0, 1.0), (0.0:0.05:12.0)),
+        ((9.0, 1.0), (0.0:0.05:12.0)),
+        ((2.0, 3.0), (0.0:0.05:12.0)),
+        ((2, 3), (0:12)),
+        ((1f0, 1f0), (0f0:0.05f0:12f0)),
+        ((1.0, 1.0), (0f0:0.05f0:12f0)),
+        ((Float16(1), Float16(1)), (Float16(0):Float16(0.05):Float16(12))),
+        ((1f0, 1f0), (Float16(0):Float16(0.05):Float16(12))),
     ])
 
     rmathcomp_tests("hyper", [

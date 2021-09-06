@@ -1,8 +1,8 @@
 # functions related to binomial distribution
 
-import .RFunctions:
-    binompdf,
-    binomlogpdf,
+# R implementations
+# For pdf and logpdf we use the Julia implementation
+using .RFunctions:
     binomcdf,
     binomccdf,
     binomlogcdf,
@@ -12,8 +12,12 @@ import .RFunctions:
     binominvlogcdf,
     binominvlogccdf
 
-# pdf for numbers with generic types
+
+# Julia implementations
 binompdf(n::Real, p::Real, k::Real) = exp(binomlogpdf(n, p, k))
 
-# logpdf for numbers with generic types
-binomlogpdf(n::Real, p::Real, k::Real) = -log1p(n) - logbeta(n - k + 1, k + 1) + k * log(p) + (n - k) * log1p(-p)
+binomlogpdf(n::Real, p::Real, k::Real) = binomlogpdf(promote(n, p, k)...)
+function binomlogpdf(n::T, p::T, k::T) where {T<:Real}
+    val = betalogpdf(k + 1, n - k + 1, p) - log(n + 1)
+    return 0 <= k <= n && isinteger(n) && isinteger(k) ? val : oftype(val, -Inf)
+end
