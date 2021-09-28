@@ -55,3 +55,10 @@ end
         end
     end
 end
+
+@testset "binom special cases" begin
+    for (n, p, k) in ((5, 0.0, 0), (5, 1.0, 5))
+        @test iszero(binomlogpdf(n, p, k))
+        @test isone(binompdf(n, p, k))
+    end
+end
