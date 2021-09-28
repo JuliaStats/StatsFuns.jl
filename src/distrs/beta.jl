@@ -1,8 +1,8 @@
 # functions related to beta distributions
 
-import .RFunctions:
-    betapdf,
-    betalogpdf,
+# R implementations
+# For pdf and logpdf we use the Julia implementation
+using .RFunctions:
     betacdf,
     betaccdf,
     betalogcdf,
@@ -12,8 +12,13 @@ import .RFunctions:
     betainvlogcdf,
     betainvlogccdf
 
-# pdf for numbers with generic types
-betapdf(α::Real, β::Real, x::Number) = x^(α - 1) * (1 - x)^(β - 1) / beta(α, β)
+# Julia implementations
+betapdf(α::Real, β::Real, x::Real) = exp(betalogpdf(α, β, x))
 
-# logpdf for numbers with generic types
-betalogpdf(α::Real, β::Real, x::Number) = (α - 1) * log(x) + (β - 1) * log1p(-x) - logbeta(α, β)
+betalogpdf(α::Real, β::Real, x::Real) = betalogpdf(promote(α, β, x)...)
+function betalogpdf(α::T, β::T, x::T) where {T<:Real}
+    # we ensure that `log(x)` and `log1p(-x)` do not error
+    y = clamp(x, 0, 1)
+    val = xlogy(α - 1, y) + xlog1py(β - 1, -y) - logbeta(α, β)
+    return x < 0 || x > 1 ? oftype(val, -Inf) : val
+end

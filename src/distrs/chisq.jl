@@ -1,8 +1,8 @@
 # functions related to chi-square distribution
 
-import .RFunctions:
-    chisqpdf,
-    chisqlogpdf,
+# R implementations
+# For pdf and logpdf we use the Julia implementation
+using .RFunctions:
     chisqcdf,
     chisqccdf,
     chisqlogcdf,
@@ -12,14 +12,11 @@ import .RFunctions:
     chisqinvlogcdf,
     chisqinvlogccdf
 
-# pdf for numbers with generic types
-function chisqpdf(k::Real, x::Number)
-  hk = k / 2  # half k
-  1 / (2^(hk) * gamma(hk)) * x^(hk - 1) * exp(-x / 2)
-end
+# Julia implementations
+# promotion ensures that we do forward e.g. `chisqpdf(::Int, ::Float32)` to
+# `gammapdf(::Float32, ::Int, ::Float32)` but not `gammapdf(::Float64, ::Int, ::Float32)`
+chisqpdf(k::Real, x::Real) = chisqpdf(promote(k, x)...)
+chisqpdf(k::T, x::T) where {T<:Real} = gammapdf(k / 2, 2, x)
 
-# logpdf for numbers with generic types
-function chisqlogpdf(k::Real, x::Number)
-  hk = k / 2  # half k
-  -hk * logtwo - loggamma(hk) + (hk - 1) * log(x) - x / 2
-end
+chisqlogpdf(k::Real, x::Real) = chisqlogpdf(promote(k, x)...)
+chisqlogpdf(k::T, x::T) where {T<:Real} = gammalogpdf(k / 2, 2, x)

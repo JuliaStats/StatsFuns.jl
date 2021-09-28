@@ -1,8 +1,8 @@
 # functions related to student's T distribution
 
-import .RFunctions:
-    tdistpdf,
-    tdistlogpdf,
+# R implementations
+# For pdf and logpdf we use the Julia implementation
+using .RFunctions:
     tdistcdf,
     tdistccdf,
     tdistlogcdf,
@@ -12,8 +12,11 @@ import .RFunctions:
     tdistinvlogcdf,
     tdistinvlogccdf
 
-# pdf for numbers with generic types
-tdistpdf(ν::Real, x::Number) = gamma((ν + 1) / 2) / (sqrt(ν * pi) * gamma(ν / 2)) * (1 + x^2 / ν)^(-(ν + 1) / 2)
+# Julia implementations
+tdistpdf(ν::Real, x::Real) = exp(tdistlogpdf(ν, x))
 
-# logpdf for numbers with generic types
-tdistlogpdf(ν::Real, x::Number) = loggamma((ν + 1) / 2) - log(ν * pi) / 2 - loggamma(ν / 2) + (-(ν + 1) / 2) * log1p(x^2 / ν)
+tdistlogpdf(ν::Real, x::Real) = tdistlogpdf(promote(ν, x)...)
+function tdistlogpdf(ν::T, x::T) where {T<:Real}
+    νp12 = (ν + 1) / 2
+    return loggamma(νp12) - (logπ + log(ν)) / 2 - loggamma(ν / 2) - νp12 * log1p(x^2 / ν)
+end

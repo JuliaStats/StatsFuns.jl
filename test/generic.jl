@@ -1,9 +1,10 @@
 using StatsFuns
+using StatsFuns: RFunctions
 using ForwardDiff: Dual
 
-function check_rmath(fname, statsfun, params, aname, a, isprob, rtol)
-    v = statsfun(params..., a)
-    rv = statsfun(params..., Dual(a)).value
+function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
+    v = @inferred(rmathfun(params..., a))
+    rv = @inferred(statsfun(params..., Dual(a))).value
     if isprob
         rd = abs(v / rv - 1.0)
         if rd > rtol
@@ -27,10 +28,12 @@ function genericcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(e
   logpdf = string(basename, "logpdf")
   stats_pdf = eval(Symbol(pdf))
   stats_logpdf = eval(Symbol(logpdf))
+  rmath_pdf = eval(Meta.parse(string("RFunctions.", pdf)))
+  rmath_logpdf = eval(Meta.parse(string("RFunctions.", logpdf)))
   for i = 1:length(X)
     x = X[i]
-    check_rmath(pdf, stats_pdf, params, "x", x, true, rtol)
-    check_rmath(logpdf, stats_logpdf, params, "x", x, false, rtol)
+    check_rmath(pdf, stats_pdf, rmath_pdf, params, "x", x, true, rtol)
+    check_rmath(logpdf, stats_logpdf, rmath_logpdf, params, "x", x, false, rtol)
   end
 end
 

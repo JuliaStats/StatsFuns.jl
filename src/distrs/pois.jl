@@ -1,8 +1,8 @@
 # functions related to Poisson distribution
 
-import .RFunctions:
-    poispdf,
-    poislogpdf,
+# R implementations
+# For pdf and logpdf we use the Julia implementation
+using .RFunctions:
     poiscdf,
     poisccdf,
     poislogcdf,
@@ -12,19 +12,11 @@ import .RFunctions:
     poisinvlogcdf,
     poisinvlogccdf
 
-# generic versions
+# Julia implementations
 poispdf(λ::Real, x::Real) = exp(poislogpdf(λ, x))
 
-poislogpdf(λ::T, x::T) where {T <: Real} = xlogy(x, λ) - λ - loggamma(x + 1)
-
-poislogpdf(λ::Number, x::Number) = poislogpdf(promote(float(λ), x)...)
-
-#=
-function poislogpdf(λ::Union{Float32,Float64}, x::Union{Float64,Float32,Integer})
-    if iszero(λ)
-        iszero(x) ? zero(λ) : oftype(λ, -Inf)
-    elseif iszero(x)
-        -λ
-    else
-        -lstirling_asym(x + 1)
-=#
+poislogpdf(λ::Real, x::Real) = poislogpdf(promote(λ, x)...)
+function poislogpdf(λ::T, x::T) where {T <: Real}
+    val = xlogy(x, λ) - λ - loggamma(x + 1)
+    return x >= 0 && isinteger(x) ? val : oftype(val, -Inf)
+end

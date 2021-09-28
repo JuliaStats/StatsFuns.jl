@@ -12,9 +12,9 @@ ChainRulesCore.@scalar_rule(
     binomlogpdf(n::Real, p::Real, k::Real),
     @setup(z = digamma(n - k + 1)),
     (
-        digamma(n + 2) - z + log1p(-p) - 1 / (1 + n),
+        ChainRulesCore.NoTangent(),
         (k / p - n) / (1 - p),
-        z - digamma(k + 1) + logit(p),
+        ChainRulesCore.NoTangent(),
     ),
 )
 
@@ -59,7 +59,7 @@ ChainRulesCore.@scalar_rule(
 
 ChainRulesCore.@scalar_rule(
     poislogpdf(λ::Number, x::Number),
-    ((iszero(x) && iszero(λ) ? zero(x / λ) : x / λ) - 1, log(λ) - digamma(x + 1)),
+    ((iszero(x) && iszero(λ) ? zero(x / λ) : x / λ) - 1, ChainRulesCore.NoTangent()),
 )
 
 ChainRulesCore.@scalar_rule(

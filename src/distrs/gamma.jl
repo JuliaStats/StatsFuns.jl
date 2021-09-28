@@ -1,8 +1,8 @@
 # functions related to gamma distribution
 
-import .RFunctions:
-    gammapdf,
-    gammalogpdf,
+# R implementations
+# For pdf and logpdf we use the Julia implementation
+using .RFunctions:
     gammacdf,
     gammaccdf,
     gammalogcdf,
@@ -12,8 +12,13 @@ import .RFunctions:
     gammainvlogcdf,
     gammainvlogccdf
 
-# pdf for numbers with generic types
-gammapdf(k::Real, θ::Real, x::Number) = 1 / (gamma(k) * θ^k) * x^(k - 1) * exp(-x / θ)
+# Julia implementations
+gammapdf(k::Real, θ::Real, x::Real) = exp(gammalogpdf(k, θ, x))
 
-# logpdf for numbers with generic types
-gammalogpdf(k::Real, θ::Real, x::Number) = -loggamma(k) - k * log(θ) + (k - 1) * log(x) - x / θ
+gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)
+function gammalogpdf(k::T, θ::T, x::T) where {T<:Real}
+    # we ensure that `log(x)` does not error if `x < 0`
+    xθ = max(x, 0) / θ
+    val = -loggamma(k) + xlogy(k - 1, xθ) - log(θ) - xθ
+    return x < 0 ? oftype(val, -Inf) : val
+end
