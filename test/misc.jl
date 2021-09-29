@@ -63,3 +63,10 @@ end
     @test binomlogpdf(1, 0.5, prevfloat(1.0)) == -Inf
     @test binomlogpdf(1, 0.5, nextfloat(1.0)) == -Inf
 end
+
+@testset "binom special cases" begin
+    for (n, p, k) in ((5, 0.0, 0), (5, 1.0, 5))
+        @test iszero(binomlogpdf(n, p, k))
+        @test isone(binompdf(n, p, k))
+    end
+end
