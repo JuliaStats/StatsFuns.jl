@@ -55,3 +55,11 @@ end
         end
     end
 end
+
+# https://github.com/JuliaStats/StatsFuns.jl/issues/115
+@testset "support of binomial distribution" begin
+    @test iszero(binompdf(1, 0.5, prevfloat(1.0)))
+    @test iszero(binompdf(1, 0.5, nextfloat(1.0)))
+    @test binomlogpdf(1, 0.5, prevfloat(1.0)) == -Inf
+    @test binomlogpdf(1, 0.5, nextfloat(1.0)) == -Inf
+end
