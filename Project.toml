@@ -14,6 +14,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 ChainRulesCore = "1"
+HypergeometricFunctions = "0.3"
 InverseFunctions = "0.1"
 IrrationalConstants = "0.1"
 LogExpFunctions = "0.3.2"
