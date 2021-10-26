@@ -69,6 +69,12 @@ function _gammalogccdf(k::T, θ::T, x::T) where {T<:Union{Float16,Float32}}
     return T(_gammalogccdf(Float64(k), Float64(θ), Float64(x)))
 end
 
-gammainvcdf(k::Real, θ::Real, p::Real) = θ*gamma_inc_inv(k, p, 1 - p)
+function gammainvcdf(k::Real, θ::Real, p::Real)
+    _k, _θ, _p = map(float, promote(k, θ, p))
+    return _θ*gamma_inc_inv(_k, _p, 1 - _p)
+end
 
-gammainvccdf(k::Real, θ::Real, p::Real) = θ*gamma_inc_inv(k, 1 - p, p)
+function gammainvccdf(k::Real, θ::Real, p::Real)
+    _k, _θ, _p = map(float, promote(k, θ, p))
+    return _θ*gamma_inc_inv(_k, 1 - _p, _p)
+end
