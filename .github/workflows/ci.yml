@@ -1,8 +1,5 @@
 name: CI
 
-env:
-  JULIA_NUM_THREADS: 2
-
 on:
   pull_request:
     branches:
@@ -17,6 +14,9 @@ concurrency:
   # Cancel intermediate builds: only if it is a pull request build.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+env:
+  JULIA_NUM_THREADS: 2
 
 jobs:
   test:
