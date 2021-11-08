@@ -1,4 +1,4 @@
-InverseFunctions.inverse(::typeof(norncdf)) = norminvcdf
+InverseFunctions.inverse(::typeof(normcdf)) = norminvcdf
 InverseFunctions.inverse(::typeof(norminvcdf)) = normcdf
 
 InverseFunctions.inverse(::typeof(normccdf)) = norminvccdf
