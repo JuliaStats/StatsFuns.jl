@@ -6,6 +6,7 @@ using Base: Math.@horner
 using Reexport
 using SpecialFunctions
 import ChainRulesCore
+import InverseFunctions
 
 # reexports
 @reexport using IrrationalConstants:
@@ -260,5 +261,6 @@ include(joinpath("distrs", "tdist.jl"))
 include(joinpath("distrs", "srdist.jl"))
 
 include("chainrules.jl")
+include("inverse.jl")
 
 end # module
