@@ -18,7 +18,7 @@ IrrationalConstants = "0.1"
 LogExpFunctions = "0.3.2"
 Reexport = "1"
 Rmath = "0.4, 0.5, 0.6, 0.7"
-SpecialFunctions = "0.8, 0.9, 0.10, 1.0"
+SpecialFunctions = "0.8, 0.9, 0.10, 1.0, 2"
 julia = "1"
 
 [extras]
