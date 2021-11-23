@@ -1,6 +1,6 @@
 name = "StatsFuns"
 uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
-version = "0.9.13"
+version = "0.9.14"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
@@ -18,7 +18,7 @@ IrrationalConstants = "0.1"
 LogExpFunctions = "0.3.2"
 Reexport = "1"
 Rmath = "0.4, 0.5, 0.6, 0.7"
-SpecialFunctions = "0.8, 0.9, 0.10, 1.0"
+SpecialFunctions = "0.8, 0.9, 0.10, 1.0, 2"
 julia = "1"
 
 [extras]
