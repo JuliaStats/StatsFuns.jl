@@ -23,7 +23,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=nothing)
     # always uses a tolerance based on `eps(one(Float64))` even when parameters are of type
     # Float32
     rtol = if rtol === nothing
-        PT = mapreduce(typeof, promote_type, params)
+        PT = Base.promote_typeof(params...)
         100 * eps(float(one(promote_type(PT, eltype(X)))))
     else
         rtol
