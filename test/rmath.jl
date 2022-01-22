@@ -17,17 +17,12 @@ end
 get_statsfun(fname) = eval(Symbol(fname))
 get_rmathfun(fname) = eval(Meta.parse(string("RFunctions.", fname)))
 
-function rmathcomp(basename, params, X::AbstractArray, rtol=nothing)
+function rmathcomp(basename, params, X::AbstractArray)
     # compute desired tolerance:
     # has to take into account `params` as well since otherwise e.g. `X::Array{<:Rational}`
     # always uses a tolerance based on `eps(one(Float64))` even when parameters are of type
     # Float32
-    rtol = if rtol === nothing
-        PT = Base.promote_typeof(params...)
-        100 * eps(float(one(promote_type(PT, eltype(X)))))
-    else
-        rtol
-    end
+    rtol = 100 * eps(float(one(promote_type(Base.promote_typeof(params...), eltype(X)))))
 
     # tackle pdf specially
     has_pdf = true
