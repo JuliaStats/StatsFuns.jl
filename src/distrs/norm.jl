@@ -91,14 +91,14 @@ end
 norminvcdf(p::Real) = -erfcinv(2*p) * sqrt2
 function norminvcdf(μ::Real, σ::Real, p::Real)
     # Promote to ensure that we don't compute erfcinv in low precision and then promote
-    _μ, _σ, _p = map(float, promote(μ, σ, p))
+    _μ, _σ, _p = promote(μ, σ, p)
     xval(_μ, _σ, norminvcdf(_p))
 end
 
 norminvccdf(p::Real) = erfcinv(2*p) * sqrt2
 function norminvccdf(μ::Real, σ::Real, p::Real)
     # Promote to ensure that we don't compute erfcinv in low precision and then promote
-    _μ, _σ, _p = map(float, promote(μ, σ, p))
+    _μ, _σ, _p = promote(μ, σ, p)
     xval(_μ, _σ, norminvccdf(_p))
 end
 
