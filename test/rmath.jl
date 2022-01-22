@@ -17,7 +17,18 @@ end
 get_statsfun(fname) = eval(Symbol(fname))
 get_rmathfun(fname) = eval(Meta.parse(string("RFunctions.", fname)))
 
-function rmathcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(eltype(X)))))
+function rmathcomp(basename, params, X::AbstractArray, rtol=nothing)
+    # compute desired tolerance:
+    # has to take into account `params` as well since otherwise e.g. `X::Array{<:Rational}`
+    # always uses a tolerance based on `eps(one(Float64))` even when parameters are of type
+    # Float32
+    rtol = if rtol === nothing
+        PT = mapreduce(typeof, promote_type, params)
+        100 * eps(float(one(promote_type(PT, eltype(X)))))
+    else
+        rtol
+    end
+
     # tackle pdf specially
     has_pdf = true
     if basename == "srdist"
@@ -264,6 +275,8 @@ end
         ((0.0, 0.0), -6.0:0.1:6.0),
         ((0f0, 1f0), -6f0:0.01f0:6f0),
         ((0.0, 1.0), -6f0:0.01f0:6f0),
+        ((0, 2), -6//1:1//2:6//1),
+        ((0f0, 2f0), -6//1:1//2:6//1),
         # Fail since `SpecialFunctions.erfcx` is not implemented for `Float16`
         #((Float16(0), Float16(1)), -Float16(6):Float16(0.01):Float16(6)),
         #((0f0, 1f0), -Float16(6):Float16(0.01):Float16(6)),
