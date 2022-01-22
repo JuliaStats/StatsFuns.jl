@@ -89,18 +89,14 @@ function normlogccdf(μ::Real, σ::Real, x::Number)
 end
 
 norminvcdf(p::Real) = -erfcinv(2*p) * sqrt2
-function norminvcdf(μ::Real, σ::Real, p::Real)
-    # Promote to ensure that we don't compute erfcinv in low precision and then promote
-    _μ, _σ, _p = promote(μ, σ, p)
-    xval(_μ, _σ, norminvcdf(_p))
-end
+# Promote to ensure that we don't compute erfcinv in low precision and then promote
+norminvcdf(μ::Real, σ::Real, p::Real) = norminvcdf(promote(μ, σ, p)...)
+norminvcdf(μ::T, σ::T, p::T) where {T<:Real} = xval(μ, σ, norminvcdf(p))
 
 norminvccdf(p::Real) = erfcinv(2*p) * sqrt2
-function norminvccdf(μ::Real, σ::Real, p::Real)
-    # Promote to ensure that we don't compute erfcinv in low precision and then promote
-    _μ, _σ, _p = promote(μ, σ, p)
-    xval(_μ, _σ, norminvccdf(_p))
-end
+# Promote to ensure that we don't compute erfcinv in low precision and then promote
+norminvccdf(μ::Real, σ::Real, p::Real) = norminvccdf(promote(μ, σ, p)...)
+norminvccdf(μ::T, σ::T, p::T) where {T<:Real} = xval(μ, σ, norminvccdf(p))
 
 # invlogcdf. Fixme! Support more precisions than Float64
 norminvlogcdf(lp::Union{Float16,Float32}) = convert(typeof(lp), _norminvlogcdf_impl(Float64(lp)))
