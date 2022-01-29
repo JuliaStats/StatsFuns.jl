@@ -12,8 +12,16 @@ function fdistlogpdf(ν1::T, ν2::T, x::T) where {T<:Real}
     return x < 0 ? oftype(val, -Inf) : val
 end
 
-for f in ("cdf", "ccdf", "logcdf", "logccdf", "invcdf", "invccdf", "invlogcdf", "invlogccdf")
+for f in ("cdf", "ccdf", "logcdf", "logccdf")
     ff = Symbol("fdist"*f)
     bf = Symbol("beta"*f)
     @eval $ff(ν1::Real, ν2::Real, x::Real) = $bf(ν1/2, ν2/2, inv(1 + ν2/(ν2*max(0, x))))
+end
+for f in ("invcdf", "invccdf", "invlogcdf", "invlogccdf")
+    ff = Symbol("fdist"*f)
+    bf = Symbol("beta"*f)
+    @eval function $ff(ν1::Real, ν2::Real, y::Real)
+        x = $bf(ν1/2, ν2/2, y)
+        return x/(1 - x)*ν2/ν1
+    end
 end
