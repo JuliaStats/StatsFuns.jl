@@ -15,5 +15,5 @@ end
 for f in ("cdf", "ccdf", "logcdf", "logccdf", "invcdf", "invccdf", "invlogcdf", "invlogccdf")
     ff = Symbol("fdist"*f)
     bf = Symbol("beta"*f)
-    @eval $ff(ν1::Real, ν2::Real, x::Real) = $bf(ν1/2, ν2/2, inv(1 + ν2/(ν2*x)))
+    @eval $ff(ν1::Real, ν2::Real, x::Real) = $bf(ν1/2, ν2/2, inv(1 + ν2/(ν2*max(0, x))))
 end
