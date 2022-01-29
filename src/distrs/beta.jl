@@ -56,4 +56,4 @@ end
 
 betainvcdf(α::Real, β::Real, p::Real) = first(beta_inc_inv(α, β, p))
 
-betainvccdf(α::Real, β::Real, p::Real) = last(beta_inc_inv(α, β, p))
+betainvccdf(α::Real, β::Real, p::Real) = last(beta_inc_inv(β, α, p))

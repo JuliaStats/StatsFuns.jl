@@ -37,9 +37,10 @@ gammalogcdf(k::Real, θ::Real, x::Real) = _gammalogcdf(map(float, promote(k, θ,
 # Implemented via the non-log version. For tiny values, we recompute the result with
 # loggamma. In that situation, there is little risk of significant cancellation.
 function _gammalogcdf(k::Float64, θ::Float64, x::Float64)
-    l, u = gamma_inc(k, x/θ)
+    xdθ = x/θ
+    l, u = gamma_inc(k, xdθ)
     if l < eps(Float64)
-        return -log(k) + k*log(x/θ) - x/θ + log(drummond1F1(1.0, 1 + k, x/θ)) - loggamma(k)
+        return -log(k) + k*log(xdθ) - xdθ + log(drummond1F1(1.0, 1 + k, xdθ)) - loggamma(k)
     elseif l < 0.7
         return log(l)
     else
