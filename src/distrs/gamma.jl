@@ -26,10 +26,10 @@ function gammalogpdf(k::T, θ::T, x::T) where {T<:Real}
     return x < 0 ? oftype(val, -Inf) : val
 end
 
-gammacdf(k::T, θ::T, x::T) where {T<:Real} = first(gamma_inc(k, x/θ))
+gammacdf(k::T, θ::T, x::T) where {T<:Real} = first(gamma_inc(k, max(0, x)/θ))
 gammacdf(k::Real, θ::Real, x::Real)        = gammacdf(promote(float(k), θ, x)...)
 
-gammaccdf(k::T, θ::T, x::T) where {T<:Real} = last(gamma_inc(k, x/θ))
+gammaccdf(k::T, θ::T, x::T) where {T<:Real} = last(gamma_inc(k, max(0, x)/θ))
 gammaccdf(k::Real, θ::Real, x::Real)        = gammaccdf(promote(float(k), θ, x)...)
 
 gammalogcdf(k::Real, θ::Real, x::Real) = _gammalogcdf(map(float, promote(k, θ, x))...)
@@ -37,7 +37,7 @@ gammalogcdf(k::Real, θ::Real, x::Real) = _gammalogcdf(map(float, promote(k, θ,
 # Implemented via the non-log version. For tiny values, we recompute the result with
 # loggamma. In that situation, there is little risk of significant cancellation.
 function _gammalogcdf(k::Float64, θ::Float64, x::Float64)
-    xdθ = x/θ
+    xdθ = max(0, x)/θ
     l, u = gamma_inc(k, xdθ)
     if l < eps(Float64)
         return -log(k) + k*log(xdθ) - xdθ + log(drummond1F1(1.0, 1 + k, xdθ)) - loggamma(k)
@@ -56,9 +56,10 @@ gammalogccdf(k::Real, θ::Real, x::Real) = _gammalogccdf(map(float, promote(k, �
 # Implemented via the non-log version. For tiny values, we recompute the result with
 # loggamma. In that situation, there is little risk of significant cancellation.
 function _gammalogccdf(k::Float64, θ::Float64, x::Float64)
-    l, u = gamma_inc(k, x/θ)
+    xdθ = max(0, x)/θ
+    l, u = gamma_inc(k, xdθ)
     if u < eps(Float64)
-        return loggamma(k, x/θ) - loggamma(k)
+        return loggamma(k, xdθ) - loggamma(k)
     elseif u < 0.7
         return log(u)
     else
