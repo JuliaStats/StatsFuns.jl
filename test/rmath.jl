@@ -174,22 +174,6 @@ end
         @test betainvcdf(1000, 2, betacdf(1000, 2, 0.48)) ≈ 0.48
     end
 
-    # We test the following extreme parameters separately since
-    # a slightly larger tolerance is needed.
-    #
-    # For `betapdf(1000, 2, 0.58)`:
-    # StatsFuns:   1.9419987107407202e-231
-    # Rmath:       1.941998710740941e-231
-    # Mathematica: 1.941998710742487e-231
-    # For `betapdf(1000, 2, 0.68)`:
-    # StatsFuns:   1.5205049885199752e-162
-    # Rmath:       1.5205049885200616e-162
-    # Mathematica: 1.520504988521358e-162
-    @testset "Beta(1000, 2)" begin
-        rmathcomp("beta", (1000, 2), setdiff(0.0:0.01:1.0, (0.58, 0.68)))
-        rmathcomp("beta", (1000, 2), [0.58, 0.68], 1e-12)
-    end
-
     rmathcomp_tests("binom", [
         ((1, 0.5), 0.0:1.0),
         ((1, 0.7), 0.0:1.0),
