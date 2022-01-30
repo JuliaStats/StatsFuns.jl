@@ -15,7 +15,7 @@ end
 for f in ("cdf", "ccdf", "logcdf", "logccdf")
     ff = Symbol("fdist"*f)
     bf = Symbol("beta"*f)
-    @eval $ff(ν1::T, ν2::T, x::T) where {T<:Real} = $bf(ν1/2, ν2/2, inv(1 + ν2/(ν2*max(0, x))))
+    @eval $ff(ν1::T, ν2::T, x::T) where {T<:Real} = $bf(ν1/2, ν2/2, inv(1 + ν2/(ν1*max(0, x))))
     @eval $ff(ν1::Real, ν2::Real, x::Real) = $ff(promote(ν1, ν2, x)...)
 end
 for f in ("invcdf", "invccdf", "invlogcdf", "invlogccdf")
