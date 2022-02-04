@@ -35,7 +35,7 @@ betaccdf(α::Real, β::Real, x::Real) = last(beta_inc(α, β, min(max(0, x), 1))
 function betalogcdf(α::T, β::T, x::T) where {T<:Real}
     _x = min(max(0, x), 1)
     p, q = beta_inc(α, β, _x)
-    if p < eps(one(p))
+    if p < floatmin(p)
         # see https://dlmf.nist.gov/8.17#E7
         return -log(α) + xlogy(α, _x) + log(_₂F₁(promote(α, 1 - β, α + 1, _x)...)) - logbeta(α, β)
     elseif p <= 0.7
