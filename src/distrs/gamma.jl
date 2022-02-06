@@ -26,10 +26,22 @@ function gammalogpdf(k::T, θ::T, x::T) where {T<:Real}
     return x < 0 ? oftype(val, -Inf) : val
 end
 
-gammacdf(k::T, θ::T, x::T) where {T<:Real} = first(gamma_inc(k, max(0, x)/θ))
+function gammacdf(k::T, θ::T, x::T) where {T<:Real}
+    # Handle the degenerate case
+    if iszero(k)
+        return last(promote(k, θ, x, x >= 0))/one(θ)
+    end
+    return first(gamma_inc(k, max(0, x)/θ))
+end
 gammacdf(k::Real, θ::Real, x::Real)        = gammacdf(promote(float(k), θ, x)...)
 
-gammaccdf(k::T, θ::T, x::T) where {T<:Real} = last(gamma_inc(k, max(0, x)/θ))
+function gammaccdf(k::T, θ::T, x::T) where {T<:Real}
+    # Handle the degenerate case
+    if iszero(k)
+        return last(promote(k, θ, x, x < 0))/one(θ)
+    end
+    return last(gamma_inc(k, max(0, x)/θ))
+end
 gammaccdf(k::Real, θ::Real, x::Real)        = gammaccdf(promote(float(k), θ, x)...)
 
 gammalogcdf(k::Real, θ::Real, x::Real) = _gammalogcdf(map(float, promote(k, θ, x))...)
@@ -37,9 +49,14 @@ gammalogcdf(k::Real, θ::Real, x::Real) = _gammalogcdf(map(float, promote(k, θ,
 # Implemented via the non-log version. For tiny values, we recompute the result with
 # loggamma. In that situation, there is little risk of significant cancellation.
 function _gammalogcdf(k::Float64, θ::Float64, x::Float64)
+    # Handle the degenerate case
+    if iszero(k)
+        return log(last(promote(k, θ, x, x >= 0))/one(θ))
+    end
+
     xdθ = max(0, x)/θ
     l, u = gamma_inc(k, xdθ)
-    if l < eps(Float64) && isfinite(k) && isfinite(xdθ)
+    if l < floatmin(Float64) && isfinite(k) && isfinite(xdθ)
         return -log(k) + k*log(xdθ) - xdθ + log(drummond1F1(1.0, 1 + k, xdθ)) - loggamma(k)
     elseif l < 0.7
         return log(l)
@@ -56,9 +73,14 @@ gammalogccdf(k::Real, θ::Real, x::Real) = _gammalogccdf(map(float, promote(k, �
 # Implemented via the non-log version. For tiny values, we recompute the result with
 # loggamma. In that situation, there is little risk of significant cancellation.
 function _gammalogccdf(k::Float64, θ::Float64, x::Float64)
+    # Handle the degenerate case
+    if iszero(k)
+        return log(last(promote(k, θ, x, x < 0))/one(θ))
+    end
+
     xdθ = max(0, x)/θ
     l, u = gamma_inc(k, xdθ)
-    if u < eps(Float64)
+    if u < floatmin(Float64)
         return loggamma(k, xdθ) - loggamma(k)
     elseif u < 0.7
         return log(u)
