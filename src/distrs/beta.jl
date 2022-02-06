@@ -26,13 +26,32 @@ function betalogpdf(α::T, β::T, x::T) where {T<:Real}
     return x < 0 || x > 1 ? oftype(val, -Inf) : val
 end
 
-betacdf(α::Real, β::Real, x::Real) = first(beta_inc(α, β, min(max(0, x), 1)))
+function betacdf(α::Real, β::Real, x::Real)
+    # Handle a degenerate case
+    if iszero(α)
+        return float(last(promote(α, β, x, x >= 0)))
+    end
 
-betaccdf(α::Real, β::Real, x::Real) = last(beta_inc(α, β, min(max(0, x), 1)))
+    return first(beta_inc(α, β, min(max(0, x), 1)))
+end
+
+function betaccdf(α::Real, β::Real, x::Real)
+    # Handle a degenerate case
+    if iszero(α)
+        return float(last(promote(α, β, x, x < 0)))
+    end
+
+    last(beta_inc(α, β, min(max(0, x), 1)))
+end
 
 # The log version is currently based on non-log version. When the cdf is very small we shift
 # to an implementation based on the hypergeometric function ₂F₁ to avoid underflow.
 function betalogcdf(α::T, β::T, x::T) where {T<:Real}
+    # Handle a degenerate case
+    if iszero(α)
+        return log(last(promote(α, β, x, x >= 0)))
+    end
+
     _x = min(max(0, x), 1)
     p, q = beta_inc(α, β, _x)
     if p < floatmin(p)
@@ -47,6 +66,11 @@ end
 betalogcdf(α::Real, β::Real, x::Real) = betalogcdf(promote(α, β, x)...)
 
 function betalogccdf(α::Real, β::Real, x::Real)
+    # Handle a degenerate case
+    if iszero(α)
+        return log(last(promote(α, β, x, x < 0)))
+    end
+
     p, q = beta_inc(α, β, min(max(0, x), 1))
     if q < 0.7
         return log(q)
