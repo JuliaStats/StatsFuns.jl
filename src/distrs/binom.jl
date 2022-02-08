@@ -36,11 +36,7 @@ for l in ("", "log"), compl in (false, true)
         # so these cases have to be special cased
         if isone(p)
             newres = oftype(res, $compl ? k < n : k >= n)
-            if $l === ""
-                return newres
-            else
-                return log(newres)
-            end
+            return $(l === "" ? :newres : :(log(newres)))
         else
             return res
         end
