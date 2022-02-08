@@ -38,7 +38,7 @@ gammacdf(k::Real, θ::Real, x::Real) = gammacdf(map(float, promote(k, θ, x))...
 function gammaccdf(k::T, θ::T, x::T) where {T<:Real}
     # Handle the degenerate case
     if iszero(k)
-        return last(promote(k, θ, x, x < 0))/sqrt(one(θ))
+        return float(last(promote(x, x < 0)))
     end
     return last(gamma_inc(k, max(0, x)/θ))
 end
