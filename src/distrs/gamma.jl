@@ -51,7 +51,7 @@ gammalogcdf(k::Real, θ::Real, x::Real) = _gammalogcdf(map(float, promote(k, θ,
 function _gammalogcdf(k::Float64, θ::Float64, x::Float64)
     # Handle the degenerate case
     if iszero(k)
-        return log(last(promote(k, θ, x, x >= 0))/sqrt(one(θ)))
+        return log(x >= 0)
     end
 
     xdθ = max(0, x)/θ
