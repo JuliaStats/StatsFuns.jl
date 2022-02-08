@@ -49,7 +49,7 @@ end
 function betalogcdf(α::T, β::T, x::T) where {T<:Real}
     # Handle a degenerate case
     if iszero(α)
-        return log(last(promote(α, β, x, x >= 0)))
+        return log(last(promote(x, x >= 0)))
     end
 
     _x = clamp(x, 0, 1)
