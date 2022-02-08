@@ -33,7 +33,7 @@ function gammacdf(k::T, θ::T, x::T) where {T<:Real}
     end
     return first(gamma_inc(k, max(0, x)/θ))
 end
-gammacdf(k::Real, θ::Real, x::Real)        = gammacdf(promote(float(k), θ, x)...)
+gammacdf(k::Real, θ::Real, x::Real) = gammacdf(map(float, promote(k, θ, x))...)
 
 function gammaccdf(k::T, θ::T, x::T) where {T<:Real}
     # Handle the degenerate case
@@ -42,7 +42,7 @@ function gammaccdf(k::T, θ::T, x::T) where {T<:Real}
     end
     return last(gamma_inc(k, max(0, x)/θ))
 end
-gammaccdf(k::Real, θ::Real, x::Real)        = gammaccdf(promote(float(k), θ, x)...)
+gammaccdf(k::Real, θ::Real, x::Real) = gammaccdf(map(float, promote(k, θ, x))...)
 
 gammalogcdf(k::Real, θ::Real, x::Real) = _gammalogcdf(map(float, promote(k, θ, x))...)
 
@@ -94,11 +94,11 @@ function _gammalogccdf(k::T, θ::T, x::T) where {T<:Union{Float16,Float32}}
 end
 
 function gammainvcdf(k::Real, θ::Real, p::Real)
-    _k, _θ, _p = map(float, promote(k, θ, p))
+    _k, _θ, _p = promote(k, θ, p)
     return _θ*gamma_inc_inv(_k, _p, 1 - _p)
 end
 
 function gammainvccdf(k::Real, θ::Real, p::Real)
-    _k, _θ, _p = map(float, promote(k, θ, p))
+    _k, _θ, _p = promote(k, θ, p)
     return _θ*gamma_inc_inv(_k, 1 - _p, _p)
 end

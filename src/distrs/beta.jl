@@ -32,7 +32,7 @@ function betacdf(α::Real, β::Real, x::Real)
         return float(last(promote(α, β, x, x >= 0)))
     end
 
-    return first(beta_inc(α, β, min(max(0, x), 1)))
+    return first(beta_inc(α, β, clamp(x, 0, 1)))
 end
 
 function betaccdf(α::Real, β::Real, x::Real)
@@ -41,7 +41,7 @@ function betaccdf(α::Real, β::Real, x::Real)
         return float(last(promote(α, β, x, x < 0)))
     end
 
-    last(beta_inc(α, β, min(max(0, x), 1)))
+    last(beta_inc(α, β, clamp(x, 0, 1)))
 end
 
 # The log version is currently based on non-log version. When the cdf is very small we shift
@@ -52,7 +52,7 @@ function betalogcdf(α::T, β::T, x::T) where {T<:Real}
         return log(last(promote(α, β, x, x >= 0)))
     end
 
-    _x = min(max(0, x), 1)
+    _x = clamp(x, 0, 1)
     p, q = beta_inc(α, β, _x)
     if p < floatmin(p)
         # see https://dlmf.nist.gov/8.17#E7
@@ -71,7 +71,7 @@ function betalogccdf(α::Real, β::Real, x::Real)
         return log(last(promote(α, β, x, x < 0)))
     end
 
-    p, q = beta_inc(α, β, min(max(0, x), 1))
+    p, q = beta_inc(α, β, clamp(x, 0, 1))
     if q < 0.7
         return log(q)
     else
