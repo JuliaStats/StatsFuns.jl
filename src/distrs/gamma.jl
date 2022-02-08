@@ -29,7 +29,7 @@ end
 function gammacdf(k::T, θ::T, x::T) where {T<:Real}
     # Handle the degenerate case
     if iszero(k)
-        return last(promote(k, θ, x, x >= 0))/one(θ)
+        return last(promote(k, θ, x, x >= 0))/sqrt(one(θ))
     end
     return first(gamma_inc(k, max(0, x)/θ))
 end
@@ -38,7 +38,7 @@ gammacdf(k::Real, θ::Real, x::Real) = gammacdf(map(float, promote(k, θ, x))...
 function gammaccdf(k::T, θ::T, x::T) where {T<:Real}
     # Handle the degenerate case
     if iszero(k)
-        return last(promote(k, θ, x, x < 0))/one(θ)
+        return last(promote(k, θ, x, x < 0))/sqrt(one(θ))
     end
     return last(gamma_inc(k, max(0, x)/θ))
 end
@@ -51,7 +51,7 @@ gammalogcdf(k::Real, θ::Real, x::Real) = _gammalogcdf(map(float, promote(k, θ,
 function _gammalogcdf(k::Float64, θ::Float64, x::Float64)
     # Handle the degenerate case
     if iszero(k)
-        return log(last(promote(k, θ, x, x >= 0))/one(θ))
+        return log(last(promote(k, θ, x, x >= 0))/sqrt(one(θ)))
     end
 
     xdθ = max(0, x)/θ
@@ -75,7 +75,7 @@ gammalogccdf(k::Real, θ::Real, x::Real) = _gammalogccdf(map(float, promote(k, �
 function _gammalogccdf(k::Float64, θ::Float64, x::Float64)
     # Handle the degenerate case
     if iszero(k)
-        return log(last(promote(k, θ, x, x < 0))/one(θ))
+        return log(last(promote(k, θ, x, x < 0))/sqrt(one(θ)))
     end
 
     xdθ = max(0, x)/θ
