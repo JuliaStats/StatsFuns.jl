@@ -173,6 +173,10 @@ end
         # Test p=0.48 separately since R fails. (It's pretty slow, though, caused by the cdf being 9.0797754e-317)
         @test betainvcdf(1000, 2, betacdf(1000, 2, 0.48)) ≈ 0.48
     end
+    @testset "$(f)(0, 0, $x) should error" for f in (betacdf, betaccdf, betalogcdf, betalogccdf),
+        x in (0.0, 0.5, 1.0)
+        @test_throws DomainError f(0.0, 0.0, x)
+    end
 
     rmathcomp_tests("binom", [
         ((1, 0.5), 0.0:1.0),

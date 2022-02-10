@@ -28,7 +28,7 @@ end
 
 function betacdf(α::Real, β::Real, x::Real)
     # Handle a degenerate case
-    if iszero(α)
+    if iszero(α) && β > 0
         return float(last(promote(α, β, x, x >= 0)))
     end
 
@@ -37,7 +37,7 @@ end
 
 function betaccdf(α::Real, β::Real, x::Real)
     # Handle a degenerate case
-    if iszero(α)
+    if iszero(α) && β > 0
         return float(last(promote(α, β, x, x < 0)))
     end
 
@@ -48,7 +48,7 @@ end
 # to an implementation based on the hypergeometric function ₂F₁ to avoid underflow.
 function betalogcdf(α::T, β::T, x::T) where {T<:Real}
     # Handle a degenerate case
-    if iszero(α)
+    if iszero(α) && β > 0
         return log(last(promote(x, x >= 0)))
     end
 
@@ -67,7 +67,7 @@ betalogcdf(α::Real, β::Real, x::Real) = betalogcdf(promote(α, β, x)...)
 
 function betalogccdf(α::Real, β::Real, x::Real)
     # Handle a degenerate case
-    if iszero(α)
+    if iszero(α) && β > 0
         return log(last(promote(α, β, x, x < 0)))
     end
 
