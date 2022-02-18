@@ -236,11 +236,15 @@ export
     # misc
     logmvgamma,         # logarithm of multivariate gamma function
     logmvbeta,          # logarithm of multivariate beta function
-    lstirling_asym
+    lstirling_asym,
+
+    # tvpack
+    bvncdf    # bivariate standard normal cdf
 
 ## source files
 include("misc.jl")
 include("rmath.jl")
+include("tvpack.jl")
 
 using .RFunctions
 
