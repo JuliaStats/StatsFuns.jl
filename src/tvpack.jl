@@ -1,5 +1,3 @@
-export bvncdf
-
 # Written in Julia by Andreas Noack Jensen
 # January 2013
 #
