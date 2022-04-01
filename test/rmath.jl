@@ -79,66 +79,47 @@ function rmathcomp(basename, params, X::AbstractArray, rtol)
     end
     rmath_rand = has_rand ? get_rmathfun(rand) : nothing
 
-    if has_pdf
-        @testset "pdf with x=$x" for x in X
+    for x in X
+        if has_pdf
             check_rmath(pdf, stats_pdf, rmath_pdf,
                 params, "x", x, true, rtol)
-        end
-        @testset "logpdf with x=$x" for x in X
             check_rmath(logpdf, stats_logpdf, rmath_logpdf,
                 params, "x", x, false, rtol)
         end
-    end
-    @testset "cdf with x=$x" for x in X
         check_rmath(cdf, stats_cdf, rmath_cdf,
             params, "x", x, true, rtol)
-    end
-    @testset "ccdf with x=$x" for x in X
         check_rmath(ccdf, stats_ccdf, rmath_ccdf,
             params, "x", x, true, rtol)
-    end
-    @testset "logcdf with x=$x" for x in X
         check_rmath(logcdf, stats_logcdf, rmath_logcdf,
             params, "x", x, false, rtol)
-    end
-    @testset "logccdf with x=$x" for x in X
         check_rmath(logccdf, stats_logccdf, rmath_logccdf,
             params, "x", x, false, rtol)
-    end
 
-    p = rmath_cdf.(params..., X)
-    cp = rmath_ccdf.(params..., X)
-    lp = rmath_logcdf.(params..., X)
-    lcp = rmath_logccdf.(params..., X)
+        p = rmath_cdf(params..., x)
+        cp = rmath_ccdf(params..., x)
+        lp = rmath_logcdf(params..., x)
+        lcp = rmath_logccdf(params..., x)
 
-    @testset "invcdf with q=$_p" for _p in p
         check_rmath(invcdf, stats_invcdf, rmath_invcdf,
-            params, "q", _p, false, rtol)
-    end
-    @testset "invccdf with q=$_p" for _p in cp
+            params, "q", p, false, rtol)
         check_rmath(invccdf, stats_invccdf, rmath_invccdf,
-            params, "q", _p, false, rtol)
-    end
-    @testset "invlogcdf with log(q)=$_p" for _p in lp
+            params, "q", cp, false, rtol)
         check_rmath(invlogcdf, stats_invlogcdf, rmath_invlogcdf,
-            params, "lq", _p, false, rtol)
-    end
-    @testset "invlogccdf with log(q)=$_p" for _p in lcp
+            params, "lq", lp, false, rtol)
         check_rmath(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
-            params, "lq", _p, false, rtol)
-    end
+            params, "lq", lcp, false, rtol)
 
-    # make sure that rand works
-    if has_rand
-        rmath_rand(params...)
+        # make sure that rand works
+        if has_rand
+            rmath_rand(params...)
+        end
     end
 end
 
 function rmathcomp_tests(basename, configs)
-    @testset "$basename" begin
-        @testset "params: $params" for (params, data) in configs
-            rmathcomp(basename, params, data)
-        end
+    println("\ttesting $basename ...")
+    for (params, data) in configs
+        rmathcomp(basename, params, data)
     end
 end
 
@@ -158,24 +139,21 @@ end
         ((10, 2), [0, 1]),
         ((10, 2), 0//1:1//100:1//1),
     ])
-    # It is not possible to maintain a rtol of 1e-14 for the cdf when there is such a large difference
-    # in the magnitude of the parameters. At least not with the current parameters. Furthermore, it
-    # seems that Rmath is actually less accurate than we are but since we are comparing against Rmath
-    # we have to use rtol=1e-12 although we are probably only off by around 1e-13.
-    @testset "param: (1000, 2)" begin
-        rmathcomp(
-            "beta",
-            (1000, 2),
-            # We have to drop the 0.48 value since the R quantile function fails while we succeed.
-            # It's tested separate below.
-            setdiff(collect(0.0:0.01:1.0), 0.48),
-            1e-12)
-        # Test p=0.48 separately since R fails. (It's pretty slow, though, caused by the cdf being 9.0797754e-317)
-        @test betainvcdf(1000, 2, betacdf(1000, 2, 0.48)) ≈ 0.48
-    end
-    @testset "$(f)(0, 0, $x) should error" for f in (betacdf, betaccdf, betalogcdf, betalogccdf),
-        x in (0.0, 0.5, 1.0)
-        @test_throws DomainError f(0.0, 0.0, x)
+
+    # We test the following extreme parameters separately since
+    # a slightly larger tolerance is needed.
+    #
+    # For `betapdf(1000, 2, 0.58)`:
+    # StatsFuns:   1.9419987107407202e-231
+    # Rmath:       1.941998710740941e-231
+    # Mathematica: 1.941998710742487e-231
+    # For `betapdf(1000, 2, 0.68)`:
+    # StatsFuns:   1.5205049885199752e-162
+    # Rmath:       1.5205049885200616e-162
+    # Mathematica: 1.520504988521358e-162
+    @testset "Beta(1000, 2)" begin
+        rmathcomp("beta", (1000, 2), setdiff(0.0:0.01:1.0, (0.58, 0.68)))
+        rmathcomp("beta", (1000, 2), [0.58, 0.68], 1e-12)
     end
 
     rmathcomp_tests("binom", [
