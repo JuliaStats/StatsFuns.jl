@@ -70,3 +70,10 @@ end
         @test isone(binompdf(n, p, k))
     end
 end
+
+@testset "lstirling_asym" begin
+    # can test for equality here because the lhs is the way the value is created
+    @test Float32(lstirling_asym(1.0)) == @inferred lstirling_asym(1.0f0)
+    # for 64.0f0 the expansion is used but for 64.0 the BigFloat value is rounded
+    @test Float32(lstirling_asym(64.0)) ≈ @inferred lstirling_asym(64.0f0)
+end
