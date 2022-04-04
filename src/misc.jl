@@ -66,7 +66,7 @@ lstirling_asym(x::BigFloat) = loggamma(x) + x - log(x)*(x - big(0.5)) - log2π/b
 lstirling_asym(x::Integer) = lstirling_asym(float(x))
 
 const lstirlingF64 = Float64[lstirling_asym(k) for k in big(1):big(64)]
-const lstirlingF32 = Float64[lstirling_asym(k) for k in big(1):big(40)]
+const lstirlingF32 = [Float32(lstirlingF64[i]) for i in 1:40]
 
 function lstirling_asym(x::Float64)
     isinteger(x) && (0 < x ≤ length(lstirlingF64)) && return lstirlingF64[Int(x)]
