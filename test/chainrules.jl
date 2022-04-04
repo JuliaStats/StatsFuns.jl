@@ -6,7 +6,7 @@ using Random
 @testset "chainrules" begin
     x = exp(randn())
     y = exp(randn())
-    z = logistic(randn())
+    z = StatsFuns.logistic(randn())
     test_frule(betalogpdf, x, y, z)
     test_rrule(betalogpdf, x, y, z)
 
@@ -33,7 +33,7 @@ using Random
     test_rrule(tdistlogpdf, x, y)
 
     x = rand(1:100)
-    y = logistic(randn())
+    y = StatsFuns.logistic(randn())
     z = rand(1:x)
     test_frule(binomlogpdf, x, y, z)
     test_rrule(binomlogpdf, x, y, z)

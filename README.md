@@ -5,60 +5,13 @@ Mathematical functions related to statistics.
 [![CI](https://github.com/JuliaStats/StatsFuns.jl/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/JuliaStats/StatsFuns.jl/actions/workflows/ci.yml?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/JuliaStats/StatsFuns.jl/branch/master/graph/badge.svg?token=CV9hGTr6cW)](https://codecov.io/gh/JuliaStats/StatsFuns.jl)
 
-This package provides a collection of mathematical constants and numerical functions for statistical computing.
+This package provides a collection of numerical functions for statistical computing.
 
-## Constants
-
-```julia
-twoπ,       # 2π
-fourπ,      # 4π
-halfπ,      # π / 2
-quartπ,     # π / 4
-invπ,       # 1 / π
-twoinvπ,    # 2 / π
-fourinvπ,   # 4 / π
-inv2π,      # 1 / (2π)
-inv4π,      # 1 / (4π)
-sqrt2,      # √2
-sqrt3,      # √3
-sqrtπ,      # √π
-sqrt2π,     # √2π
-sqrt4π,     # √4π
-sqrthalfπ,  # √(π / 2)
-invsqrt2,   # 1 / √2
-invsqrt2π,  # 1 / √2π
-loghalf,    # log(1 / 2)
-logtwo,     # log(2)
-logπ,       # log(π)
-log2π,      # log(2π)
-log4π,      # log(4π)
-```
+Other mathematical constants and numerical functions are provided by the packages [IrrationalConstants.jl](https://github.com/JuliaMath/IrrationalConstants.jl) and [LogExpFunctions.jl](https://github.com/JuliaStats/LogExpFunctions.jl).
 
 ## Basic Functions
 
 ```julia
-# basicfuns
-xlogx,          # x * log(x), or 0 when x is zero
-xlogy,          # x * log(y), or 0 when x is zero
-xlog1py,        # x * log(1 + y) for x > 0, or 0 when x == 0
-logistic,       # 1 / (1 + exp(-x))
-logit,          # log(x / (1 - x))
-log1psq,        # log(1 + x^2)
-log1pexp,       # log(1 + exp(x))
-log1mexp,       # log(1 - exp(x))
-log2mexp,       # log(2 - exp(x))
-logexpm1,       # log(exp(x) - 1)
-softplus,       # alias of log1pexp
-invsoftplus,    # alias of logexpm1
-log1pmx,        # log(1 + x) - x
-logmxp1,        # log(x) - x + 1
-logaddexp,      # log(exp(x) + exp(y))
-logsubexp,      # log(abs(exp(x) - exp(y)))
-logsumexp,      # log(sum(exp(x)))
-softmax,        # exp(x_i) / sum(exp(x)), for i
-softmax!,       # inplace softmax
-
-# misc
 logmvgamma,     # logarithm of multivariate gamma function
 lstirling_asym
 ```
