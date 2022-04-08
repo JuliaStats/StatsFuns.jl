@@ -42,7 +42,12 @@ end
             #  B₁(a, b) = B(a, b)
             a = rand(eltya)
             b = rand(eltyb)
-            @test logmvbeta(1, a, b) ≈ logbeta(a, b)
+            # Older SpecialFunctions + Julia versions require slightly larger tolerance
+            if VERSION < v"1.3" && promote_type(eltya, eltyb) === Float64
+                @test logmvbeta(1, a, b) ≈ logbeta(a, b) rtol = 10 * sqrt(eps(Float64))
+            else
+                @test logmvbeta(1, a, b) ≈ logbeta(a, b)
+            end
         end
     end
 
