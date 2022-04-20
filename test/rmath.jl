@@ -79,66 +79,47 @@ function rmathcomp(basename, params, X::AbstractArray, rtol)
     end
     rmath_rand = has_rand ? get_rmathfun(rand) : nothing
 
-    if has_pdf
-        @testset "pdf with x=$x" for x in X
+    for x in X
+        if has_pdf
             check_rmath(pdf, stats_pdf, rmath_pdf,
                 params, "x", x, true, rtol)
-        end
-        @testset "logpdf with x=$x" for x in X
             check_rmath(logpdf, stats_logpdf, rmath_logpdf,
                 params, "x", x, false, rtol)
         end
-    end
-    @testset "cdf with x=$x" for x in X
         check_rmath(cdf, stats_cdf, rmath_cdf,
             params, "x", x, true, rtol)
-    end
-    @testset "ccdf with x=$x" for x in X
         check_rmath(ccdf, stats_ccdf, rmath_ccdf,
             params, "x", x, true, rtol)
-    end
-    @testset "logcdf with x=$x" for x in X
         check_rmath(logcdf, stats_logcdf, rmath_logcdf,
             params, "x", x, false, rtol)
-    end
-    @testset "logccdf with x=$x" for x in X
         check_rmath(logccdf, stats_logccdf, rmath_logccdf,
             params, "x", x, false, rtol)
-    end
 
-    p = rmath_cdf.(params..., X)
-    cp = rmath_ccdf.(params..., X)
-    lp = rmath_logcdf.(params..., X)
-    lcp = rmath_logccdf.(params..., X)
+        p = rmath_cdf(params..., x)
+        cp = rmath_ccdf(params..., x)
+        lp = rmath_logcdf(params..., x)
+        lcp = rmath_logccdf(params..., x)
 
-    @testset "invcdf with q=$_p" for _p in p
         check_rmath(invcdf, stats_invcdf, rmath_invcdf,
-            params, "q", _p, false, rtol)
-    end
-    @testset "invccdf with q=$_p" for _p in cp
+            params, "q", p, false, rtol)
         check_rmath(invccdf, stats_invccdf, rmath_invccdf,
-            params, "q", _p, false, rtol)
-    end
-    @testset "invlogcdf with log(q)=$_p" for _p in lp
+            params, "q", cp, false, rtol)
         check_rmath(invlogcdf, stats_invlogcdf, rmath_invlogcdf,
-            params, "lq", _p, false, rtol)
-    end
-    @testset "invlogccdf with log(q)=$_p" for _p in lcp
+            params, "lq", lp, false, rtol)
         check_rmath(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
-            params, "lq", _p, false, rtol)
-    end
+            params, "lq", lcp, false, rtol)
 
-    # make sure that rand works
-    if has_rand
-        rmath_rand(params...)
+        # make sure that rand works
+        if has_rand
+            rmath_rand(params...)
+        end
     end
 end
 
 function rmathcomp_tests(basename, configs)
-    @testset "$basename" begin
-        @testset "params: $params" for (params, data) in configs
-            rmathcomp(basename, params, data)
-        end
+    println("\ttesting $basename ...")
+    for (params, data) in configs
+        rmathcomp(basename, params, data)
     end
 end
 
