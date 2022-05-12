@@ -82,3 +82,11 @@ end
     # for 64.0f0 the expansion is used but for 64.0 the BigFloat value is rounded
     @test Float32(lstirling_asym(64.0)) ≈ @inferred lstirling_asym(64.0f0)
 end
+
+# https://github.com/JuliaStats/StatsFuns.jl/issues/143
+# https://github.com/JuliaMath/HypergeometricFunctions.jl/issues/47
+@testset "logbetacdf: numerical issue" begin
+    # Mathematica: N[Log[CDF[BetaDistribution[6041, 2496], 1/10]], 10]
+    @test betalogcdf(6041, 2496, 0.1) ≈ -9020.029401
+    @test betainvlogcdf(6041, 2496, betalogcdf(6041, 2496, 0.1)) ≈ 0.1
+end
