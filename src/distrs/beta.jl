@@ -47,9 +47,13 @@ end
 # The log version is currently based on non-log version. When the cdf is very small we shift
 # to an implementation based on the hypergeometric function ₂F₁ to avoid underflow.
 function betalogcdf(α::T, β::T, x::T) where {T<:Real}
-    # Handle a degenerate case
-    if iszero(α) && β > 0
+    # Handle degenerate cases
+    isinf_α = isinf(α)
+    isinf_β = isinf(β)
+    if (iszero(α) && β > 0) || (!isinf_α && isinf_β)
         return log(last(promote(x, x >= 0)))
+    elseif isinf_α && !isinf_β
+        return log(last(promote(x, x >= 1)))
     end
 
     _x = clamp(x, 0, 1)
