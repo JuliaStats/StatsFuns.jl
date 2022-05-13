@@ -1,6 +1,6 @@
 # functions related to beta distributions
 
-using HypergeometricFunctions: positive₂F₁
+using HypergeometricFunctions: _₂F₁
 
 # R implementations
 using .RFunctions:
@@ -47,13 +47,9 @@ end
 # The log version is currently based on non-log version. When the cdf is very small we shift
 # to an implementation based on the hypergeometric function ₂F₁ to avoid underflow.
 function betalogcdf(α::T, β::T, x::T) where {T<:Real}
-    # Handle degenerate cases
-    isinf_α = isinf(α)
-    isinf_β = isinf(β)
-    if (iszero(α) && β > 0) || (!isinf_α && isinf_β)
+    # Handle a degenerate case
+    if iszero(α) && β > 0
         return log(last(promote(x, x >= 0)))
-    elseif isinf_α && !isinf_β
-        return log(last(promote(x, x >= 1)))
     end
 
     _x = clamp(x, 0, 1)
@@ -61,7 +57,7 @@ function betalogcdf(α::T, β::T, x::T) where {T<:Real}
     if p < floatmin(p)
         # see https://dlmf.nist.gov/8.17#E8
         # we use E8 instead of E7 due to https://github.com/JuliaMath/HypergeometricFunctions.jl/issues/47
-        return -log(α) + xlogy(α, _x) + xlog1py(β, -_x) + log(positive₂F₁(promote(α + β, 1, α + 1, _x)...)) - logbeta(α, β)
+        return -log(α) + xlogy(α, _x) + xlog1py(β, -_x) + log(_₂F₁(promote(α + β, 1, α + 1, _x)...; method=:positive)) - logbeta(α, β)
     elseif p <= 0.7
         return log(p)
     else

@@ -30,6 +30,15 @@ for l in ("", "log"), compl in (false, true)
         if isnan(k)
             return last(promote(n, p, k))
         end
-        return ($fbeta)(max(0, floor(k) + 1), max(0, n - floor(k)), p)
+        res = ($fbeta)(max(0, floor(k) + 1), max(0, n - floor(k)), p)
+
+        # When p == 1 the betaccdf doesn't return the correct result
+        # so these cases have to be special cased
+        if isone(p)
+            newres = oftype(res, $compl ? k < n : k >= n)
+            return $(l === "" ? :newres : :(log(newres)))
+        else
+            return res
+        end
     end
 end
