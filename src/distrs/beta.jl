@@ -55,8 +55,9 @@ function betalogcdf(α::T, β::T, x::T) where {T<:Real}
     _x = clamp(x, 0, 1)
     p, q = beta_inc(α, β, _x)
     if p < floatmin(p)
-        # see https://dlmf.nist.gov/8.17#E7
-        return -log(α) + xlogy(α, _x) + log(_₂F₁(promote(α, 1 - β, α + 1, _x)...)) - logbeta(α, β)
+        # see https://dlmf.nist.gov/8.17#E8
+        # we use E8 instead of E7 due to https://github.com/JuliaMath/HypergeometricFunctions.jl/issues/47
+        return -log(α) + xlogy(α, _x) + xlog1py(β, -_x) + log(_₂F₁(promote(α + β, 1, α + 1, _x)...; method=:positive)) - logbeta(α, β)
     elseif p <= 0.7
         return log(p)
     else
