@@ -2,14 +2,6 @@
 
 # R implementations
 using .RFunctions:
-    # tdistpdf,
-    # tdistlogpdf,
-    tdistcdf,
-    tdistccdf,
-    tdistlogcdf,
-    tdistlogccdf,
-    tdistinvcdf,
-    tdistinvccdf,
     tdistinvlogcdf,
     tdistinvlogccdf
 
@@ -22,3 +14,27 @@ function tdistlogpdf(ν::T, x::T) where {T<:Real}
     νp12 = (ν + 1) / 2
     return loggamma(νp12) - (logπ + log(ν)) / 2 - loggamma(ν / 2) - νp12 * log1p(x^2 / ν)
 end
+function tdistcdf(ν::T, x::T) where {T<:Real}
+    if x < 0 && r < (0x1p-26 * x)^2
+       return -log(abs(x))*r + log(r)*muladd(r, .5, -1.) - logbeta(r/2, 1/2)
+    end
+    q = 0.5*beta_inc(r/2, 1/2, r/muladd(x, x, r))[1]
+    return ifelse(q > 0, 1 - q, q)
+end
+function tdistlogcdf(ν::T, x::T) where {T<:Real}
+    if x < 0 && r < (0x1p-26 * x)^2
+       return -log(abs(x))*r + log(r)*muladd(r, .5, -1.) - logbeta(r/2, 1/2)
+    end
+    q = 0.5*beta_inc(r/2, 1/2, r/muladd(x, x, r))[1]
+    return q > 0 ? log1p(-q) : log(q)
+end
+tdistccdf(ν, x) = tdistcdf(ν, -x)
+tdistlogccdf(ν, x) = tdistlogcdf(ν, -x)
+
+function tdistinvcdf(ν, x::Real)
+    if x > .5
+        return -tdistinvcdf(d, 1-x)
+    end
+    return -sqrt(ν * (inv(beta_inc_inv(ν/2, 1/2, 2*x)[1]) - 1))
+end
+tdistinvccdf(ν, x::Real) = -tdistinvcdf(ν, x)
