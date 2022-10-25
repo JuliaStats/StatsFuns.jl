@@ -15,17 +15,17 @@ function tdistlogpdf(ν::T, x::T) where {T<:Real}
     return loggamma(νp12) - (logπ + log(ν)) / 2 - loggamma(ν / 2) - νp12 * log1p(x^2 / ν)
 end
 function tdistcdf(ν::T, x::T) where {T<:Real}
-    if x < 0 && r < (0x1p-26 * x)^2
-       return -log(abs(x))*r + log(r)*muladd(r, .5, -1.) - logbeta(r/2, 1/2)
+    if x < 0 && ν < (0x1p-26 * x)^2
+       return -log(abs(x))*ν + log(ν)*muladd(ν, T(.5), -1.) - logbeta(ν/2, T(.5))
     end
-    q = 0.5*beta_inc(r/2, 1/2, r/muladd(x, x, r))[1]
+    q = T(0.5)*beta_inc(ν/2, T(.5), ν/muladd(x, x, ν))[1]
     return ifelse(q > 0, 1 - q, q)
 end
 function tdistlogcdf(ν::T, x::T) where {T<:Real}
-    if x < 0 && r < (0x1p-26 * x)^2
-       return -log(abs(x))*r + log(r)*muladd(r, .5, -1.) - logbeta(r/2, 1/2)
+    if x < 0 && ν < (0x1p-26 * x)^2
+       return -log(abs(x))*ν + log(ν)*muladd(ν, T(.5), -1) - logbeta(ν/2, T(.5))
     end
-    q = 0.5*beta_inc(r/2, 1/2, r/muladd(x, x, r))[1]
+    q = T(.5)*beta_inc(ν/2, T(.5), ν/muladd(x, x, r))[1]
     return q > 0 ? log1p(-q) : log(q)
 end
 tdistccdf(ν, x) = tdistcdf(ν, -x)
