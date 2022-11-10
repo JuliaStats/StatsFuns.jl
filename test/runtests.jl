@@ -6,7 +6,9 @@ for t in tests
     include(fp)
 end
 
-using JET
-@testset "Static analysis" begin
-    @test isempty(JET.get_reports(report_package("StatsFuns", target_modules=(StatsFuns,))))
+if VERSION >= v"1.7"
+    using JET
+    @testset "Static analysis" begin
+        @test isempty(JET.get_reports(report_package("StatsFuns", target_modules=(StatsFuns,))))
+    end
 end
