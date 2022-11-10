@@ -5,3 +5,8 @@ for t in tests
     println("* running $fp")
     include(fp)
 end
+
+using JET
+@testset "Static analysis" begin
+    @test isempty(JET.get_reports(report_package("StatsFuns", target_modules=(StatsFuns,))))
+end
