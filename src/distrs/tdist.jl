@@ -42,7 +42,7 @@ function tdistinvcdf(ν::T, p::T) where T<:Real
     elseif p < 0.5
         return -sqrt(fdistinvccdf(one(ν), ν, 2*p))
     else
-        sqrt(fdistinvccdf(one(ν), ν, 2*(1 - p)))
+        return sqrt(fdistinvccdf(one(ν), ν, 2*(1 - p)))
     end
 end
 tdistinvcdf(ν::Real, p::Real) = tdistinvcdf(map(float, promote(ν, p))...)
