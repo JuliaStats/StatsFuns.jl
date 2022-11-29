@@ -13,9 +13,9 @@ function tdistcdf(ν::T, x::T) where T<:Real
     if isinf(ν)
         return normcdf(x)
     elseif x < 0
-        return fdistccdf(one(ν), ν, x*x)/2
+        return fdistccdf(one(ν), ν, x^2)/2
     else
-        return 1 - fdistccdf(one(ν), ν, x*x)/2
+        return 1 - fdistccdf(one(ν), ν, x^2)/2
     end
 end
 tdistcdf(ν::Real, x::Real) = tdistcdf(map(float, promote(ν, x))...)
@@ -26,10 +26,10 @@ function tdistlogcdf(ν::T, x::T) where T<:Real
     if isinf(ν)
         return normlogcdf(x)
     elseif x < 0
-        ret = fdistlogccdf(one(ν), ν, x*x)
-        return ret - log(2*one(ret))
+        ret = fdistlogccdf(one(ν), ν, x^2)
+        return ret - logtwo
     else
-        return log1p(-fdistccdf(one(ν), ν, x*x)/2)
+        return log1p(-fdistccdf(one(ν), ν, x^2)/2)
     end
 end
 tdistlogcdf(ν::Real, x::Real) = tdistlogcdf(map(float, promote(ν, x))...)
@@ -64,7 +64,7 @@ function tdistinvlogcdf(ν::T, logp::T) where T<:Real
     if isinf(ν)
         return norminvlogcdf(logp)
     elseif logp < -log(2)
-        return -sqrt(fdistinvlogccdf(one(ν), ν, logp + log(2*one(logp))))
+        return -sqrt(fdistinvlogccdf(one(ν), ν, logp + logtwo))
     else
         sqrt(fdistinvccdf(one(ν), ν, -2*_expm1(logp)))
     end
