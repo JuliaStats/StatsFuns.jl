@@ -66,7 +66,7 @@ function tdistinvlogcdf(ν::T, logp::T) where T<:Real
     elseif logp < -log(2)
         return -sqrt(fdistinvlogccdf(one(ν), ν, logp + logtwo))
     else
-        sqrt(fdistinvccdf(one(ν), ν, -2*_expm1(logp)))
+        return sqrt(fdistinvccdf(one(ν), ν, -2*_expm1(logp)))
     end
 end
 tdistinvlogcdf(ν::Real, logp::Real) = tdistinvlogcdf(map(float, promote(ν, logp))...)
