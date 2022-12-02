@@ -1,6 +1,6 @@
 # functions related to gamma distribution
 
-using HypergeometricFunctions: drummond1F1
+using HypergeometricFunctions: _₁F₁
 
 # R implementations
 using .RFunctions:
@@ -57,7 +57,7 @@ function _gammalogcdf(k::Float64, θ::Float64, x::Float64)
     xdθ = max(0, x)/θ
     l, u = gamma_inc(k, xdθ)
     if l < floatmin(Float64) && isfinite(k) && isfinite(xdθ)
-        return -log(k) + k*log(xdθ) - xdθ + log(drummond1F1(1.0, 1 + k, xdθ)) - loggamma(k)
+        return -log(k) + k*log(xdθ) - xdθ + log(_₁F₁(1.0, 1 + k, xdθ)) - loggamma(k)
     elseif l < 0.7
         return log(l)
     else
