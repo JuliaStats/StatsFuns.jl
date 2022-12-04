@@ -85,8 +85,13 @@ end
 
 # https://github.com/JuliaStats/StatsFuns.jl/issues/143
 # https://github.com/JuliaMath/HypergeometricFunctions.jl/issues/47
-@testset "logbetacdf: numerical issue" begin
+@testset "betalogcdf: numerical issue" begin
     # Mathematica: N[Log[CDF[BetaDistribution[6041, 2496], 1/10]], 10]
     @test betalogcdf(6041, 2496, 0.1) ≈ -9020.029401
     @test betainvlogcdf(6041, 2496, betalogcdf(6041, 2496, 0.1)) ≈ 0.1
+end
+
+# https://github.com/JuliaStats/StatsFuns.jl/issues/150
+@testset "gammalogcdf: numerical issue" begin
+    @test gammalogcdf(42648.50647826826, 2.2498007956420723e-5, 0.6991377135675367) ≈ -1933.2698959040617410
 end
