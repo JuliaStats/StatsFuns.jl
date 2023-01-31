@@ -1,6 +1,9 @@
 using StatsFuns
 using StatsFuns: RFunctions
 using ForwardDiff: Dual
+using Test
+
+include("utils.jl")
 
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = @inferred(rmathfun(params..., a))
@@ -14,17 +17,7 @@ function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     end
 end
 
-function genericcomp(basename, params, X::AbstractArray)
-    # compute default tolerance:
-    # has to take into account `params` as well since otherwise e.g. `X::Array{<:Rational}`
-    # always uses a tolerance based on `eps(one(Float64))` even when parameters are of type
-    # Float32
-    # eps^(7//8) means requiring equality of about 7/8 of the significant digits
-    # Corresponds to tolerances of ~2e-14 (Float64), ~9f-7 (Float32) and ~0.002 (Float16)
-    rtol = eps(float(one(promote_type(Base.promote_typeof(params...), eltype(X)))))^(7//8)
-    genericcomp(basename, params, X, rtol)
-end
-function genericcomp(basename, params, X::AbstractArray, rtol)
+function genericcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params, X))
   pdf = string(basename, "pdf")
   logpdf = string(basename, "logpdf")
   stats_pdf = eval(Symbol(pdf))
