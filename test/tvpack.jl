@@ -1,4 +1,5 @@
 using StatsFuns, Test
+using StatsFuns: bvtcdf
 
 @testset "bvncdf: bivariate normal cdf" begin
 
@@ -27,4 +28,14 @@ using StatsFuns, Test
     for x in -100.0:100.0, y in -100.0:100.0, r in -1.0:0.1:1.0
         @test !isnan(bvncdf(x,y,r))
     end
+end
+
+@testset "bvtcdf: bivariate T CDF" begin
+    # Tested against R's mvtnorm::pmvt
+    @test_throws DomainError bvtcdf(-1, 1.0, 1.0, 0.5)
+    @test bvtcdf(2, 1.0, 1.0, 1.0) ≈ 0.7886751345948129
+    @test bvtcdf(2, 1.0, 1.0, -1.0) ≈ 0.5773502691896257
+    @test bvtcdf(2, 1.0, -1.0, -1.0) == 0.0
+    @test bvtcdf(2, 1.0, 1.0, 0.5) ≈ 0.6811385938470963
+    @test bvtcdf(3, 1.0, 1.0, 0.5) ≈ 0.7001771920356403
 end

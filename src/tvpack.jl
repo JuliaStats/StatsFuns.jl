@@ -12,7 +12,7 @@
 # Original source available from
 # http://www.math.wsu.edu/faculty/genz/software/fort77/tvpack.f
 
-function tvtcdf(nu::Int, h::Vector{Float64}, r::Vector{Float64})
+function tvtcdf(nu::Int, h::NTuple{3,Float64}, r::NTuple{3,Float64})
     pt = 0.5 * pi
     h1 = h[1]
     h2 = h[2]
@@ -128,10 +128,10 @@ end
 # # One Dimensional Globally Adaptive Integration Function
 
 function adonet(f::Function, a::Float64, b::Float64, tol::Float64)
-    ai = Vector{Float64}(100)
-    bi = Vector{Float64}(100)
-    ei = Vector{Float64}(100)
-    fi = Vector{Float64}(100)
+    ai = Vector{Float64}(undef, 100)
+    bi = Vector{Float64}(undef, 100)
+    ei = Vector{Float64}(undef, 100)
+    fi = Vector{Float64}(undef, 100)
     ai[1] = a
     bi[1] = b
     err = 1.0
@@ -242,7 +242,9 @@ end
 
 function bvtcdf(nu::Int, dh::Float64, dk::Float64, r::Float64)
     if nu < 1
-        return bvnuppercdf(-dh, -dk, r)
+        # The source call the commented out line below. Instead we error out
+        throw(DomainError(nu, "degrees of freedom parameter must be positive"))
+        # return bvnuppercdf(-dh, -dk, r)
     elseif 1.0 - r < eps()
         return tcdf(nu, min(dh, dk))
     elseif r + 1.0 < eps()
@@ -266,12 +268,12 @@ function bvtcdf(nu::Int, dh::Float64, dk::Float64, r::Float64)
         hs = sign(hrk)
         ks = sign(krh)
         if mod(nu, 2) == 0
-            bvt = atan2(sqrt(ors), -r) / (2.0pi)
+            bvt = atan(sqrt(ors), -r) / (2.0pi)
             gmph = dh / sqrt(16.0 * (nu + dh^2))
             gmpk = dk / sqrt(16.0 * (nu + dk^2))
-            btnckh = 2.0atan2(sqrt(xnkh), sqrt(1.0 - xnkh)) / pi
+            btnckh = 2.0atan(sqrt(xnkh), sqrt(1.0 - xnkh)) / pi
             btpdkh = 2.0sqrt(xnkh * (1.0 - xnkh)) / pi
-            btnchk = 2.0atan2(sqrt(xnhk), sqrt(1.0 - xnhk)) / pi
+            btnchk = 2.0atan(sqrt(xnhk), sqrt(1.0 - xnhk)) / pi
             btpdhk = 2.0sqrt(xnhk * (1.0 - xnhk)) / pi
             for j = 1:div(nu, 2)
                 bvt += gmph * (1.0 + ks * btnckh)
@@ -288,7 +290,7 @@ function bvtcdf(nu::Int, dh::Float64, dk::Float64, r::Float64)
             hkrn = dh*dk + r*nu
             hkn = dh*dk - nu
             hpk = dh + dk
-            bvt = atan2(-snu * (hkn * qhrk + hpk * hkrn), hkn * hkrn - nu * hpk * qhrk) / (2.0pi)
+            bvt = atan(-snu * (hkn * qhrk + hpk * hkrn), hkn * hkrn - nu * hpk * qhrk) / (2.0pi)
             if bvt < -eps()
                 bvt += 1.0
             end
