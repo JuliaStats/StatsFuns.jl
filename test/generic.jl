@@ -129,9 +129,7 @@ end
         ((10.0,), 39:42),
     ])
     # Requires slightly larger tolerance: #157
-    genericcomp_tests("pois", [
-        ((10.0,), 38:38)
-    ], 2.5e-14)
+    genericcomp("pois", (10.0,), 38:38, 2.5e-14)
 
     genericcomp_tests("tdist", [
         ((1,), -5.0:0.1:5.0),
