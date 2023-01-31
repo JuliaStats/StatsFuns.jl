@@ -49,6 +49,17 @@ tdistinvcdf(ν::Real, p::Real) = tdistinvcdf(map(float, promote(ν, p))...)
 
 tdistinvccdf(ν::Real, p::Real) = -tdistinvcdf(ν, p)
 
+if VERSION < v"1.7.0-DEV.1172"
+    function _expm1(x::Float16)
+        if -0.2 < x < 0.1
+            return @evalpoly(x, Float16(0), Float16(1), Float16(1/2), Float16(1/6), Float16(1/24), Float16(1/120))
+        else
+            return exp(x) - 1
+        end
+    end
+end
+_expm1(x::Number) = expm1(x)
+
 function tdistinvlogcdf(ν::T, logp::T) where T<:Real
     if isinf(ν)
         return norminvlogcdf(logp)
