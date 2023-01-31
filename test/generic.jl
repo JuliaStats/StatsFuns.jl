@@ -5,34 +5,36 @@ using ForwardDiff: Dual
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = @inferred(rmathfun(params..., a))
     rv = @inferred(statsfun(params..., Dual(a))).value
+    @test v isa float(Base.promote_typeof(params..., a))
+    @test rv isa float(Base.promote_typeof(params..., a))
     if isprob
-        rd = abs(v / rv - 1.0)
-        if rd > rtol
-            error("$fname deviates too much from Rmath at " *
-                "params = $params, $aname = $a:\n" *
-                "  v = $v (rv = $rv)\n  |v/rv - 1| = $rd > $rtol.")
-        end
+        @test v ≈ rv rtol=rtol nans=true
     else
-        τ = (1.0 + abs(rv)) * rtol
-        ad = abs(v - rv)
-        if ad > τ
-            error("$fname deviates too much from Rmath at " *
-                "params = $params, $aname = $a:\n" *
-                "  v = $v (rv = $rv)\n  |v - rv| = $ad > $τ.")
-        end
+        @test v ≈ rv atol=rtol rtol=rtol nans=true
     end
 end
 
-function genericcomp(basename, params, X::AbstractArray, rtol=100eps(float(one(eltype(X)))))
+function genericcomp(basename, params, X::AbstractArray)
+    # compute default tolerance:
+    # has to take into account `params` as well since otherwise e.g. `X::Array{<:Rational}`
+    # always uses a tolerance based on `eps(one(Float64))` even when parameters are of type
+    # Float32
+    rtol = 100 * eps(float(one(promote_type(Base.promote_typeof(params...), eltype(X)))))
+    genericcomp(basename, params, X, rtol)
+end
+function genericcomp(basename, params, X::AbstractArray, rtol)
   pdf = string(basename, "pdf")
   logpdf = string(basename, "logpdf")
   stats_pdf = eval(Symbol(pdf))
   stats_logpdf = eval(Symbol(logpdf))
   rmath_pdf = eval(Meta.parse(string("RFunctions.", pdf)))
   rmath_logpdf = eval(Meta.parse(string("RFunctions.", logpdf)))
-  for i = 1:length(X)
-    x = X[i]
+
+  @testset "pdf with params=$params, x=$x" for x in X
     check_rmath(pdf, stats_pdf, rmath_pdf, params, "x", x, true, rtol)
+  end
+
+  @testset "logpdf with params=$params, x=$x" for x in X
     check_rmath(logpdf, stats_logpdf, rmath_logpdf, params, "x", x, false, rtol)
   end
 end
