@@ -1,4 +1,5 @@
 using SpecialFunctions, StatsFuns
+using Test
 
 @testset "logmvgamma" begin
     @testset "type behavior" for eltya in (Float32, Float64)

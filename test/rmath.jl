@@ -2,6 +2,8 @@ using StatsFuns
 using StatsFuns: RFunctions
 using Test
 
+include("utils.jl")
+
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = @inferred(statsfun(params..., a))
     rv = @inferred(rmathfun(params..., a))
@@ -17,15 +19,7 @@ end
 get_statsfun(fname) = eval(Symbol(fname))
 get_rmathfun(fname) = eval(Meta.parse(string("RFunctions.", fname)))
 
-function rmathcomp(basename, params, X::AbstractArray)
-    # compute default tolerance:
-    # has to take into account `params` as well since otherwise e.g. `X::Array{<:Rational}`
-    # always uses a tolerance based on `eps(one(Float64))` even when parameters are of type
-    # Float32
-    rtol = 100 * eps(float(one(promote_type(Base.promote_typeof(params...), eltype(X)))))
-    rmathcomp(basename, params, X, rtol)
-end
-function rmathcomp(basename, params, X::AbstractArray, rtol)
+function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params, X))
     # tackle pdf specially
     has_pdf = true
     if basename == "srdist"
