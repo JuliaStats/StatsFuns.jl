@@ -51,12 +51,9 @@ tdistinvccdf(ν::Real, p::Real) = -tdistinvcdf(ν, p)
 
 if VERSION < v"1.7.0-DEV.1172"
     # expm1(::Float16) is not defined in older Julia versions
+    # https://github.com/JuliaLang/julia/pull/40867
     function _log2mexp(x::Float16)
-        expm1_x = if -0.2 < x < 0.1
-            x * @evalpoly(x, Float16(1), Float16(1/2), Float16(1/6), Float16(1/24), Float16(1/120))
-        else
-            return exp(x) - 1
-        end
+        expm1_x = Float16(expm1(Float32(x)))
         return log1p(-expm1_x)
     end
 end
