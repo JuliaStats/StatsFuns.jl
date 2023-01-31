@@ -19,7 +19,9 @@ function genericcomp(basename, params, X::AbstractArray)
     # has to take into account `params` as well since otherwise e.g. `X::Array{<:Rational}`
     # always uses a tolerance based on `eps(one(Float64))` even when parameters are of type
     # Float32
-    rtol = 100 * eps(float(one(promote_type(Base.promote_typeof(params...), eltype(X)))))
+    # eps^(7//8) means requiring equality of about 7/8 of the significant digits
+    # Corresponds to tolerances of ~2e-14 (Float64), ~9f-7 (Float32) and ~0.002 (Float16)
+    rtol = eps(float(one(promote_type(Base.promote_typeof(params...), eltype(X)))))^(7//8)
     genericcomp(basename, params, X, rtol)
 end
 function genericcomp(basename, params, X::AbstractArray, rtol)
@@ -123,8 +125,13 @@ end
 
     genericcomp_tests("pois", [
         ((1.0,), 0:30),
-        ((10.0,), 0:42)
+        ((10.0,), 0:37),
+        ((10.0,), 39:42),
     ])
+    # Requires slightly larger tolerance: #157
+    genericcomp_tests("pois", [
+        ((10.0,), 38:38)
+    ], 2.5e-14)
 
     genericcomp_tests("tdist", [
         ((1,), -5.0:0.1:5.0),
