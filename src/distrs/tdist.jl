@@ -49,6 +49,18 @@ tdistinvcdf(ν::Real, p::Real) = tdistinvcdf(map(float, promote(ν, p))...)
 
 tdistinvccdf(ν::Real, p::Real) = -tdistinvcdf(ν, p)
 
+if VERSION < v"1.7.0-DEV.1172"
+    # expm1(::Float16) is not defined in older Julia versions
+    function _log2mexp(x::Float16)
+        expm1_x = if -0.2 < x < 0.1
+            x * @evalpoly(x, Float16(1), Float16(1/2), Float16(1/6), Float16(1/24), Float16(1/120))
+        else
+            return exp(x) - 1
+        end
+        return log1p(-expm1_x)
+    end
+end
+_log2mexp(x::Real) = log2mexp(x)
 function tdistinvlogcdf(ν::T, logp::T) where T<:Real
     if isinf(ν)
         return norminvlogcdf(logp)
@@ -57,7 +69,7 @@ function tdistinvlogcdf(ν::T, logp::T) where T<:Real
         if logq < 0
             return -sqrt(fdistinvlogccdf(one(ν), ν, logq))
         else
-            return sqrt(fdistinvlogccdf(one(ν), ν, log2mexp(logq)))
+            return sqrt(fdistinvlogccdf(one(ν), ν, _log2mexp(logq)))
         end
     end
 end
