@@ -57,7 +57,7 @@ function tdistinvlogcdf(ν::T, logp::T) where T<:Real
         if logq < 0
             return -sqrt(fdistinvlogccdf(one(ν), ν, logq))
         else
-            return sqrt(fdistinvlogccdf(one(ν), ν, log2mexp(logq))
+            return sqrt(fdistinvlogccdf(one(ν), ν, log2mexp(logq)))
         end
     end
 end
