@@ -261,8 +261,8 @@ include(joinpath("distrs", "tdist.jl"))
 include(joinpath("distrs", "srdist.jl"))
 
 if !isdefined(Base, :get_extension)
-    include("../ext/ChainRulesCoreExt.jl")
-    include("../ext/InverseFunctionsExt.jl")
+    include("../ext/StatsFunsChainRulesCoreExt.jl")
+    include("../ext/StatsFunsInverseFunctionsExt.jl")
 end
 
 end # module

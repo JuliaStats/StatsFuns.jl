@@ -1,9 +1,8 @@
-module ChainRulesCoreExt
-
-import ChainRulesCore
+module StatsFunsChainRulesCoreExt
 
 using StatsFuns
 using StatsFuns: digamma
+import ChainRulesCore
 
 ChainRulesCore.@scalar_rule(
     betalogpdf(α::Real, β::Real, x::Number),
