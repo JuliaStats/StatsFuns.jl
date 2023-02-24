@@ -2,6 +2,8 @@ using StatsFuns
 using StatsFuns: RFunctions
 using Test
 
+include("utils.jl")
+
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     v = @inferred(statsfun(params..., a))
     rv = @inferred(rmathfun(params..., a))
@@ -17,15 +19,7 @@ end
 get_statsfun(fname) = eval(Symbol(fname))
 get_rmathfun(fname) = eval(Meta.parse(string("RFunctions.", fname)))
 
-function rmathcomp(basename, params, X::AbstractArray)
-    # compute default tolerance:
-    # has to take into account `params` as well since otherwise e.g. `X::Array{<:Rational}`
-    # always uses a tolerance based on `eps(one(Float64))` even when parameters are of type
-    # Float32
-    rtol = 100 * eps(float(one(promote_type(Base.promote_typeof(params...), eltype(X)))))
-    rmathcomp(basename, params, X, rtol)
-end
-function rmathcomp(basename, params, X::AbstractArray, rtol)
+function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params, X))
     # tackle pdf specially
     has_pdf = true
     if basename == "srdist"
@@ -176,6 +170,41 @@ end
     @testset "$(f)(0, 0, $x) should error" for f in (betacdf, betaccdf, betalogcdf, betalogccdf),
         x in (0.0, 0.5, 1.0)
         @test_throws DomainError f(0.0, 0.0, x)
+    end
+    # Have to check them separately since Rmath is not completely consistent with our conventions:
+    # - betacdf(α, β, x) = P(X ≤ x) where X ~ Beta(α, β)
+    # - betaccdf(α, β, x) = P(X > x) where X ~ Beta(α, β)
+    # - betainvcdf(α, β, p) = inf { x : p ≤ P(X ≤ x) } where X ~ Beta(α, β)
+    # - betainvccdf(α, β, p) = sup { x : p ≤ P(X > x) } where X ~ Beta(α, β)
+    @testset "beta: degenerate cases" begin
+        # Check degenerate cases Beta(0, β) and Dirac(α, 0) with α, β > 0
+        # Beta(0, β) is a Dirac distribution at x=0
+        # Beta(α, 0) is a Dirac distribution at x=1
+        α = β =  1//2
+
+        for x in 0f0:0.01f0:1f0
+            # Check betacdf
+            @test @inferred(betacdf(0, β, x)) === 1f0
+            @test @inferred(betacdf(α, 0, x)) === (x < 1 ? 0f0 : 1f0)
+
+            # Check betaccdf, betalogcdf, and betalogccdf based on betacdf
+            @test @inferred(betaccdf(0, β, x)) === 1 - betacdf(0, β, x)
+            @test @inferred(betaccdf(α, 0, x)) === 1 - betacdf(α, 0, x)
+            @test @inferred(betalogcdf(0, β, x)) === log(betacdf(0, β, x))
+            @test @inferred(betalogcdf(α, 0, x)) === log(betacdf(α, 0, x))
+            @test @inferred(betalogccdf(0, β, x)) === log(betaccdf(0, β, x))
+            @test @inferred(betalogccdf(α, 0, x)) === log(betaccdf(α, 0, x))
+        end
+
+        for p in 0f0:0.01f0:1f0
+            # Check betainvcdf
+            @test @inferred(betainvcdf(0, β, p)) === 0f0
+            @test @inferred(betainvcdf(α, 0, p)) === (p > 0 ? 1f0 : 0f0)
+
+            # Check betainvccdf
+            @test @inferred(betainvccdf(0, β, p)) === (p > 0 ? 0f0 : 1f0)
+            @test @inferred(betainvccdf(α, 0, p)) === 1f0
+        end
     end
 
     rmathcomp_tests("binom", [

@@ -1,4 +1,5 @@
 using SpecialFunctions, StatsFuns
+using Test
 
 @testset "logmvgamma" begin
     @testset "type behavior" for eltya in (Float32, Float64)
@@ -94,4 +95,9 @@ end
 # https://github.com/JuliaStats/StatsFuns.jl/issues/150
 @testset "gammalogcdf: numerical issue" begin
     @test gammalogcdf(42648.50647826826, 2.2498007956420723e-5, 0.6991377135675367) ≈ -1933.2698959040617410
+end
+
+# https://github.com/JuliaStats/StatsFuns.jl/issues/154
+@testset "tvdistinvcdf: numerical issue" begin
+    @test isnan(@inferred(tdistinvcdf(0, 0.975)))
 end
