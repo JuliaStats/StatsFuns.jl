@@ -427,7 +427,7 @@ function bvnuppercdf(dh::T, dk::T, r::T)::T where {T<:Float64}
         elseif dk == typemin(T)
             return normcdf(-dh)
         else
-            thow(error())
+            throw(error())
         end
     end
 end
