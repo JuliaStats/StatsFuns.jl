@@ -56,7 +56,7 @@ end
                                       for eltyb in (Float32, Float64)
             a = rand(eltya)
             b = rand(eltyb)
-            T = Base.promote_eltype(eltya, eltyb)
+            T = Base.promote_type(eltya, eltyb)
             @test typeof(logmvbeta(1, a, b)) == T
         end
     end
