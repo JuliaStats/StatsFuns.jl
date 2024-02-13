@@ -22,7 +22,12 @@ gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)
 function gammalogpdf(k::T, θ::T, x::T) where {T<:Real}
     # we ensure that `log(x)` does not error if `x < 0`
     xθ = max(x, 0) / θ
-    val = -loggamma(k) + xlogy(k - 1, xθ) - log(θ) - xθ
+    val = -loggamma(k) - log(θ) - xθ
+    # xlogy(k - 1, xθ) - xθ -> -∞ for xθ -> ∞ so we only add the first term
+    # when it's safe
+    if isfinite(xθ)
+        val += xlogy(k - 1, xθ)
+    end
     return x < 0 ? oftype(val, -Inf) : val
 end
 

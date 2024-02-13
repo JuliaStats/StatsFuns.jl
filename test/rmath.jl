@@ -264,6 +264,7 @@ end
         ((Float16(1), Float16(1)), (Float16(0):Float16(0.05):Float16(12))),
         ((1f0, 1f0), (Float16(0):Float16(0.05):Float16(12))),
         ((2, 3), (0//1:12//1)),
+        ((3.0, 1e-310), (0.0:0.05:12.0))
     ])
 
     rmathcomp_tests("hyper", [
