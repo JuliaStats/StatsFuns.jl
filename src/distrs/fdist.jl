@@ -21,9 +21,17 @@ end
 for f in ("invcdf", "invccdf", "invlogcdf", "invlogccdf")
     ff = Symbol("fdist"*f)
     bf = Symbol("beta"*f)
+    cf = Symbol("chisq"*f)
     @eval function $ff(ν1::T, ν2::T, y::T) where {T<:Real}
-        x = $bf(ν1/2, ν2/2, y)
-        return x/(1 - x)*ν2/ν1
+        # the evaluation of the CDF with the t-distribution combined with the
+        # beta distribution is unstable for high ν2,
+        # therefore, we switch from the beta to the chi-squared distribution at ν > 1.0e7
+        if ν2 > 1.0e7
+            return $cf(ν1, y)/ν1
+        else
+            x = $bf(ν1/2, ν2/2, y)
+            return x/(1 - x)*ν2/ν1
+        end
     end
     @eval $ff(ν1::Real, ν2::Real, y::Real) = $ff(promote(ν1, ν2, y)...)
 end

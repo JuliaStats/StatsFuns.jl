@@ -4,7 +4,9 @@ tdistpdf(ν::Real, x::Real) = exp(tdistlogpdf(ν, x))
 
 tdistlogpdf(ν::Real, x::Real) = tdistlogpdf(promote(ν, x)...)
 function tdistlogpdf(ν::T, x::T) where {T<:Real}
-    isinf(ν) && return normlogpdf(x)
+    # the logpdf equation of the t-distribution is numerically unstable for high ν,
+    # therefore we switch at ν > 1.0e7 to the normal distribution
+    ν > 1.0e7 && return normlogpdf(x)
     νp12 = (ν + 1) / 2
     return loggamma(νp12) - (logπ + log(ν)) / 2 - loggamma(ν / 2) - νp12 * log1p(x^2 / ν)
 end
