@@ -191,28 +191,61 @@ end
         # Beta(α, 0) is a Dirac distribution at x=1
         α = β =  1//2
 
-        for x in 0f0:0.01f0:1f0
-            # Check betacdf
-            @test @inferred(betacdf(0, β, x)) === 1f0
-            @test @inferred(betacdf(α, 0, x)) === (x < 1 ? 0f0 : 1f0)
+        for x in -1f0:0.05f0:1f0
+            # Check betapdf
+            @test @inferred(betapdf(0, β, x)) === (x == 0 ? NaN32 : 0f0)
+            @test @inferred(betapdf(α, 0, x)) === (x == 1 ? NaN32 : 0f0)
+            @test @inferred(betapdf(Inf32, β, x)) === (x == 1 ? NaN32 : 0f0)
+            @test @inferred(betapdf(α, Inf32, x)) === (x == 0 ? NaN32 : 0f0)
+            @test @inferred(betapdf(Inf32, Inf32, x)) === (x === 0.5f0 ? NaN32 : 0f0)
 
+            # Check betalogpdf
+            @test @inferred(betalogpdf(0, β, x)) === (x == 0 ? NaN32 : -Inf32)
+            @test @inferred(betalogpdf(α, 0, x)) === (x == 1 ? NaN32 : -Inf32)
+            @test @inferred(betalogpdf(Inf32, β, x)) === (x == 1 ? NaN32 : -Inf32)
+            @test @inferred(betalogpdf(α, Inf32, x)) === (x == 0 ? NaN32 : -Inf32)
+            @test @inferred(betalogpdf(Inf32, Inf32, x)) === (x === 0.5f0 ? NaN32 : -Inf32)
+
+            # Check betacdf
+            @test @inferred(betacdf(0, β, x)) === (x < 0 ? 0f0 : 1f0)
+            @test @inferred(betacdf(α, 0, x)) === (x < 1 ? 0f0 : 1f0)
+            @test @inferred(betacdf(Inf32, β, x)) === (x < 1 ? 0f0 : 1f0)
+            @test @inferred(betacdf(α, Inf32, x)) === (x < 0 ? 0f0 : 1f0)
+            @test @inferred(betacdf(Inf32, Inf32, x)) === (x < .5 ? 0f0 : 1f0)
+ 
             # Check betaccdf, betalogcdf, and betalogccdf based on betacdf
             @test @inferred(betaccdf(0, β, x)) === 1 - betacdf(0, β, x)
             @test @inferred(betaccdf(α, 0, x)) === 1 - betacdf(α, 0, x)
+            @test @inferred(betaccdf(Inf32, β, x)) === 1 - betacdf(Inf32, β, x)
+            @test @inferred(betaccdf(α, Inf32, x)) === 1 - betacdf(α, Inf32, x)
+            @test @inferred(betaccdf(Inf32, Inf32, x)) === 1 - betacdf(Inf32, Inf32, x)
+
             @test @inferred(betalogcdf(0, β, x)) === log(betacdf(0, β, x))
             @test @inferred(betalogcdf(α, 0, x)) === log(betacdf(α, 0, x))
+            @test @inferred(betalogcdf(Inf32, β, x)) === log(betacdf(Inf32, β, x))
+            @test @inferred(betalogcdf(α, Inf32, x)) === log(betacdf(α, Inf32, x))
+            @test @inferred(betalogcdf(Inf32, Inf32, x)) === log(betacdf(Inf32, Inf32, x))
+
             @test @inferred(betalogccdf(0, β, x)) === log(betaccdf(0, β, x))
             @test @inferred(betalogccdf(α, 0, x)) === log(betaccdf(α, 0, x))
+            @test @inferred(betalogccdf(Inf32, β, x)) === log(betaccdf(Inf32, β, x))
+            @test @inferred(betalogccdf(α, Inf32, x)) === log(betaccdf(α, Inf32, x))
+            @test @inferred(betalogccdf(Inf32, Inf32, x)) === log(betaccdf(Inf32, Inf32, x))
         end
 
-        for p in 0f0:0.01f0:1f0
+        for p in 0f0:0.05f0:1f0
             # Check betainvcdf
             @test @inferred(betainvcdf(0, β, p)) === 0f0
-            @test @inferred(betainvcdf(α, 0, p)) === (p > 0 ? 1f0 : 0f0)
+            @test @inferred(betainvcdf(α, 0, p)) === 1f0
+            @test @inferred(betainvcdf(Inf32, β, p)) === 1f0
+            @test @inferred(betainvcdf(α, Inf32, p)) === 0f0
+            @test @inferred(betainvcdf(Inf32, Inf32, p)) === 0.5f0
 
             # Check betainvccdf
-            @test @inferred(betainvccdf(0, β, p)) === (p > 0 ? 0f0 : 1f0)
+            @test @inferred(betainvccdf(0, β, p)) === 0f0
             @test @inferred(betainvccdf(α, 0, p)) === 1f0
+            @test @inferred(betainvccdf(Inf32, β, p)) === 1f0
+            @test @inferred(betainvccdf(Inf32, Inf32, p)) === 0.5f0
         end
     end
 

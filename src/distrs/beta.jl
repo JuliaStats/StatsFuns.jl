@@ -20,6 +20,28 @@ betapdf(α::Real, β::Real, x::Real) = exp(betalogpdf(α, β, x))
 
 betalogpdf(α::Real, β::Real, x::Real) = betalogpdf(promote(α, β, x)...)
 function betalogpdf(α::T, β::T, x::T) where {T<:Real}
+    # Handle degenerate cases
+    xf = float(typeof(x))
+    if isinf(α)
+        if isinf(β)
+            return float(last(promote(α, β, x, 
+                x == .5 ? convert(xf, NaN) : convert(xf, -Inf)
+            )))
+        else
+            return float(last(promote(α, β, x, 
+                x == 1 ? convert(xf, NaN) : convert(xf, -Inf)
+            )))
+        end
+    elseif (iszero(α) && β > 0) || isinf(β)
+        return float(last(promote(α, β, x, 
+            x == 0 ? convert(xf, NaN) : convert(xf, -Inf)
+        )))
+    elseif iszero(β) && α > 0
+        return float(last(promote(α, β, x, 
+            x == 1 ? convert(xf, NaN) : convert(xf, -Inf)
+        )))
+    end
+
     # we ensure that `log(x)` and `log1p(-x)` do not error
     y = clamp(x, 0, 1)
     val = xlogy(α - 1, y) + xlog1py(β - 1, -y) - logbeta(α, β)
@@ -28,7 +50,13 @@ end
 
 function betacdf(α::Real, β::Real, x::Real)
     # Handle degenerate cases
-    if iszero(α) && β > 0
+    if isinf(α)
+        if isinf(β)
+            return float(last(promote(α, β, x, x >= 0.5f0)))
+        else
+            return float(last(promote(α, β, x, x >= 1)))
+        end
+    elseif (iszero(α) && β > 0) || isinf(β)
         return float(last(promote(α, β, x, x >= 0)))
     elseif iszero(β) && α > 0
         return float(last(promote(α, β, x, x >= 1)))
@@ -39,7 +67,13 @@ end
 
 function betaccdf(α::Real, β::Real, x::Real)
     # Handle degenerate cases
-    if iszero(α) && β > 0
+    if isinf(α)
+        if isinf(β)
+            return float(last(promote(α, β, x, x < 0.5f0)))
+        else
+            return float(last(promote(α, β, x, x < 1)))
+        end
+    elseif (iszero(α) && β > 0) || isinf(β)
         return float(last(promote(α, β, x, x < 0)))
     elseif iszero(β) && α > 0
         return float(last(promote(α, β, x, x < 1)))
@@ -52,7 +86,13 @@ end
 # to an implementation based on the hypergeometric function ₂F₁ to avoid underflow.
 function betalogcdf(α::T, β::T, x::T) where {T<:Real}
     # Handle degenerate cases
-    if iszero(α) && β > 0
+    if isinf(α)
+        if isinf(β)
+            return log(last(promote(x, x >= 0.5f0)))
+        else
+            return log(last(promote(x, x >= 1)))
+        end
+    elseif (iszero(α) && β > 0) || isinf(β)
         return log(last(promote(x, x >= 0)))
     elseif iszero(β) && α > 0
         return log(last(promote(x, x >= 1)))
@@ -74,7 +114,13 @@ betalogcdf(α::Real, β::Real, x::Real) = betalogcdf(promote(α, β, x)...)
 
 function betalogccdf(α::Real, β::Real, x::Real)
     # Handle degenerate cases
-    if iszero(α) && β > 0
+    if isinf(α)
+        if isinf(β)
+            return log(last(promote(α, β, x, x < 0.5f0)))
+        else
+            return log(last(promote(α, β, x, x < 1)))
+        end
+    elseif (iszero(α) && β > 0) || isinf(β)
         return log(last(promote(α, β, x, x < 0)))
     elseif iszero(β) && α > 0
         return log(last(promote(α, β, x, x < 1)))
@@ -91,10 +137,16 @@ end
 function betainvcdf(α::Real, β::Real, p::Real)
     # Handle degenerate cases
     if 0 ≤ p ≤ 1
-        if iszero(α) && β > 0
-            return last(promote(α, β, p, false))
+        if isinf(α)
+            if isinf(β)
+                return last(promote(α, β, p, convert(float(typeof(p)), 0.5)))
+            else
+                return last(promote(α, β, p, 1))
+            end
+        elseif (iszero(α) && β > 0) || isinf(β)
+            return last(promote(α, β, p, 0))
         elseif iszero(β) && α > 0
-            return last(promote(α, β, p, p > 0))
+            return last(promote(α, β, p, 1))
         end
     end
 
@@ -104,10 +156,16 @@ end
 function betainvccdf(α::Real, β::Real, p::Real)
     # Handle degenerate cases
     if 0 ≤ p ≤ 1
-        if iszero(α) && β > 0
-            return last(promote(α, β, p, p == 0))
+        if isinf(α)
+            if isinf(β)
+                return last(promote(α, β, p, convert(float(typeof(p)), 0.5)))
+            else
+                return last(promote(α, β, p, 1))
+            end
+        elseif (iszero(α) && β > 0) || isinf(β)
+            return last(promote(α, β, p, 0))
         elseif iszero(β) && α > 0
-            return last(promote(α, β, p, true))
+            return last(promote(α, β, p, 1))
         end
     end
 
