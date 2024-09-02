@@ -1,3 +1,8 @@
+module StatsFunsInverseFunctionsExt
+
+using StatsFuns
+import InverseFunctions
+
 InverseFunctions.inverse(::typeof(normcdf)) = norminvcdf
 InverseFunctions.inverse(::typeof(norminvcdf)) = normcdf
 
@@ -9,3 +14,5 @@ InverseFunctions.inverse(::typeof(norminvlogcdf)) = normlogcdf
 
 InverseFunctions.inverse(::typeof(normlogccdf)) = norminvlogccdf
 InverseFunctions.inverse(::typeof(norminvlogccdf)) = normlogccdf
+
+end # module

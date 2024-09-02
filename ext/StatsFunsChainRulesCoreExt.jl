@@ -1,3 +1,9 @@
+module StatsFunsChainRulesCoreExt
+
+using StatsFuns
+using StatsFuns: digamma
+import ChainRulesCore
+
 ChainRulesCore.@scalar_rule(
     betalogpdf(α::Real, β::Real, x::Number),
     @setup(z = digamma(α + β)),
@@ -76,3 +82,5 @@ ChainRulesCore.@scalar_rule(
         - x * b,
     ),
 )
+
+end # module

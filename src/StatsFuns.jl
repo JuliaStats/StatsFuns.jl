@@ -3,8 +3,6 @@ module StatsFuns
 using Base: Math.@horner
 using Reexport
 using SpecialFunctions
-import ChainRulesCore
-import InverseFunctions
 
 # reexports
 @reexport using IrrationalConstants:
@@ -262,7 +260,9 @@ include(joinpath("distrs", "pois.jl"))
 include(joinpath("distrs", "tdist.jl"))
 include(joinpath("distrs", "srdist.jl"))
 
-include("chainrules.jl")
-include("inverse.jl")
+if !isdefined(Base, :get_extension)
+    include("../ext/StatsFunsChainRulesCoreExt.jl")
+    include("../ext/StatsFunsInverseFunctionsExt.jl")
+end
 
 end # module
