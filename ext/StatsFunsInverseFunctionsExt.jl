@@ -15,4 +15,12 @@ InverseFunctions.inverse(::typeof(norminvlogcdf)) = normlogcdf
 InverseFunctions.inverse(::typeof(normlogccdf)) = norminvlogccdf
 InverseFunctions.inverse(::typeof(norminvlogccdf)) = normlogccdf
 
+InverseFunctions.inverse(::typeof(logit)) = logistic
+InverseFunctions.inverse(::typeof(logistic)) = logit
+
+InverseFunctions.inverse(::typeof(log1mexp)) = log1mexp
+
+InverseFunctions.inverse(::typeof(log1pexp)) = logexpm1
+InverseFunctions.inverse(::typeof(logexpm1)) = log1pexp
+
 end # module
