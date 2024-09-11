@@ -27,7 +27,7 @@ InverseFunctions = "0.1"
 IrrationalConstants = "0.1, 0.2"
 LogExpFunctions = "0.3.26"
 Reexport = "1"
-Rmath = "0.6.1, 0.7"
+Rmath = "0.6.1, 0.7, 0.8"
 SpecialFunctions = "1.8.4, 2.1.4"
 julia = "1.3"
 
