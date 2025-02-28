@@ -25,17 +25,17 @@ the number of ways {1,2,...,j} can sum to W-i+1.
     return DP
 end
 
-function signrankpdf(n::Int, W::Union{Float64,Int})
-    f, _ = modf(W)
-    if f != 0
-        return 0.0
-    end
-    W = Int(W)
-    max_W = (n * (n + 1)) >> 1
+function signrankpdf(n::Int, W::Float64)
+    return isinteger(W) ? signrankpdf(n, Int(W)) : 0.0
+end
+function signrankpdf(n::Int, W::Int)
     if W < 0
         return 0.0
-    elseif W > max_W >> 1
-        return signrankpdf(n, max_W - W)
+    end
+    max_W = (n * (n + 1)) >> 1
+    W2 = max_W - W
+    if W2 < W
+        return signrankpdf(n, W2)
     end
     DP = signrankDP(n, W)
     return ldexp(float(DP[1]), -n)
@@ -45,13 +45,17 @@ function signranklogpdf(n::Int, W::Union{Float64,Int})
     return log(signrankpdf(n, W))
 end
 
-function signrankcdf(n::Int, W::Union{Float64,Int})
-    W = round(Int, W, RoundNearestTiesUp)
-    max_W = (n * (n + 1)) >> 1
+function signrankcdf(n::Int, W::Float64)
+    return signrankcdf(n, round(Int, W, RoundNearestTiesUp))
+end
+function signrankcdf(n::Int, W::Int)
     if W < 0
         return 0.0
-    elseif W > max_W >> 1
-        return 1.0 - signrankcdf(n, max_W - W - 1)
+    end
+    max_W = (n * (n + 1)) >> 1
+    W2 = max_W - W - 1
+    if W2 < W
+        return 1.0 - signrankcdf(n, W2)
     end
     DP = signrankDP(n, W)
     return sum(Base.Fix2(ldexp, -n) ∘ float, DP)
@@ -61,10 +65,12 @@ function signranklogcdf(n::Int, W::Union{Float64,Int})
     return log(signrankcdf(n, W))
 end
 
-function signrankccdf(n::Int, W::Union{Float64,Int})
+function signrankccdf(n::Int, W::Float64)
+    return signrankccdf(n, round(Int, W, RoundNearestTiesUp))
+end
+function signrankccdf(n::Int, W::Int)
     max_W = (n * (n + 1)) >> 1
-    W = round(Int, W, RoundNearestTiesUp)
-    return signrankcdf(n, max_W - W - 1,)
+    return signrankcdf(n, max_W - W - 1)
 end
 
 function signranklogccdf(n::Int, W::Union{Float64,Int})
@@ -72,7 +78,7 @@ function signranklogccdf(n::Int, W::Union{Float64,Int})
 end
 
 function signrankinvcdf(n::Int, p::Float64)
-    if p < 0.0 || p > 1.0
+    if !(0.0 <= p <= 1.0)
         return NaN
     end
     W = 0
@@ -83,7 +89,7 @@ function signrankinvcdf(n::Int, p::Float64)
 end
 
 function signrankinvlogcdf(n::Int, logp::Float64)
-    if logp > 0.0 || logp == -Inf
+    if !(-Inf < logp <= 0.0)
         return NaN
     end
     W = 0
@@ -94,16 +100,27 @@ function signrankinvlogcdf(n::Int, logp::Float64)
 end
 
 function signrankinvccdf(n::Int, p::Float64)
-    signrankinvcdf(n, 1 - p)
+    if !(0.0 <= p <= 1)
+        return NaN
+    end
+    if p == 0.0
+        max_W = (n * (n + 1)) >> 1
+        return float(max_W)
+    end
+    W = 0
+    while signrankccdf(n, W) > p # TODO binary search and symmetry
+        W += 1
+    end
+    return float(W)
 end
 
 function signrankinvlogccdf(n::Int, logp::Float64)
-    if logp == -Inf
+    if !(-Inf < logp <= 0.0)
         return NaN
     end
-    if logp == 0
-        return 0.0
+    W = 0
+    while signranklogccdf(n, W) > logp # TODO binary search and symmetry
+        W += 1
     end
-    #signrankinvlogcdf(n, log1mexp(logp)) # does not roundtrip well
-    signrankinvccdf(n, exp(logp))
+    return float(W)
 end
