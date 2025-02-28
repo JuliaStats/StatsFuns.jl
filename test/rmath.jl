@@ -215,7 +215,7 @@ end
             @test @inferred(betainvccdf(α, 0, p)) === 1f0
         end
     end
-
+    
     rmathcomp_tests("binom", [
         ((1, 0.5), 0.0:1.0),
         ((1, 0.7), 0.0:1.0),
@@ -375,6 +375,23 @@ end
         ((Inf,), -5.0:0.1:5.0),
         ((Inf32,), -5f0:0.1f0:5f0),
     ])
+
+    rmathcomp_tests("signrank", [
+        ((4),-2:12),
+        ((4),-2.0:0.25:12.0),
+        ((10),-2:57),
+        #((50),-2:1277),
+    ])
+    
+    @test signrankinvcdf.(10, signrankcdf.(10, -1:56)) ≈ [0; 0:55; 55] atol = 1e-12 rtol = 1e-12
+    @test signrankinvccdf.(10, signrankccdf.(10, -1:56)) ≈ [0; 0:55; 55] atol = 1e-12 rtol = 1e-12
+    @test signrankinvlogcdf.(10, signranklogcdf.(10, -1:56)) ≈ [NaN; 0:55; 55] nans = true atol = 1e-12 rtol = 1e-12
+    @test signrankinvlogccdf.(10, signranklogccdf.(10, -1:56)) ≈ [0; 0:54; NaN; NaN] nans = true atol = 1e-12 rtol = 1e-12
+
+    @test signrankinvcdf.(50, signrankcdf.(50, -1:1276)) ≈ [0; 0:1275; 1275] atol = 1e-12 rtol = 1e-12
+    @test signrankinvccdf.(50, signrankccdf.(50, -1:1276)) ≈ [0; 0:1275; 1275] atol = 1e-12 rtol = 1e-12
+    @test signrankinvlogcdf.(50, signranklogcdf.(50, -1:1276)) ≈ [NaN; 0:1275; 1275] nans = true atol = 1e-12 rtol = 1e-12
+    @test signrankinvlogccdf.(50, signranklogccdf.(50, -1:1276)) ≈ [0; 0:1274; NaN; NaN] nans = true atol = 1e-12 rtol = 1e-12
 
     rmathcomp_tests("srdist", [
         ((1,2), (0.0:0.2:5.0)),

@@ -131,6 +131,7 @@ end
 
 ### Import specific functions
 
+@import_rmath signrank signrank n
 @import_rmath beta beta α β
 @import_rmath binom binom n p
 @import_rmath chisq chisq k
