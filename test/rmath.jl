@@ -421,7 +421,22 @@ end
         ((1,2), (Float16(0):Float16(0.2):Float16(5))),
         ((1,2), (0//1:1//5:5//1)),
     ])
-
+    
+    rmathcomp_tests("wilcox", [
+        ((3, 4), -2:13),
+        ((4, 3), -2:13),
+    ])
+    
+    sum((20+1):(20+30))-sum(1:20)
+    
+    @test wilcoxinvcdf.(10, 10, wilcoxcdf.(10, 10, -1:101)) == [0; 0:100; 100]
+    @test wilcoxinvccdf.(10, 10, wilcoxccdf.(10, 10, -1:101)) == [0; 0:100; 100]
+    @test wilcoxinvlogcdf.(10, 10, wilcoxlogcdf.(10, 10, 0:101)) == [0:100; 100]
+    @test isnan(wilcoxinvlogcdf.(10, 10, wilcoxlogcdf(10, 10, -1)))
+    @test wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, -1:99)) == [0; 0:99]
+    @test isnan(wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, 100)))
+    @test isnan(wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, 101)))
+  
     # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
     # Reduced df or k allows convergence. This test documents this behavior.
     x = 0.15
