@@ -34,6 +34,20 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     if basename == "srdist"
         has_pdf = false
     end
+    
+    #=
+    R version of signrank has system variation
+    julia> psignrank(18,10,false,true) # windows
+    -0.2076393647782445
+    julia> psignrank(18,10,false,true) # linux
+    -0.20763936477824452
+    This slight difference causes test failures for the inverse functions,
+    due to a slight shift in the location of the discontinuity.
+    =#
+    has_inv = true
+    if basename == "signrank" && Sys.islinux()
+        has_inv = false
+    end
 
     if has_pdf
         pdf     = string(basename, "pdf")
@@ -43,10 +57,12 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     ccdf    = string(basename, "ccdf")
     logcdf  = string(basename, "logcdf")
     logccdf = string(basename, "logccdf")
-    invcdf     = string(basename, "invcdf")
-    invccdf    = string(basename, "invccdf")
-    invlogcdf  = string(basename, "invlogcdf")
-    invlogccdf = string(basename, "invlogccdf")
+    if has_inv
+        invcdf     = string(basename, "invcdf")
+        invccdf    = string(basename, "invccdf")
+        invlogcdf  = string(basename, "invlogcdf")
+        invlogccdf = string(basename, "invlogccdf")
+    end
     rand       = string(basename, "rand")
 
     if has_pdf
@@ -57,10 +73,12 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     stats_ccdf    = get_statsfun(ccdf)
     stats_logcdf  = get_statsfun(logcdf)
     stats_logccdf = get_statsfun(logccdf)
-    stats_invcdf     = get_statsfun(invcdf)
-    stats_invccdf    = get_statsfun(invccdf)
-    stats_invlogcdf  = get_statsfun(invlogcdf)
-    stats_invlogccdf = get_statsfun(invlogccdf)
+    if has_inv
+        stats_invcdf     = get_statsfun(invcdf)
+        stats_invccdf    = get_statsfun(invccdf)
+        stats_invlogcdf  = get_statsfun(invlogcdf)
+        stats_invlogccdf = get_statsfun(invlogccdf)
+    end
 
     if has_pdf
         rmath_pdf     = get_rmathfun(pdf)
@@ -70,10 +88,12 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     rmath_ccdf    = get_rmathfun(ccdf)
     rmath_logcdf  = get_rmathfun(logcdf)
     rmath_logccdf = get_rmathfun(logccdf)
-    rmath_invcdf     = get_rmathfun(invcdf)
-    rmath_invccdf    = get_rmathfun(invccdf)
-    rmath_invlogcdf  = get_rmathfun(invlogcdf)
-    rmath_invlogccdf = get_rmathfun(invlogccdf)
+    if has_inv
+        rmath_invcdf     = get_rmathfun(invcdf)
+        rmath_invccdf    = get_rmathfun(invccdf)
+        rmath_invlogcdf  = get_rmathfun(invlogcdf)
+        rmath_invlogccdf = get_rmathfun(invlogccdf)
+    end
 
     # tackle rand specially
     has_rand = true
@@ -114,21 +134,23 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     lp = rmath_logcdf.(params..., X)
     lcp = rmath_logccdf.(params..., X)
 
-    @testset "invcdf with q=$_p" for _p in p
-        check_rmath(invcdf, stats_invcdf, rmath_invcdf,
-            params, "q", _p, false, rtol)
-    end
-    @testset "invccdf with q=$_p" for _p in cp
-        check_rmath(invccdf, stats_invccdf, rmath_invccdf,
-            params, "q", _p, false, rtol)
-    end
-    @testset "invlogcdf with log(q)=$_p" for _p in lp
-        check_rmath(invlogcdf, stats_invlogcdf, rmath_invlogcdf,
-            params, "lq", _p, false, rtol)
-    end
-    @testset "invlogccdf with log(q)=$_p" for _p in lcp
-        check_rmath(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
-            params, "lq", _p, false, rtol)
+    if has_inv
+        @testset "invcdf with q=$_p" for _p in p
+            check_rmath(invcdf, stats_invcdf, rmath_invcdf,
+                params, "q", _p, false, rtol)
+        end
+        @testset "invccdf with q=$_p" for _p in cp
+            check_rmath(invccdf, stats_invccdf, rmath_invccdf,
+                params, "q", _p, false, rtol)
+        end
+        @testset "invlogcdf with log(q)=$_p" for _p in lp
+            check_rmath(invlogcdf, stats_invlogcdf, rmath_invlogcdf,
+                params, "lq", _p, false, rtol)
+        end
+        @testset "invlogccdf with log(q)=$_p" for _p in lcp
+            check_rmath(invlogccdf, stats_invlogccdf, rmath_invlogccdf,
+                params, "lq", _p, false, rtol)
+        end
     end
 
     # make sure that rand works
