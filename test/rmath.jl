@@ -44,9 +44,9 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     This slight difference causes test failures for the inverse functions,
     due to a slight shift in the location of the discontinuity.
     =#
-    has_inv = true
+    test_inv = true
     if basename == "signrank" && Sys.islinux()
-        has_inv = false
+        test_inv = false
     end
 
     if has_pdf
@@ -57,7 +57,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     ccdf    = string(basename, "ccdf")
     logcdf  = string(basename, "logcdf")
     logccdf = string(basename, "logccdf")
-    if has_inv
+    if test_inv
         invcdf     = string(basename, "invcdf")
         invccdf    = string(basename, "invccdf")
         invlogcdf  = string(basename, "invlogcdf")
@@ -73,7 +73,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     stats_ccdf    = get_statsfun(ccdf)
     stats_logcdf  = get_statsfun(logcdf)
     stats_logccdf = get_statsfun(logccdf)
-    if has_inv
+    if test_inv
         stats_invcdf     = get_statsfun(invcdf)
         stats_invccdf    = get_statsfun(invccdf)
         stats_invlogcdf  = get_statsfun(invlogcdf)
@@ -88,7 +88,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     rmath_ccdf    = get_rmathfun(ccdf)
     rmath_logcdf  = get_rmathfun(logcdf)
     rmath_logccdf = get_rmathfun(logccdf)
-    if has_inv
+    if test_inv
         rmath_invcdf     = get_rmathfun(invcdf)
         rmath_invccdf    = get_rmathfun(invccdf)
         rmath_invlogcdf  = get_rmathfun(invlogcdf)
@@ -134,7 +134,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     lp = rmath_logcdf.(params..., X)
     lcp = rmath_logccdf.(params..., X)
 
-    if has_inv
+    if test_inv
         @testset "invcdf with q=$_p" for _p in p
             check_rmath(invcdf, stats_invcdf, rmath_invcdf,
                 params, "q", _p, false, rtol)
@@ -402,17 +402,10 @@ end
         ((4),-2:12),
         ((4),-2.0:0.25:12.0),
         ((10),-2:57),
-        #((50),-2:1277),
     ])
     
-    @test signrankinvcdf.(10, signrankcdf.(10, -1:56)) == [0; 0:55; 55]
-    @test signrankinvccdf.(10, signrankccdf.(10, -1:56)) == [0; 0:55; 55]
-    @test signrankinvlogcdf.(10, signranklogcdf.(10, 0:56)) == [0:55; 55]
-    @test isnan(signrankinvlogcdf.(10, signranklogcdf(10, -1)))
-    @test signrankinvlogccdf.(10, signranklogccdf.(10, -1:54)) == [0; 0:54]
-    @test isnan(signrankinvlogccdf.(10, signranklogccdf.(10, 55)))
-    @test isnan(signrankinvlogccdf.(10, signranklogccdf.(10, 56)))
-
+    # The R version does not roundtrip cdf->invcdf, while our version does
+    @test_broken RFunctions.signrankinvcdf.(50, RFunctions.signrankcdf.(50, -1:1276)) == [0; 0:1275; 1275]
     @test signrankinvcdf.(50, signrankcdf.(50, -1:1276)) == [0; 0:1275; 1275]
     @test signrankinvccdf.(50, signrankccdf.(50, -1:1276)) == [0; 0:1275; 1275]
     @test signrankinvlogcdf.(50, signranklogcdf.(50, 0:1276)) == [0:1275; 1275]
