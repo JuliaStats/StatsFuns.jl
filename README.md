@@ -224,6 +224,18 @@ poisinvccdf,       # inverse-ccdf of Poisson distribution
 poisinvlogcdf,     # inverse-logcdf of Poisson distribution
 poisinvlogccdf,    # inverse-logccdf of Poisson distribution
 
+# distrs/signrank
+signrankpdf,           # pdf of signrank distribution
+signranklogpdf,        # logpdf of signrank distribution
+signrankcdf,           # cdf of signrank distribution
+signrankccdf,          # ccdf of signrank distribution
+signranklogcdf,        # logcdf of signrank distribution
+signranklogccdf,       # logccdf of signrank distribution
+signrankinvcdf,        # inverse-cdf of signrank distribution
+signrankinvccdf,       # inverse-ccdf of signrank distribution
+signrankinvlogcdf,     # inverse-logcdf of signrank distribution
+signrankinvlogccdf,    # inverse-logccdf of signrank distribution
+
 # distrs/tdist
 tdistpdf,           # pdf of student's t distribution
 tdistlogpdf,        # logpdf of student's t distribution
