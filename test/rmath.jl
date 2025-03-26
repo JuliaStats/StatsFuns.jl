@@ -427,7 +427,6 @@ end
         ((4, 3), -2:13),
     ])
     
-    sum((20+1):(20+30))-sum(1:20)
     
     @test wilcoxinvcdf.(10, 10, wilcoxcdf.(10, 10, -1:101)) == [0; 0:100; 100]
     @test wilcoxinvccdf.(10, 10, wilcoxccdf.(10, 10, -1:101)) == [0; 0:100; 100]
