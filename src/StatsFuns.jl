@@ -219,6 +219,18 @@ export
     tdistinvlogcdf,     # inverse-logcdf of student's t distribution
     tdistinvlogccdf,    # inverse-logccdf of student's t distribution
 
+    # distrs/signrank
+    signrankpdf,
+    signranklogpdf,
+    signrankcdf,
+    signranklogcdf,
+    signrankccdf,
+    signranklogccdf,
+    signrankinvcdf,
+    signrankinvccdf,
+    signrankinvlogcdf,
+    signrankinvlogccdf,
+            
     # distrs/srdist
     srdistcdf,           # cdf of studentized range distribution
     srdistccdf,          # ccdf of studentized range distribution
@@ -258,6 +270,7 @@ include(joinpath("distrs", "norm.jl"))
 include(joinpath("distrs", "ntdist.jl"))
 include(joinpath("distrs", "pois.jl"))
 include(joinpath("distrs", "tdist.jl"))
+include(joinpath("distrs", "signrank.jl"))
 include(joinpath("distrs", "srdist.jl"))
 
 if !isdefined(Base, :get_extension)
