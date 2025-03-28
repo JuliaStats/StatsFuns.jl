@@ -14,28 +14,20 @@ summing to (U+sum(1:nx)),
 This can be calculated bottom up using dynamic programming.
 
 The (i,j)'th element of DP in the k'th outer loop iteration represents:
-the number of subsets with size k of {1,2,...,k,k+1,...,k+j-1} summing to i.
+the number of subsets with size k of {1,2,...,k,k+1,...,k+j-1} summing to i+sum(1:k)-1.
  =#
 
 @inline function wilcoxDP(nx, ny, U)
-    DP = zeros(Int, sum(1:nx) + U, ny + 1)
+    DP = zeros(Int, U + 1, ny + 1)
     for j = 1:(ny+1)
-        for i = 1:j
-            DP[i, j] = 1
-        end
+        DP[1, j] = 1
     end
-    for k = 2:nx
-        sum_1_k = (k * (k + 1)) >> 1
-        for j = 1:(ny+1)
-            local_max = k * (j - 1)
-            for i = (sum_1_k+min(U, local_max)):-1:1
-                if j > 1
-                    DP[i, j] = DP[i, j-1]
-                else
-                    DP[i, j] = 0
-                end
-                if i - j - k + 1 >= 1
-                    DP[i, j] += DP[i-j-k+1, j]
+    for k = 1:nx
+        for j = 2:(ny+1)
+            for i = (U+1):-1:2
+                DP[i, j] = DP[i, j-1]
+                if i - j >= 0
+                    DP[i, j] += DP[i-j+1, j]
                 end
             end
         end
@@ -56,7 +48,7 @@ function wilcoxpdf(nx::Int, ny::Int, U::Int)
         return wilcoxpdf(nx, ny, U2)
     end
     DP = wilcoxDP(nx, ny, U)
-    DP[sum(1:nx)+U, ny+1] / binomial(nx + ny, nx)
+    DP[U+1, ny+1] / binomial(nx + ny, nx)
 end
 
 function wilcoxlogpdf(nx::Int, ny::Int, U::Union{Float64,Int})
@@ -76,7 +68,7 @@ function wilcoxcdf(nx::Int, ny::Int, U::Int)
         return 1.0 - wilcoxcdf(nx, ny, U2)
     end
     DP = wilcoxDP(nx, ny, U)
-    sum(DP[(sum(1:nx)):(sum(1:nx)+U), ny+1] ./ binomial(nx + ny, nx))
+    sum(@view(DP[1:(U+1), ny+1]) ./ binomial(nx + ny, nx))
 end
 
 function wilcoxlogcdf(nx::Int, ny::Int, U::Union{Float64,Int})
