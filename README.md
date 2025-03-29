@@ -247,6 +247,18 @@ tdistinvcdf,        # inverse-cdf of student's t distribution
 tdistinvccdf,       # inverse-ccdf of student's t distribution
 tdistinvlogcdf,     # inverse-logcdf of student's t distribution
 tdistinvlogccdf,    # inverse-logccdf of student's t distribution
+
+# distrs/wilcox
+wilcoxpdf,           # pdf of Wilcox distribution
+wilcoxlogpdf,        # logpdf of Wilcox distribution
+wilcoxcdf,           # cdf of Wilcox distribution
+wilcoxccdf,          # ccdf of Wilcox distribution
+wilcoxlogcdf,        # logcdf of Wilcox distribution
+wilcoxlogccdf,       # logccdf of Wilcox distribution
+wilcoxinvcdf,        # inverse-cdf of Wilcox distribution
+wilcoxinvccdf,       # inverse-ccdf of Wilcox distribution
+wilcoxinvlogcdf,     # inverse-logcdf of Wilcox distribution
+wilcoxinvlogccdf,    # inverse-logccdf of Wilcox distribution
 ```
 
 ## License

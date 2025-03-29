@@ -240,6 +240,18 @@ export
     srdistinvccdf,       # inverse-ccdf of studentized range distribution
     srdistinvlogcdf,     # inverse-logcdf of studentized range distribution
     srdistinvlogccdf,    # inverse-logccdf of studentized range distribution
+    
+    # distrs/wilcox
+    wilcoxpdf,
+    wilcoxlogpdf,
+    wilcoxcdf,
+    wilcoxlogcdf,
+    wilcoxccdf,
+    wilcoxlogccdf,
+    wilcoxinvcdf,
+    wilcoxinvccdf,
+    wilcoxinvlogcdf,
+    wilcoxinvlogccdf,
 
     # misc
     logmvgamma,         # logarithm of multivariate gamma function
@@ -272,6 +284,7 @@ include(joinpath("distrs", "pois.jl"))
 include(joinpath("distrs", "tdist.jl"))
 include(joinpath("distrs", "signrank.jl"))
 include(joinpath("distrs", "srdist.jl"))
+include(joinpath("distrs", "wilcox.jl"))
 
 if !isdefined(Base, :get_extension)
     include("../ext/StatsFunsChainRulesCoreExt.jl")
