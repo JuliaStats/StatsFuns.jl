@@ -8,7 +8,7 @@ This can be calculated using the recursion:
 either nx+ny is in the subset in which case we need to calculate
 the number of subsets with size nx-1 of {1,2,...,nx,nx+1,...,nx+ny-1}
 summing to (U+sum(1:nx)-nx-ny),
-or nx is not in the subset in which case we need to calculate
+or nx+ny is not in the subset in which case we need to calculate
 the number of subsets with size nx of {1,2,...,nx,nx+1,...,nx+ny-1}
 summing to (U+sum(1:nx)),
 This can be calculated bottom up using dynamic programming.
@@ -24,11 +24,14 @@ the number of subsets with size k of {1,2,...,k,k+1,...,k+j-1} summing to i+sum(
     end
     for k = 1:nx
         for j = 2:(ny+1)
-            for i = (U+1):-1:2
+            local_max = k * (j - 1)
+            for i = min(U + 1, local_max + 1):-1:max(j, 2)
+                # In this loop: min(U+1,local_max+1) >= i >= 2 AND i - j >= 0
+                DP[i, j] = DP[i-j+1, j] + DP[i, j-1]
+            end
+            for i = min(U + 1, local_max + 1, j - 1):-1:2
+                # In this loop: min(U+1,local_max+1) >= i >= 2 AND i - j < 0
                 DP[i, j] = DP[i, j-1]
-                if i - j >= 0
-                    DP[i, j] += DP[i-j+1, j]
-                end
             end
         end
     end
@@ -36,7 +39,7 @@ the number of subsets with size k of {1,2,...,k,k+1,...,k+j-1} summing to i+sum(
 end
 
 function wilcoxpdf(nx::Int, ny::Int, U::Float64)
-    return isinteger(U) ? wilcoxpdf(nx, ny, Int(W)) : 0.0
+    return isinteger(U) ? wilcoxpdf(nx, ny, Int(U)) : 0.0
 end
 function wilcoxpdf(nx::Int, ny::Int, U::Int)
     if U < 0
@@ -68,7 +71,7 @@ function wilcoxcdf(nx::Int, ny::Int, U::Int)
         return 1.0 - wilcoxcdf(nx, ny, U2)
     end
     DP = wilcoxDP(nx, ny, U)
-    sum(@view(DP[1:(U+1), ny+1]) ./ binomial(nx + ny, nx))
+    sum(@view(DP[1:(U+1), ny+1]) / binomial(nx + ny, nx))
 end
 
 function wilcoxlogcdf(nx::Int, ny::Int, U::Union{Float64,Int})
