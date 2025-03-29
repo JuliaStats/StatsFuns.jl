@@ -43,8 +43,10 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     -0.20763936477824452
     This slight difference causes test failures for the inverse functions,
     due to a slight shift in the location of the discontinuity.
+    
+    This also holds true for wilcox.
     =#
-    test_inv = basename != "signrank" || !Sys.islinux()
+    test_inv = basename != "signrank" && basename != "wilcox" || !Sys.islinux()
 
     if has_pdf
         pdf     = string(basename, "pdf")
