@@ -88,7 +88,7 @@ function wilcoxccdf(nx::Int, ny::Int, U::Float64)
     wilcoxccdf(nx, ny, round(Int, U, RoundNearestTiesUp))
 end
 function wilcoxccdf(nx::Int, ny::Int, U::Int)
-    max_U = sum((ny+1):(nx+ny)) - sum(1:nx)
+    max_U = nx * ny
     wilcoxcdf(nx, ny, max_U - U - 1)
 end
 
