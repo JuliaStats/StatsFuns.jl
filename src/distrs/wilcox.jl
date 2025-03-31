@@ -71,7 +71,7 @@ function wilcoxcdf(nx::Int, ny::Int, U::Int)
         return 1.0 - wilcoxcdf(nx, ny, U2)
     end
     DP = wilcoxDP(nx, ny, U)
-    sum(@view(DP[1:(U+1), ny+1]) / binomial(nx + ny, nx))
+    sum(float, @view(DP[1:(U+1), ny+1])) / binomial(nx + ny, nx)
 end
 
 function wilcoxlogcdf(nx::Int, ny::Int, U::Union{Float64,Int})
