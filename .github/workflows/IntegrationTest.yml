@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   test:
-    name: ${{ matrix.package.repo }}/${{ matrix.package.group }}
+    name: ${{ matrix.package }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -25,29 +25,26 @@ jobs:
         julia-version: [1]
         os: [ubuntu-latest]
         package:
-          - {user: JuliaStats, repo: Distributions.jl}
+          - Distributions
+          - HypothesisTests
 
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.julia-version }}
-          arch: x64
+      - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
-      - name: Clone Downstream
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ matrix.package.user }}/${{ matrix.package.repo }}
-          path: downstream
       - name: Load this and run the downstream tests
-        shell: julia --color=yes --project=downstream {0}
+        shell: julia --color=yes {0}
         run: |
           using Pkg
           try
             # force it to use this PR's version of the package
             Pkg.develop(PackageSpec(path="."))  # resolver may fail with main deps
+            Pkg.add("${{ matrix.package }}")
             Pkg.update()
-            Pkg.test()  # resolver may fail with test time deps
+            Pkg.test("${{ matrix.package }}") # resolver may fail with test time deps
           catch err
             err isa Pkg.Resolve.ResolverError || rethrow()
             # If we can't resolve that means this is incompatible by SemVer and this is fine
