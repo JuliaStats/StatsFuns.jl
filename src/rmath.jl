@@ -143,6 +143,7 @@ end
 @import_rmath pois pois λ
 @import_rmath t tdist k
 @import_rmath tukey srdist k ν
+@import_rmath wilcox wilcox nx ny
 
 @import_rmath nbeta nbeta α β λ
 @import_rmath nchisq nchisq k λ
