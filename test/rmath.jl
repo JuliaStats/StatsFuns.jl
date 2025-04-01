@@ -5,17 +5,8 @@ using Test
 include("utils.jl")
 
 function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
-    # HypergeometricFunctions@0.3.18 made some changes that trips inference
-    # on older versions of Julia. Not worth the the time trying to debug/fix
-    # as we might drop support for these version soon so just putting the
-    # inference check behind a VERSION branch
-    if VERSION >= v"1.7"
-        v = @inferred(statsfun(params..., a))
-        rv = @inferred(rmathfun(params..., a))
-    else
-        v = statsfun(params..., a)
-        rv = rmathfun(params..., a)
-    end
+    v = @inferred(statsfun(params..., a))
+    rv = @inferred(rmathfun(params..., a))
     @test v isa float(Base.promote_typeof(params..., a))
     @test rv isa float(Base.promote_typeof(params..., a))
     if isprob

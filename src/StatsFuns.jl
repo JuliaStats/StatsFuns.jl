@@ -286,9 +286,4 @@ include(joinpath("distrs", "signrank.jl"))
 include(joinpath("distrs", "srdist.jl"))
 include(joinpath("distrs", "wilcox.jl"))
 
-if !isdefined(Base, :get_extension)
-    include("../ext/StatsFunsChainRulesCoreExt.jl")
-    include("../ext/StatsFunsInverseFunctionsExt.jl")
-end
-
 end # module
