@@ -46,7 +46,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol=_default_rtol(params
     
     This also holds true for wilcox.
     =#
-    test_inv = basename != "signrank" && basename != "wilcox" || !Sys.islinux()
+    test_inv = (basename != "signrank" && basename != "wilcox") || !Sys.islinux()
 
     if has_pdf
         pdf     = string(basename, "pdf")
