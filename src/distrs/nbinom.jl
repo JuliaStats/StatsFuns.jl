@@ -2,13 +2,13 @@
 
 # R implementations
 using .RFunctions:
-    nbinompdf,
-    nbinomlogpdf,
-    nbinomcdf,
-    nbinomccdf,
-    nbinomlogcdf,
-    nbinomlogccdf,
-    nbinominvcdf,
-    nbinominvccdf,
-    nbinominvlogcdf,
-    nbinominvlogccdf
+                   nbinompdf,
+                   nbinomlogpdf,
+                   nbinomcdf,
+                   nbinomccdf,
+                   nbinomlogcdf,
+                   nbinomlogccdf,
+                   nbinominvcdf,
+                   nbinominvccdf,
+                   nbinominvlogcdf,
+                   nbinominvlogccdf

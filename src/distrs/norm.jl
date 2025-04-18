@@ -22,7 +22,7 @@ function normpdf(μ::Real, σ::Real, x::Number)
     else
         z = zval(μ, σ, x)
     end
-    normpdf(z) / σ
+    return normpdf(z) / σ
 end
 
 # logpdf
@@ -38,7 +38,7 @@ function normlogpdf(μ::Real, σ::Real, x::Number)
     else
         z = zval(μ, σ, x)
     end
-    normlogpdf(z) - log(σ)
+    return normlogpdf(z) - log(σ)
 end
 
 # cdf
@@ -49,7 +49,7 @@ function normcdf(μ::Real, σ::Real, x::Number)
     else
         z = zval(μ, σ, x)
     end
-    normcdf(z)
+    return normcdf(z)
 end
 # ccdf
 normccdf(z::Number) = erfc(z * invsqrt2)/2
@@ -59,33 +59,37 @@ function normccdf(μ::Real, σ::Real, x::Number)
     else
         z = zval(μ, σ, x)
     end
-    normccdf(z)
+    return normccdf(z)
 end
 
 # logcdf
-normlogcdf(z::Number) = z < -1.0 ?
-    log(erfcx(-z * invsqrt2)/2) - abs2(z)/2 :
-    log1p(-erfc(z * invsqrt2)/2)
+function normlogcdf(z::Number)
+    return z < -1.0 ?
+           log(erfcx(-z * invsqrt2)/2) - abs2(z)/2 :
+           log1p(-erfc(z * invsqrt2)/2)
+end
 function normlogcdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
     else
         z = zval(μ, σ, x)
     end
-    normlogcdf(z)
+    return normlogcdf(z)
 end
 
 # logccdf
-normlogccdf(z::Number) = z > 1.0 ?
-    log(erfcx(z * invsqrt2)/2) - abs2(z)/2 :
-    log1p(-erfc(-z * invsqrt2)/2)
+function normlogccdf(z::Number)
+    return z > 1.0 ?
+           log(erfcx(z * invsqrt2)/2) - abs2(z)/2 :
+           log1p(-erfc(-z * invsqrt2)/2)
+end
 function normlogccdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
     else
         z = zval(μ, σ, x)
     end
-    normlogccdf(z)
+    return normlogccdf(z)
 end
 
 norminvcdf(p::Real) = -erfcinv(2*p) * sqrt2
@@ -99,15 +103,18 @@ norminvccdf(μ::Real, σ::Real, p::Real) = norminvccdf(promote(μ, σ, p)...)
 norminvccdf(μ::T, σ::T, p::T) where {T<:Real} = xval(μ, σ, norminvccdf(p))
 
 # invlogcdf. Fixme! Support more precisions than Float64
-norminvlogcdf(lp::Union{Float16,Float32}) = convert(typeof(lp), _norminvlogcdf_impl(Float64(lp)))
+function norminvlogcdf(lp::Union{Float16,Float32})
+    return convert(typeof(lp), _norminvlogcdf_impl(Float64(lp)))
+end
 norminvlogcdf(lp::Real) = _norminvlogcdf_impl(Float64(lp))
 norminvlogcdf(μ::Real, σ::Real, lp::Real) = xval(μ, σ, norminvlogcdf(lp))
 
 # invlogccdf. Fixme! Support more precisions than Float64
-norminvlogccdf(lp::Union{Float16,Float32}) = convert(typeof(lp), -_norminvlogcdf_impl(Float64(lp)))
+function norminvlogccdf(lp::Union{Float16,Float32})
+    return convert(typeof(lp), -_norminvlogcdf_impl(Float64(lp)))
+end
 norminvlogccdf(lp::Real) = -_norminvlogcdf_impl(Float64(lp))
 norminvlogccdf(μ::Real, σ::Real, lp::Real) = xval(μ, σ, norminvlogccdf(lp))
-
 
 # norminvcdf & norminvlogcdf implementation
 #
@@ -138,23 +145,23 @@ function _qnorm_ker1(q::Float64)
     # pre-condition: abs(q) <= 0.425
     r = 0.180625 - q*q
     return q * @horner(r,
-                       3.38713_28727_96366_6080e0,
-                       1.33141_66789_17843_7745e2,
-                       1.97159_09503_06551_4427e3,
-                       1.37316_93765_50946_1125e4,
-                       4.59219_53931_54987_1457e4,
-                       6.72657_70927_00870_0853e4,
-                       3.34305_75583_58812_8105e4,
-                       2.50908_09287_30122_6727e3) /
-    @horner(r,
-            1.0,
-            4.23133_30701_60091_1252e1,
-            6.87187_00749_20579_0830e2,
-            5.39419_60214_24751_1077e3,
-            2.12137_94301_58659_5867e4,
-            3.93078_95800_09271_0610e4,
-            2.87290_85735_72194_2674e4,
-            5.22649_52788_52854_5610e3)
+                      3.38713_28727_96366_6080e0,
+                      1.33141_66789_17843_7745e2,
+                      1.97159_09503_06551_4427e3,
+                      1.37316_93765_50946_1125e4,
+                      4.59219_53931_54987_1457e4,
+                      6.72657_70927_00870_0853e4,
+                      3.34305_75583_58812_8105e4,
+                      2.50908_09287_30122_6727e3) /
+           @horner(r,
+                   1.0,
+                   4.23133_30701_60091_1252e1,
+                   6.87187_00749_20579_0830e2,
+                   5.39419_60214_24751_1077e3,
+                   2.12137_94301_58659_5867e4,
+                   3.93078_95800_09271_0610e4,
+                   2.87290_85735_72194_2674e4,
+                   5.22649_52788_52854_5610e3)
 end
 
 function _qnorm_ker2(r::Float64)

@@ -1,7 +1,7 @@
 module StatsFunsInverseFunctionsExt
 
 using StatsFuns
-import InverseFunctions
+using InverseFunctions: InverseFunctions
 
 InverseFunctions.inverse(::typeof(normcdf)) = norminvcdf
 InverseFunctions.inverse(::typeof(norminvcdf)) = normcdf

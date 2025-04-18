@@ -2,13 +2,13 @@
 
 # R implementations
 using .RFunctions:
-    nfdistpdf,
-    nfdistlogpdf,
-    nfdistcdf,
-    nfdistccdf,
-    nfdistlogcdf,
-    nfdistlogccdf,
-    nfdistinvcdf,
-    nfdistinvccdf,
-    nfdistinvlogcdf,
-    nfdistinvlogccdf
+                   nfdistpdf,
+                   nfdistlogpdf,
+                   nfdistcdf,
+                   nfdistccdf,
+                   nfdistlogcdf,
+                   nfdistlogccdf,
+                   nfdistinvcdf,
+                   nfdistinvccdf,
+                   nfdistinvlogcdf,
+                   nfdistinvlogccdf
