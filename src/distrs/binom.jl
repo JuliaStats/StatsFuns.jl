@@ -2,16 +2,16 @@
 
 # R implementations
 using .RFunctions:
-    # binompdf,
-    # binomlogpdf,
-    # binomcdf,
-    # binomccdf,
-    # binomlogcdf,
-    # binomlogccdf,
-    binominvcdf,
-    binominvccdf,
-    binominvlogcdf,
-    binominvlogccdf
+# binompdf,
+# binomlogpdf,
+# binomcdf,
+# binomccdf,
+# binomlogcdf,
+# binomlogccdf,
+                  binominvcdf,
+                  binominvccdf,
+                  binominvlogcdf,
+                  binominvlogccdf
 
 # Julia implementations
 binompdf(n::Real, p::Real, k::Real) = exp(binomlogpdf(n, p, k))
@@ -24,8 +24,8 @@ function binomlogpdf(n::T, p::T, k::T) where {T<:Real}
 end
 
 for l in ("", "log"), compl in (false, true)
-    fbinom = Symbol(string("binom", l, ifelse(compl, "c", "" ), "cdf"))
-    fbeta  = Symbol(string("beta" , l, ifelse(compl,  "", "c"), "cdf"))
+    fbinom = Symbol(string("binom", l, ifelse(compl, "c", ""), "cdf"))
+    fbeta = Symbol(string("beta", l, ifelse(compl, "", "c"), "cdf"))
     @eval function ($fbinom)(n::Real, p::Real, k::Real)
         if isnan(k)
             return last(promote(n, p, k))

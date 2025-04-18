@@ -18,7 +18,7 @@ the number of ways {1,2,...,j} can sum to W-i+1.
     DP = zeros(Int, W + 1)
     DP[W+1] = 1
     for j in 1:n
-        for i in 1:(W+1-j)
+        for i in 1:(W + 1 - j)
             DP[i] += DP[i+j]
         end
     end

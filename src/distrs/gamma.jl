@@ -4,16 +4,16 @@ using HypergeometricFunctions: _₁F₁
 
 # R implementations
 using .RFunctions:
-    # gammapdf,
-    # gammalogpdf,
-    # gammacdf,
-    # gammaccdf,
-    # gammalogcdf,
-    # gammalogccdf,
-    # gammainvcdf,
-    # gammainvccdf,
-    gammainvlogcdf,
-    gammainvlogccdf
+# gammapdf,
+# gammalogpdf,
+# gammacdf,
+# gammaccdf,
+# gammalogcdf,
+# gammalogccdf,
+# gammainvcdf,
+# gammainvccdf,
+                  gammainvlogcdf,
+                  gammainvlogccdf
 
 # Julia implementations
 gammapdf(k::Real, θ::Real, x::Real) = exp(gammalogpdf(k, θ, x))
