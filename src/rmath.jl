@@ -65,7 +65,7 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     end
 
     # Function implementation
-    quote
+    return quote
         if $(!is_tukey)
             function $pdf($(pdecls...), x::Real)
                 T = float(Base.promote_typeof($(pargs...), x))
@@ -126,7 +126,7 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
 end
 
 macro import_rmath(rname, jname, pargs...)
-    esc(_import_rmath(rname, jname, pargs))
+    return esc(_import_rmath(rname, jname, pargs))
 end
 
 ### Import specific functions

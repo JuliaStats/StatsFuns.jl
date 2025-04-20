@@ -20,11 +20,11 @@ using StatsFuns, Test
     @test_throws DomainError bvncdf(0.0, 0.0, 2.0)
 
     @test bvncdf(0.0, -100000.0, 0.0) ≈ 0.0
-    @test bvncdf(0.0,  100000.0, 0.0) ≈ 0.5
-    @test bvncdf(100000.0,  100000.0, 0.0000) ≈ 1.0
-    @test bvncdf(-100000.0,  100000.0, 0.0000) ≈ 0.0
+    @test bvncdf(0.0, 100000.0, 0.0) ≈ 0.5
+    @test bvncdf(100000.0, 100000.0, 0.0) ≈ 1.0
+    @test bvncdf(-100000.0, 100000.0, 0.0) ≈ 0.0
 
     for x in -100.0:100.0, y in -100.0:100.0, r in -1.0:0.1:1.0
-        @test !isnan(bvncdf(x,y,r))
+        @test !isnan(bvncdf(x, y, r))
     end
 end

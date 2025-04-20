@@ -19,7 +19,7 @@ using .RFunctions:
 betapdf(α::Real, β::Real, x::Real) = exp(betalogpdf(α, β, x))
 
 betalogpdf(α::Real, β::Real, x::Real) = betalogpdf(promote(α, β, x)...)
-function betalogpdf(α::T, β::T, x::T) where {T<:Real}
+function betalogpdf(α::T, β::T, x::T) where {T <: Real}
     # we ensure that `log(x)` and `log1p(-x)` do not error
     y = clamp(x, 0, 1)
     val = xlogy(α - 1, y) + xlog1py(β - 1, -y) - logbeta(α, β)
@@ -45,12 +45,12 @@ function betaccdf(α::Real, β::Real, x::Real)
         return float(last(promote(α, β, x, x < 1)))
     end
 
-    last(beta_inc(α, β, clamp(x, 0, 1)))
+    return last(beta_inc(α, β, clamp(x, 0, 1)))
 end
 
 # The log version is currently based on non-log version. When the cdf is very small we shift
 # to an implementation based on the hypergeometric function ₂F₁ to avoid underflow.
-function betalogcdf(α::T, β::T, x::T) where {T<:Real}
+function betalogcdf(α::T, β::T, x::T) where {T <: Real}
     # Handle degenerate cases
     if iszero(α) && β > 0
         return log(last(promote(x, x >= 0)))
@@ -63,7 +63,7 @@ function betalogcdf(α::T, β::T, x::T) where {T<:Real}
     if p < floatmin(p)
         # see https://dlmf.nist.gov/8.17#E8
         # we use E8 instead of E7 due to https://github.com/JuliaMath/HypergeometricFunctions.jl/issues/47
-        return -log(α) + xlogy(α, _x) + xlog1py(β, -_x) + log(_₂F₁(promote(α + β, 1, α + 1, _x)...; method=:positive)) - logbeta(α, β)
+        return -log(α) + xlogy(α, _x) + xlog1py(β, -_x) + log(_₂F₁(promote(α + β, 1, α + 1, _x)...; method = :positive)) - logbeta(α, β)
     elseif p <= 0.7
         return log(p)
     else

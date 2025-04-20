@@ -16,10 +16,10 @@ the number of ways {1,2,...,j} can sum to W-i+1.
 
 @inline function signrankDP(n, W)
     DP = zeros(Int, W + 1)
-    DP[W+1] = 1
+    DP[W + 1] = 1
     for j in 1:n
-        for i in 1:(W+1-j)
-            DP[i] += DP[i+j]
+        for i in 1:(W + 1 - j)
+            DP[i] += DP[i + j]
         end
     end
     return DP
@@ -41,7 +41,7 @@ function signrankpdf(n::Int, W::Int)
     return ldexp(float(DP[1]), -n)
 end
 
-function signranklogpdf(n::Int, W::Union{Float64,Int})
+function signranklogpdf(n::Int, W::Union{Float64, Int})
     return log(signrankpdf(n, W))
 end
 
@@ -61,7 +61,7 @@ function signrankcdf(n::Int, W::Int)
     return sum(Base.Fix2(ldexp, -n) ∘ float, DP)
 end
 
-function signranklogcdf(n::Int, W::Union{Float64,Int})
+function signranklogcdf(n::Int, W::Union{Float64, Int})
     return log(signrankcdf(n, W))
 end
 
@@ -73,7 +73,7 @@ function signrankccdf(n::Int, W::Int)
     return signrankcdf(n, max_W - W - 1)
 end
 
-function signranklogccdf(n::Int, W::Union{Float64,Int})
+function signranklogccdf(n::Int, W::Union{Float64, Int})
     return log(signrankccdf(n, W))
 end
 
