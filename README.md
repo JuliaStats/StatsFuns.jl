@@ -4,6 +4,7 @@ Mathematical functions related to statistics.
 
 [![CI](https://github.com/JuliaStats/StatsFuns.jl/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/JuliaStats/StatsFuns.jl/actions/workflows/ci.yml?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/JuliaStats/StatsFuns.jl/branch/master/graph/badge.svg?token=CV9hGTr6cW)](https://codecov.io/gh/JuliaStats/StatsFuns.jl)
+[![code style: runic](https://img.shields.io/badge/code_style-%E1%9A%B1%E1%9A%A2%E1%9A%BE%E1%9B%81%E1%9A%B2-black)](https://github.com/fredrikekre/Runic.jl)
 
 This package provides a collection of mathematical constants and numerical functions for statistical computing.
 
