@@ -29,7 +29,7 @@ the number of subsets with size k of {1,2,...,k,k+1,...,k+j-1} summing to i+sum(
                 # In this loop: i_max >= i >= 2 AND i - j >= 0
                 DP[i, j] = DP[i-j+1, j] + DP[i, j-1]
             end
-            for i = min(i_max, j - 1):-1:2
+            for i = min(i_max, j-1):-1:2
                 # In this loop: i_max >= i >= 2 AND i - j < 0
                 DP[i, j] = DP[i, j-1]
             end

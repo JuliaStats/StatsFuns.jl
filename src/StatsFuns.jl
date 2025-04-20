@@ -230,7 +230,7 @@ export
     signrankinvccdf,
     signrankinvlogcdf,
     signrankinvlogccdf,
-            
+
     # distrs/srdist
     srdistcdf,           # cdf of studentized range distribution
     srdistccdf,          # ccdf of studentized range distribution
@@ -240,7 +240,7 @@ export
     srdistinvccdf,       # inverse-ccdf of studentized range distribution
     srdistinvlogcdf,     # inverse-logcdf of studentized range distribution
     srdistinvlogccdf,    # inverse-logccdf of studentized range distribution
-    
+
     # distrs/wilcox
     wilcoxpdf,
     wilcoxlogpdf,

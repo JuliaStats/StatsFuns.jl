@@ -69,58 +69,87 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
         if $(!is_tukey)
             function $pdf($(pdecls...), x::Real)
                 T = float(Base.promote_typeof($(pargs...), x))
-                return convert(T, ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0))
+                return convert(
+                    T,
+                    ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0),
+                )
             end
 
             function $logpdf($(pdecls...), x::Real)
                 T = float(Base.promote_typeof($(pargs...), x))
-                return convert(T, ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1))
+                return convert(
+                    T,
+                    ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1),
+                )
             end
         end
 
         function $cdf($(pdecls...), x::Real)
             T = float(Base.promote_typeof($(pargs...), x))
-            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0))
+            return convert(
+                T,
+                ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0),
+            )
         end
 
         function $ccdf($(pdecls...), x::Real)
             T = float(Base.promote_typeof($(pargs...), x))
-            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0))
+            return convert(
+                T,
+                ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0),
+            )
         end
 
         function $logcdf($(pdecls...), x::Real)
             T = float(Base.promote_typeof($(pargs...), x))
-            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1))
+            return convert(
+                T,
+                ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1),
+            )
         end
 
         function $logccdf($(pdecls...), x::Real)
             T = float(Base.promote_typeof($(pargs...), x))
-            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1))
+            return convert(
+                T,
+                ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1),
+            )
         end
 
         function $invcdf($(pdecls...), q::Real)
             T = float(Base.promote_typeof($(pargs...), q))
-            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0))
+            return convert(
+                T,
+                ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0),
+            )
         end
 
         function $invccdf($(pdecls...), q::Real)
             T = float(Base.promote_typeof($(pargs...), q))
-            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0))
+            return convert(
+                T,
+                ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0),
+            )
         end
 
         function $invlogcdf($(pdecls...), lq::Real)
             T = float(Base.promote_typeof($(pargs...), lq))
-            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1))
+            return convert(
+                T,
+                ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1),
+            )
         end
 
         function $invlogccdf($(pdecls...), lq::Real)
             T = float(Base.promote_typeof($(pargs...), lq))
-            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1))
+            return convert(
+                T,
+                ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1),
+            )
         end
 
         if $has_rand
-            $rand($(pdecls...)) =
-                ccall(($rfun, libRmath), Float64, $rtypes, $(pargs...))
+            $rand($(pdecls...)) = ccall(($rfun, libRmath), Float64, $rtypes, $(pargs...))
         end
     end
 end

@@ -7,30 +7,19 @@ import ChainRulesCore
 ChainRulesCore.@scalar_rule(
     betalogpdf(α::Real, β::Real, x::Number),
     @setup(z = digamma(α + β)),
-    (
-        log(x) + z - digamma(α),
-        log1p(-x) + z - digamma(β),
-        (α - 1) / x + (1 - β) / (1 - x),
-    ),
+    (log(x) + z - digamma(α), log1p(-x) + z - digamma(β), (α - 1) / x + (1 - β) / (1 - x)),
 )
 
 ChainRulesCore.@scalar_rule(
     binomlogpdf(n::Real, p::Real, k::Real),
     @setup(z = digamma(n - k + 1)),
-    (
-        ChainRulesCore.NoTangent(),
-        (k / p - n) / (1 - p),
-        ChainRulesCore.NoTangent(),
-    ),
+    (ChainRulesCore.NoTangent(), (k / p - n) / (1 - p), ChainRulesCore.NoTangent()),
 )
 
 ChainRulesCore.@scalar_rule(
     chisqlogpdf(k::Real, x::Number),
     @setup(hk = k / 2),
-    (
-        (log(x) - logtwo - digamma(hk)) / 2,
-        (hk - 1) / x - one(hk) / 2,
-    ),
+    ((log(x) - logtwo - digamma(hk)) / 2, (hk - 1) / x - one(hk) / 2),
 )
 
 ChainRulesCore.@scalar_rule(
@@ -51,16 +40,8 @@ ChainRulesCore.@scalar_rule(
 
 ChainRulesCore.@scalar_rule(
     gammalogpdf(k::Real, θ::Real, x::Number),
-    @setup(
-        invθ = inv(θ),
-        xoθ = invθ * x,
-        z = xoθ - k,
-    ),
-    (
-        log(xoθ) - digamma(k),
-        invθ * z,
-        - (1 + z) / x,
-    ),
+    @setup(invθ = inv(θ), xoθ = invθ * x, z = xoθ - k,),
+    (log(xoθ) - digamma(k), invθ * z, - (1 + z) / x),
 )
 
 ChainRulesCore.@scalar_rule(
@@ -70,17 +51,8 @@ ChainRulesCore.@scalar_rule(
 
 ChainRulesCore.@scalar_rule(
     tdistlogpdf(ν::Real, x::Number),
-    @setup(
-        νp1 = ν + 1,
-        xsq = x^2,
-        invν = inv(ν),
-        a = xsq * invν,
-        b = νp1 / (ν + xsq),
-    ),
-    (
-        (digamma(νp1 / 2) - digamma(ν / 2) + a * b - log1p(a) - invν) / 2,
-        - x * b,
-    ),
+    @setup(νp1 = ν + 1, xsq = x^2, invν = inv(ν), a = xsq * invν, b = νp1 / (ν + xsq),),
+    ((digamma(νp1 / 2) - digamma(ν / 2) + a * b - log1p(a) - invν) / 2, - x * b),
 )
 
 end # module

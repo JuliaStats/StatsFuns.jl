@@ -63,7 +63,11 @@ function betalogcdf(α::T, β::T, x::T) where {T<:Real}
     if p < floatmin(p)
         # see https://dlmf.nist.gov/8.17#E8
         # we use E8 instead of E7 due to https://github.com/JuliaMath/HypergeometricFunctions.jl/issues/47
-        return -log(α) + xlogy(α, _x) + xlog1py(β, -_x) + log(_₂F₁(promote(α + β, 1, α + 1, _x)...; method=:positive)) - logbeta(α, β)
+        return -log(α) +
+               xlogy(α, _x) +
+               xlog1py(β, -_x) +
+               log(_₂F₁(promote(α + β, 1, α + 1, _x)...; method = :positive)) -
+               logbeta(α, β)
     elseif p <= 0.7
         return log(p)
     else
