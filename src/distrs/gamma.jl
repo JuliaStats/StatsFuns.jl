@@ -19,7 +19,7 @@ using .RFunctions:
 gammapdf(k::Real, θ::Real, x::Real) = exp(gammalogpdf(k, θ, x))
 
 gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)
-function gammalogpdf(k::T, θ::T, x::T) where {T<:Real}
+function gammalogpdf(k::T, θ::T, x::T) where {T <: Real}
     # we ensure that `log(x)` does not error if `x < 0`
     xθ = max(x, 0) / θ
     val = -loggamma(k) - log(θ) - xθ
@@ -31,21 +31,21 @@ function gammalogpdf(k::T, θ::T, x::T) where {T<:Real}
     return x < 0 ? oftype(val, -Inf) : val
 end
 
-function gammacdf(k::T, θ::T, x::T) where {T<:Real}
+function gammacdf(k::T, θ::T, x::T) where {T <: Real}
     # Handle the degenerate case
     if iszero(k)
         return float(last(promote(x, x >= 0)))
     end
-    return first(gamma_inc(k, max(0, x)/θ))
+    return first(gamma_inc(k, max(0, x) / θ))
 end
 gammacdf(k::Real, θ::Real, x::Real) = gammacdf(map(float, promote(k, θ, x))...)
 
-function gammaccdf(k::T, θ::T, x::T) where {T<:Real}
+function gammaccdf(k::T, θ::T, x::T) where {T <: Real}
     # Handle the degenerate case
     if iszero(k)
         return float(last(promote(x, x < 0)))
     end
-    return last(gamma_inc(k, max(0, x)/θ))
+    return last(gamma_inc(k, max(0, x) / θ))
 end
 gammaccdf(k::Real, θ::Real, x::Real) = gammaccdf(map(float, promote(k, θ, x))...)
 
@@ -59,17 +59,17 @@ function _gammalogcdf(k::Float64, θ::Float64, x::Float64)
         return log(x >= 0)
     end
 
-    xdθ = max(0, x)/θ
+    xdθ = max(0, x) / θ
     l, u = gamma_inc(k, xdθ)
     if l < floatmin(Float64) && isfinite(k) && isfinite(xdθ)
-        return -log(k) + k*log(xdθ) - xdθ + log(_₁F₁(1.0, 1 + k, xdθ)) - loggamma(k)
+        return -log(k) + k * log(xdθ) - xdθ + log(_₁F₁(1.0, 1 + k, xdθ)) - loggamma(k)
     elseif l < 0.7
         return log(l)
     else
         return log1p(-u)
     end
 end
-function _gammalogcdf(k::T, θ::T, x::T) where {T<:Union{Float16,Float32}}
+function _gammalogcdf(k::T, θ::T, x::T) where {T <: Union{Float16, Float32}}
     return T(_gammalogcdf(Float64(k), Float64(θ), Float64(x)))
 end
 
@@ -83,7 +83,7 @@ function _gammalogccdf(k::Float64, θ::Float64, x::Float64)
         return log(x < 0)
     end
 
-    xdθ = max(0, x)/θ
+    xdθ = max(0, x) / θ
     l, u = gamma_inc(k, xdθ)
     if u < floatmin(Float64)
         return loggamma(k, xdθ) - loggamma(k)
@@ -94,16 +94,16 @@ function _gammalogccdf(k::Float64, θ::Float64, x::Float64)
     end
 end
 
-function _gammalogccdf(k::T, θ::T, x::T) where {T<:Union{Float16,Float32}}
+function _gammalogccdf(k::T, θ::T, x::T) where {T <: Union{Float16, Float32}}
     return T(_gammalogccdf(Float64(k), Float64(θ), Float64(x)))
 end
 
 function gammainvcdf(k::Real, θ::Real, p::Real)
     _k, _θ, _p = promote(k, θ, p)
-    return _θ*gamma_inc_inv(_k, _p, 1 - _p)
+    return _θ * gamma_inc_inv(_k, _p, 1 - _p)
 end
 
 function gammainvccdf(k::Real, θ::Real, p::Real)
     _k, _θ, _p = promote(k, θ, p)
-    return _θ*gamma_inc_inv(_k, 1 - _p, _p)
+    return _θ * gamma_inc_inv(_k, 1 - _p, _p)
 end

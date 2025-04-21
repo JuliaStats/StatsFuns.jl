@@ -19,19 +19,19 @@ the number of subsets with size k of {1,2,...,k,k+1,...,k+j-1} summing to i+sum(
 
 @inline function wilcoxDP(nx, ny, U)
     DP = zeros(Int, U + 1, ny + 1)
-    for j = 1:(ny+1)
+    for j in 1:(ny + 1)
         DP[1, j] = 1
     end
-    for k = 1:nx
-        for j = 2:(ny+1)
+    for k in 1:nx
+        for j in 2:(ny + 1)
             i_max = min(U, k * (j - 1)) + 1
-            for i = i_max:-1:max(j, 2)
+            for i in i_max:-1:max(j, 2)
                 # In this loop: i_max >= i >= 2 AND i - j >= 0
-                DP[i, j] = DP[i-j+1, j] + DP[i, j-1]
+                DP[i, j] = DP[i - j + 1, j] + DP[i, j - 1]
             end
-            for i = min(i_max, j - 1):-1:2
+            for i in min(i_max, j - 1):-1:2
                 # In this loop: i_max >= i >= 2 AND i - j < 0
-                DP[i, j] = DP[i, j-1]
+                DP[i, j] = DP[i, j - 1]
             end
         end
     end
@@ -51,15 +51,15 @@ function wilcoxpdf(nx::Int, ny::Int, U::Int)
         return wilcoxpdf(nx, ny, U2)
     end
     DP = wilcoxDP(nx, ny, U)
-    DP[U+1, ny+1] / binomial(nx + ny, nx)
+    return DP[U + 1, ny + 1] / binomial(nx + ny, nx)
 end
 
-function wilcoxlogpdf(nx::Int, ny::Int, U::Union{Float64,Int})
+function wilcoxlogpdf(nx::Int, ny::Int, U::Union{Float64, Int})
     return log(wilcoxpdf(nx, ny, U))
 end
 
 function wilcoxcdf(nx::Int, ny::Int, U::Float64)
-    wilcoxcdf(nx, ny, round(Int, U, RoundNearestTiesUp))
+    return wilcoxcdf(nx, ny, round(Int, U, RoundNearestTiesUp))
 end
 function wilcoxcdf(nx::Int, ny::Int, U::Int)
     if U < 0
@@ -71,10 +71,10 @@ function wilcoxcdf(nx::Int, ny::Int, U::Int)
         return 1.0 - wilcoxcdf(nx, ny, U2)
     end
     DP = wilcoxDP(nx, ny, U)
-    sum(float, @view(DP[1:(U+1), ny+1])) / binomial(nx + ny, nx)
+    return sum(float, @view(DP[1:(U + 1), ny + 1])) / binomial(nx + ny, nx)
 end
 
-function wilcoxlogcdf(nx::Int, ny::Int, U::Union{Float64,Int})
+function wilcoxlogcdf(nx::Int, ny::Int, U::Union{Float64, Int})
     max_U = nx * ny
     U2 = max_U - U - 1
     if U2 < U
@@ -85,14 +85,14 @@ function wilcoxlogcdf(nx::Int, ny::Int, U::Union{Float64,Int})
 end
 
 function wilcoxccdf(nx::Int, ny::Int, U::Float64)
-    wilcoxccdf(nx, ny, round(Int, U, RoundNearestTiesUp))
+    return wilcoxccdf(nx, ny, round(Int, U, RoundNearestTiesUp))
 end
 function wilcoxccdf(nx::Int, ny::Int, U::Int)
     max_U = nx * ny
-    wilcoxcdf(nx, ny, max_U - U - 1)
+    return wilcoxcdf(nx, ny, max_U - U - 1)
 end
 
-function wilcoxlogccdf(nx::Int, ny::Int, U::Union{Float64,Int})
+function wilcoxlogccdf(nx::Int, ny::Int, U::Union{Float64, Int})
     max_U = nx * ny
     U2 = max_U - U - 1
     if U2 < U + 2 # +2 is empirical
