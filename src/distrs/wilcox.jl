@@ -74,21 +74,32 @@ A. Löffler: "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Tes
     return partitions
 end
 
-function wilcoxpdf(nx::Int, ny::Int, U::Float64)
-    return isinteger(U) ? wilcoxpdf(nx, ny, Int(U)) : 0.0
+function wilcoxpdf(nx::Int, ny::Int, U::Union{Float64, Int})
+    numseqs = wilcox_numseqs(nx, ny, U)
+    return iszero(numseqs) ? 0.0 : numseqs / binomial(nx + ny, nx)
 end
-function wilcoxpdf(nx::Int, ny::Int, U::Int)
+
+function wilcox_numseqs(nx::Int, ny::Int, U::Float64)
+    return isinteger(U) ? wilcox_numseqs(nx, ny, Int(U)) : 0
+end
+function wilcox_numseqs(nx::Int, ny::Int, U::Int)
     max_U = nx * ny
     if !(0 <= U <= max_U)
-        return 0.0
+        return 0
     end
     U = min(U, max_U - U)
     partitions = wilcox_partitions(nx, ny, U)
-    return partitions[end] / binomial(nx + ny, nx)
+    return partitions[end]
 end
 
 function wilcoxlogpdf(nx::Int, ny::Int, U::Union{Float64, Int})
     return log(wilcoxpdf(nx, ny, U))
+end
+function wilcoxlogupdf(nx::Int, ny::Int, U::Union{Float64, Int})
+    return log(wilcox_numseqs(nx, ny, U))
+end
+function wilcoxlogulikelihood(nx::Int, ny::Int, U::Union{Float64, Int})
+    return wilcoxlogpdf(nx, ny, U)
 end
 
 function wilcoxcdf(nx::Int, ny::Int, U::Float64)

@@ -12,6 +12,27 @@ function fdistlogpdf(ν1::T, ν2::T, x::T) where {T <: Real}
     return x < 0 ? oftype(val, -Inf) : val
 end
 
+fdistlogupdf(ν1::Real, ν2::Real, x::Real) = fdistlogupdf(promote(ν1, ν2, x)...)
+function fdistlogupdf(ν1::T, ν2::T, x::T) where {T <: Real}
+    # we ensure that `log(x)` does not error if `x < 0`
+    y = max(x, 0)
+    val = (xlogy(ν1 - 2, y) - xlogy(ν1 + ν2, ν1 * y + ν2)) / 2
+    return x < 0 ? oftype(val, -Inf) : val
+end
+
+fdistloguloglikelihood(ν1::Real, ν2::Real, x::Real) = fdistlogulikelihood(promote(ν1, ν2, x)...)
+function fdistlogulikelihood(ν1::T, ν2::T, x::T) where {T}
+    # we ensure that `log(x)` does not error if `x < 0`
+    y = max(x, 0)
+    tmp = ν1 * y + ν2
+    a = ν1 / tmp
+    b = ν2 / tmp
+    halfν1 = ν1 / 2
+    halfν2 = ν2 / 2
+    val = (xlogy(halfν1, a) + xlogy(halfν2, b)) - logbeta(halfν1, halfν2)
+    return x < 0 ? oftype(val, -Inf) : val
+end
+
 for f in ("cdf", "ccdf", "logcdf", "logccdf")
     ff = Symbol("fdist" * f)
     bf = Symbol("beta" * f)

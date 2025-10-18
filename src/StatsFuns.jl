@@ -55,6 +55,8 @@ export
     # distrs/beta
     betapdf, # pdf of beta distribution
     betalogpdf, # logpdf of beta distribution
+    betalogupdf, # unnormalized logpdf of beta distribution (parameters constant)
+    betalogulikelihood, # unnormalized logpdf of beta distribution (data constant)
     betacdf, # cdf of beta distribution
     betaccdf, # ccdf of beta distribution
     betalogcdf, # logcdf of beta distribution
@@ -67,6 +69,8 @@ export
     # distrs/binom
     binompdf, # pdf of binomial distribution
     binomlogpdf, # logpdf of binomial distribution
+    binomlogupdf, # unnormalized logpdf of binomial distribution (parameters constant)
+    binomlogulikelihood, # unnormalized logpdf of binomial distribution (data constant)
     binomcdf, # cdf of binomial distribution
     binomccdf, # ccdf of binomial distribution
     binomlogcdf, # logcdf of binomial distribution
@@ -79,6 +83,8 @@ export
     # distrs/chisq
     chisqpdf, # pdf of chi-square distribution
     chisqlogpdf, # logpdf of chi-square distribution
+    chisqlogupdf, # unnormalized logpdf of chi-square distribution (parameters constant)
+    chisqlogulikelihood, # unnormalized logpdf of chi-square distribution (data constant)
     chisqcdf, # cdf of chi-square distribution
     chisqccdf, # ccdf of chi-square distribution
     chisqlogcdf, # logcdf of chi-square distribution
@@ -91,6 +97,8 @@ export
     # distrs/fdist
     fdistpdf, # pdf of F distribution
     fdistlogpdf, # logpdf of F distribution
+    fdistlogupdf, # unnormalized logpdf of F distribution (parameters constant)
+    fdistlogulikelihood, # unnormalized logpdf of F distribution (data constant)
     fdistcdf, # cdf of F distribution
     fdistccdf, # ccdf of F distribution
     fdistlogcdf, # logcdf of F distribution
@@ -103,6 +111,8 @@ export
     # distrs/gamma
     gammapdf, # pdf of gamma distribution
     gammalogpdf, # logpdf of gamma distribution
+    gammalogupdf, # unnormalized logpdf of gamma distribution (parameters constant)
+    gammalogulikelihood, # unnormalized logpdf of gamma distribution (data constant)
     gammacdf, # cdf of gamma distribution
     gammaccdf, # ccdf of gamma distribution
     gammalogcdf, # logcdf of gamma distribution
@@ -115,6 +125,8 @@ export
     # distrs/hyper
     hyperpdf, # pdf of hypergeometric distribution
     hyperlogpdf, # logpdf of hypergeometric distribution
+    hyperlogupdf, # unnormalized logpdf of hypergeometric distribution (parameters constant)
+    hyperlogulikelihood, # unnormalized logpdf of hypergeometric distribution (data constant)
     hypercdf, # cdf of hypergeometric distribution
     hyperccdf, # ccdf of hypergeometric distribution
     hyperlogcdf, # logcdf of hypergeometric distribution
@@ -127,6 +139,8 @@ export
     # distrs/nbeta
     nbetapdf, # pdf of noncentral beta distribution
     nbetalogpdf, # logpdf of noncentral beta distribution
+    nbetalogupdf, # unnormalized logpdf of noncentral beta distribution (parameters constant)
+    nbetalogulikelihood, # unnormalized logpdf of noncentral beta distribution (data constant)
     nbetacdf, # cdf of noncentral beta distribution
     nbetaccdf, # ccdf of noncentral beta distribution
     nbetalogcdf, # logcdf of noncentral beta distribution
@@ -139,6 +153,8 @@ export
     # distrs/nbinom
     nbinompdf, # pdf of negative nbinomial distribution
     nbinomlogpdf, # logpdf of negative nbinomial distribution
+    nbinomlogupdf, # unnormalized logpdf of negative nbinomial distribution (parameters constant)
+    nbinomlogulikelihood, # unnormalized logpdf of negative nbinomial distribution (data constant)
     nbinomcdf, # cdf of negative nbinomial distribution
     nbinomccdf, # ccdf of negative nbinomial distribution
     nbinomlogcdf, # logcdf of negative nbinomial distribution
@@ -151,6 +167,8 @@ export
     # distrs/nchisq
     nchisqpdf, # pdf of noncentral chi-square distribution
     nchisqlogpdf, # logpdf of noncentral chi-square distribution
+    nchisqlogupdf, # unnormalized logpdf of noncentral chi-square distribution (parameters constant)
+    nchisqlogulikelihood, # unnormalized logpdf of noncentral chi-square distribution (data constant)
     nchisqcdf, # cdf of noncentral chi-square distribution
     nchisqccdf, # ccdf of noncentral chi-square distribution
     nchisqlogcdf, # logcdf of noncentral chi-square distribution
@@ -163,6 +181,8 @@ export
     # distrs/nfdist
     nfdistpdf, # pdf of noncentral F distribution
     nfdistlogpdf, # logpdf of noncentral F distribution
+    nfdistlogupdf, # unnormalized logpdf of noncentral F distribution (parameters constant)
+    nfdistlogulikelihood, # unnormalized logpdf of noncentral F distribution (data constant)
     nfdistcdf, # cdf of noncentral F distribution
     nfdistccdf, # ccdf of noncentral F distribution
     nfdistlogcdf, # logcdf of noncentral F distribution
@@ -175,6 +195,8 @@ export
     # distrs/norm
     normpdf, # pdf of normal distribution
     normlogpdf, # logpdf of normal distribution
+    normlogupdf, # unnormalized logpdf of normal distribution (parameters constant)
+    normlogulikelihood, # unnormalized logpdf of normal distribution (data constant)
     normcdf, # cdf of normal distribution
     normccdf, # ccdf of normal distribution
     normlogcdf, # logcdf of normal distribution
@@ -187,6 +209,8 @@ export
     # distrs/ntdist
     ntdistpdf, # pdf of noncentral t distribution
     ntdistlogpdf, # logpdf of noncentral t distribution
+    ntdistlogupdf, # unnormalized logpdf of noncentral t distribution (parameters constant)
+    ntdistlogulikelihood, # unnormalized logpdf of noncentral t distribution (data constant)
     ntdistcdf, # cdf of noncentral t distribution
     ntdistccdf, # ccdf of noncentral t distribution
     ntdistlogcdf, # logcdf of noncentral t distribution
@@ -199,6 +223,8 @@ export
     # distrs/pois
     poispdf, # pdf of Poisson distribution
     poislogpdf, # logpdf of Poisson distribution
+    poislogupdf, # unnormalized logpdf of Poisson distribution (parameters constant)
+    poislogulikelihood, # unnormalized logpdf of Poisson distribution (data constant)
     poiscdf, # cdf of Poisson distribution
     poisccdf, # ccdf of Poisson distribution
     poislogcdf, # logcdf of Poisson distribution
@@ -211,6 +237,8 @@ export
     # distrs/tdist
     tdistpdf, # pdf of student's t distribution
     tdistlogpdf, # logpdf of student's t distribution
+    tdistlogupdf, # unnormalized logpdf of student's t distribution (parameters constant)
+    tdistlogulikelihood, # unnormalized logpdf of student's t distribution (data constant)
     tdistcdf, # cdf of student's t distribution
     tdistccdf, # ccdf of student's t distribution
     tdistlogcdf, # logcdf of student's t distribution
@@ -223,6 +251,8 @@ export
     # distrs/signrank
     signrankpdf,
     signranklogpdf,
+    signranklogupdf,
+    signranklogulikelihood,
     signrankcdf,
     signranklogcdf,
     signrankccdf,
@@ -245,6 +275,8 @@ export
     # distrs/wilcox
     wilcoxpdf,
     wilcoxlogpdf,
+    wilcoxlogupdf,
+    wilcoxlogulikelihood,
     wilcoxcdf,
     wilcoxlogcdf,
     wilcoxccdf,

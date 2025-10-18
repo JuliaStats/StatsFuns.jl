@@ -12,3 +12,7 @@ using .RFunctions:
     hyperinvccdf,
     hyperinvlogcdf,
     hyperinvlogccdf
+
+
+hyperlogupdf(ms::Real, mf::Real, n::Real, x::Real) = hyperlogpdf(ms, mf, n, x)
+hyperlogulikelihood(ms::Real, mf::Real, n::Real, x::Real) = hyperlogpdf(ms, mf, n, x)

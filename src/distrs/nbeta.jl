@@ -12,3 +12,6 @@ using .RFunctions:
     nbetainvccdf,
     nbetainvlogcdf,
     nbetainvlogccdf
+
+nbetalogupdf(α::Real, β::Real, λ::Real, x::Real) = nbetalogpdf(α, β, λ, x)
+nbetalogulikelihood(α::Real, β::Real, λ::Real, x::Real) = nbetalogpdf(α, β, λ, x)
