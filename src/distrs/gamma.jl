@@ -20,13 +20,31 @@ gammapdf(k::Real, θ::Real, x::Real) = exp(gammalogpdf(k, θ, x))
 
 gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)
 function gammalogpdf(k::T, θ::T, x::T) where {T <: Real}
+    logupdf = gammalogupdf(k, θ, x)
+    return isfinite(logupdf) ? logupdf - loggamma(k) - k * log(θ) : logupdf
+end
+
+gammalogupdf(k::Real, θ::Real, x::Real) = gammalogupdf(promote(k, θ, x)...)
+function gammalogupdf(k::T, θ::T, x::T) where {T <: Real}
     # we ensure that `log(x)` does not error if `x < 0`
-    xθ = max(x, 0) / θ
-    val = -loggamma(k) - log(θ) - xθ
+    y = max(x, 0)
+    val = -float(y / θ)
     # xlogy(k - 1, xθ) - xθ -> -∞ for xθ -> ∞ so we only add the first term
     # when it's safe
-    if isfinite(xθ)
-        val += xlogy(k - 1, xθ)
+    if isfinite(val)
+        val += xlogy(k - 1, y)
+    end
+    return x < 0 ? oftype(val, -Inf) : val
+end
+
+function gammalogulikelihood(k::Real, θ::Real, x::Real)
+    # we ensure that `log(x)` does not error if `x < 0`
+    xθ = max(x, 0) / θ
+    val = - xθ - loggamma(k)
+    # xlogy(k, xθ) - xθ -> -∞ for xθ -> ∞ so we only add the first term
+    # when it's safe
+    if isfinite(val)
+        val += xlogy(k, xθ)
     end
     return x < 0 ? oftype(val, -Inf) : val
 end

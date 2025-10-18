@@ -18,10 +18,22 @@ binompdf(n::Real, p::Real, k::Real) = exp(binomlogpdf(n, p, k))
 
 binomlogpdf(n::Real, p::Real, k::Real) = binomlogpdf(promote(n, p, k)...)
 function binomlogpdf(n::T, p::T, k::T) where {T <: Real}
+    logupdf = binomlogupdf(n, p, k)
+    if isfinite(logupdf)
+        return min(0, logupdf - log(n + 1))
+    else
+        return logupdf
+    end
+end
+
+binomlogupdf(n::Real, p::Real, k::Real) = binomlogupdf(promote(n, p, k)...)
+function binomlogupdf(n::T, p::T, k::T) where {T <: Real}
     m = clamp(k, 0, n)
-    val = min(0, betalogpdf(m + 1, n - m + 1, p) - log(n + 1))
+    val = betalogpdf(m + 1, n - m + 1, p)
     return 0 <= k <= n && isinteger(k) ? val : oftype(val, -Inf)
 end
+
+binomlogulikelihood(n::Real, p::Real, k::Real) = binomlogpdf(n, p, k)
 
 for l in ("", "log"), compl in (false, true)
     fbinom = Symbol(string("binom", l, ifelse(compl, "c", ""), "cdf"))

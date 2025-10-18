@@ -41,6 +41,33 @@ function normlogpdf(μ::Real, σ::Real, x::Number)
     return normlogpdf(z) - log(σ)
 end
 
+# logupdf
+normlogupdf(z::Number) = -abs2(z) / 2
+function normlogupdf(μ::Real, σ::Real, x::Number)
+    if iszero(σ) && x == μ
+        z = zval(μ, one(σ), x)
+    else
+        z = zval(μ, σ, x)
+    end
+    return normlogupdf(z)
+end
+
+# logulikelihood
+normlogulikelihood(z::Number) = normulogpdf(z)
+function normlogulikelihood(μ::Real, σ::Real, x::Number)
+    if iszero(σ)
+        if x == μ
+            z = zval(μ, one(σ), x)
+        else
+            z = zval(μ, σ, x)
+            σ = one(σ)
+        end
+    else
+        z = zval(μ, σ, x)
+    end
+    return normlogulikelihood(z) - log(σ)
+end
+
 # cdf
 normcdf(z::Number) = erfc(-z * invsqrt2) / 2
 function normcdf(μ::Real, σ::Real, x::Number)

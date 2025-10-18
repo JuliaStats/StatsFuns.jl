@@ -25,24 +25,35 @@ the number of ways {1,2,...,j} can sum to W-i+1.
     return DP
 end
 
-function signrankpdf(n::Int, W::Float64)
-    return isinteger(W) ? signrankpdf(n, Int(W)) : 0.0
+function signrankpdf(n::Int, W::Union{Int, Float64})
+    numsets = signrank_numsets(n, W)
+    return iszero(numsets) ? 0.0 : ldexp(float(numsets), -n)
 end
-function signrankpdf(n::Int, W::Int)
+
+function signrank_numsets(n::Int, W::Float64)
+    return isinteger(W) ? signrank_numsets(n, Int(W)) : 0
+end
+function signrank_numsets(n::Int, W::Int)
     if W < 0
-        return 0.0
+        return 0
     end
     max_W = (n * (n + 1)) >> 1
     W2 = max_W - W
     if W2 < W
-        return signrankpdf(n, W2)
+        return signrank_numsets(n, W2)
     end
     DP = signrankDP(n, W)
-    return ldexp(float(DP[1]), -n)
+    return DP[1]
 end
 
 function signranklogpdf(n::Int, W::Union{Float64, Int})
     return log(signrankpdf(n, W))
+end
+function signranklogupdf(n::Int, W::Union{Float64, Int})
+    return log(signrank_numsets(n, W))
+end
+function signranklogulikelihood(n::Int, W::Union{Float64, Int})
+    return signranklogpdf(n, W)
 end
 
 function signrankcdf(n::Int, W::Float64)
