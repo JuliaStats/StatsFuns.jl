@@ -274,12 +274,12 @@ function bvtcdf(nu::Int, dh::Float64, dk::Float64, r::Float64)
         hs = sign(hrk)
         ks = sign(krh)
         if mod(nu, 2) == 0
-            bvt = atan2(sqrt(ors), -r) / (2.0pi)
+            bvt = atan(sqrt(ors), -r) / (2.0pi)
             gmph = dh / sqrt(16.0 * (nu + dh^2))
             gmpk = dk / sqrt(16.0 * (nu + dk^2))
-            btnckh = 2.0atan2(sqrt(xnkh), sqrt(1.0 - xnkh)) / pi
+            btnckh = 2.0atan(sqrt(xnkh), sqrt(1.0 - xnkh)) / pi
             btpdkh = 2.0sqrt(xnkh * (1.0 - xnkh)) / pi
-            btnchk = 2.0atan2(sqrt(xnhk), sqrt(1.0 - xnhk)) / pi
+            btnchk = 2.0atan(sqrt(xnhk), sqrt(1.0 - xnhk)) / pi
             btpdhk = 2.0sqrt(xnhk * (1.0 - xnhk)) / pi
             for j in 1:div(nu, 2)
                 bvt += gmph * (1.0 + ks * btnckh)
@@ -296,7 +296,7 @@ function bvtcdf(nu::Int, dh::Float64, dk::Float64, r::Float64)
             hkrn = dh * dk + r * nu
             hkn = dh * dk - nu
             hpk = dh + dk
-            bvt = atan2(-snu * (hkn * qhrk + hpk * hkrn), hkn * hkrn - nu * hpk * qhrk) / (2.0pi)
+            bvt = atan(-snu * (hkn * qhrk + hpk * hkrn), hkn * hkrn - nu * hpk * qhrk) / (2.0pi)
             if bvt < -eps()
                 bvt += 1.0
             end

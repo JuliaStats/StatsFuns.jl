@@ -16,7 +16,6 @@ ChainRulesCore.@scalar_rule(
 
 ChainRulesCore.@scalar_rule(
     binomlogpdf(n::Real, p::Real, k::Real),
-    @setup(z = digamma(n - k + 1)),
     (
         ChainRulesCore.NoTangent(),
         (k / p - n) / (1 - p),
