@@ -85,13 +85,6 @@ function rmathcomp(basename, params, X::AbstractArray, rtol = _default_rtol(para
         rmath_invlogccdf = get_rmathfun(invlogccdf)
     end
 
-    # tackle rand specially
-    has_rand = true
-    if basename == "nbeta" || basename == "nfdist" || basename == "ntdist" || basename == "srdist"
-        has_rand = false
-    end
-    rmath_rand = has_rand ? get_rmathfun(rand) : nothing
-
     if has_pdf
         @testset "pdf with x=$x" for x in X
             check_rmath(
@@ -163,10 +156,7 @@ function rmathcomp(basename, params, X::AbstractArray, rtol = _default_rtol(para
         end
     end
 
-    # make sure that rand works
-    return if has_rand
-        rmath_rand(params...)
-    end
+    return nothing
 end
 
 function rmathcomp_tests(basename, configs)

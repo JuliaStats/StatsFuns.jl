@@ -27,8 +27,6 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     invlogcdf = Symbol(jname, "invlogcdf")
     invlogccdf = Symbol(jname, "invlogccdf")
 
-    rand = Symbol(jname, "rand")
-
     # arguments & argument types
     pdecls = [Expr(:(::), ps, :Real) for ps in pargs] # [:(p1::Real), :(p2::Real), ...]
 
@@ -93,10 +91,6 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
                 T = float(Base.promote_typeof($(pargs...), lq))
                 return convert(T, Rmath.$qfun(lq, $(pargs...), false, true))
             end
-        end
-
-        if $(isdefined(Rmath, rfun))
-            $rand($(pdecls...)) = Rmath.$rfun($(pargs...))
         end
     end
 end
