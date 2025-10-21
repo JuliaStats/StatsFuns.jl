@@ -1,8 +1,9 @@
 module StatsFuns
 
 using Base: Math.@horner
-using Reexport
-using SpecialFunctions
+using Reexport: @reexport
+using SpecialFunctions: beta_inc, beta_inc_inv, digamma,
+    erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logbeta, loggamma
 
 # reexports
 @reexport using IrrationalConstants:
@@ -268,22 +269,22 @@ include("tvpack.jl")
 
 using .RFunctions
 
-include(joinpath("distrs", "beta.jl"))
-include(joinpath("distrs", "binom.jl"))
-include(joinpath("distrs", "chisq.jl"))
-include(joinpath("distrs", "fdist.jl"))
-include(joinpath("distrs", "gamma.jl"))
-include(joinpath("distrs", "hyper.jl"))
-include(joinpath("distrs", "nbeta.jl"))
-include(joinpath("distrs", "nbinom.jl"))
-include(joinpath("distrs", "nchisq.jl"))
-include(joinpath("distrs", "nfdist.jl"))
-include(joinpath("distrs", "norm.jl"))
-include(joinpath("distrs", "ntdist.jl"))
-include(joinpath("distrs", "pois.jl"))
-include(joinpath("distrs", "tdist.jl"))
-include(joinpath("distrs", "signrank.jl"))
-include(joinpath("distrs", "srdist.jl"))
-include(joinpath("distrs", "wilcox.jl"))
+include("distrs/beta.jl")
+include("distrs/binom.jl")
+include("distrs/chisq.jl")
+include("distrs/fdist.jl")
+include("distrs/gamma.jl")
+include("distrs/hyper.jl")
+include("distrs/nbeta.jl")
+include("distrs/nbinom.jl")
+include("distrs/nchisq.jl")
+include("distrs/nfdist.jl")
+include("distrs/norm.jl")
+include("distrs/ntdist.jl")
+include("distrs/pois.jl")
+include("distrs/tdist.jl")
+include("distrs/signrank.jl")
+include("distrs/srdist.jl")
+include("distrs/wilcox.jl")
 
 end # module
