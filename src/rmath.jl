@@ -2,23 +2,16 @@
 
 module RFunctions
 
-import Rmath: libRmath
+using Rmath: Rmath
 
 ### import macro
 
 function _import_rmath(rname::Symbol, jname::Symbol, pargs)
-    # C function names
-    if rname == :norm
-        dfun = Expr(:quote, "dnorm4")
-        pfun = Expr(:quote, "pnorm5")
-        qfun = Expr(:quote, "qnorm5")
-        rfun = Expr(:quote, "rnorm")
-    else
-        dfun = Expr(:quote, string('d', rname))    # density
-        pfun = Expr(:quote, string('p', rname))    # cumulative probability
-        qfun = Expr(:quote, string('q', rname))    # quantile
-        rfun = Expr(:quote, string('r', rname))    # random sampling
-    end
+    # Rmath function names
+    dfun = Symbol(:d, rname)    # density
+    pfun = Symbol(:p, rname)    # cumulative probability
+    qfun = Symbol(:q, rname)    # quantile
+    rfun = Symbol(:r, rname)    # random sampling
 
     # Julia function names
     pdf = Symbol(jname, "pdf")
@@ -34,93 +27,76 @@ function _import_rmath(rname::Symbol, jname::Symbol, pargs)
     invlogcdf = Symbol(jname, "invlogcdf")
     invlogccdf = Symbol(jname, "invlogccdf")
 
-    is_tukey = rname == :tukey
-
     rand = Symbol(jname, "rand")
-    has_rand = true
-    if rname == :nbeta || rname == :nf || rname == :nt || is_tukey
-        has_rand = false
-    end
 
     # arguments & argument types
-    _pts = fill(:Cdouble, length(pargs))
-
-    if is_tukey
-        dtypes = Expr(:tuple, :Cdouble, :Cdouble, _pts..., :Cint)
-        ptypes = Expr(:tuple, :Cdouble, :Cdouble, _pts..., :Cint, :Cint)
-        qtypes = Expr(:tuple, :Cdouble, :Cdouble, _pts..., :Cint, :Cint)
-        rtypes = Expr(:tuple, :Cdouble, _pts...)
-    else
-        dtypes = Expr(:tuple, :Cdouble, _pts..., :Cint)
-        ptypes = Expr(:tuple, :Cdouble, _pts..., :Cint, :Cint)
-        qtypes = Expr(:tuple, :Cdouble, _pts..., :Cint, :Cint)
-        rtypes = Expr(:tuple, _pts...)
-    end
-
     pdecls = [Expr(:(::), ps, :Real) for ps in pargs] # [:(p1::Real), :(p2::Real), ...]
 
-    if is_tukey
+    if rname == :tukey
         # ptukey and qtukey have an extra literal 1 argument
-        pargs = (1, pargs...)
+        pargs = (pargs..., 1)
     end
 
     # Function implementation
     return quote
-        if $(!is_tukey)
+        if $(isdefined(Rmath, dfun))
             function $pdf($(pdecls...), x::Real)
                 T = float(Base.promote_typeof($(pargs...), x))
-                return convert(T, ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 0))
+                return convert(T, Rmath.$dfun(x, $(pargs...), false))
             end
 
             function $logpdf($(pdecls...), x::Real)
                 T = float(Base.promote_typeof($(pargs...), x))
-                return convert(T, ccall(($dfun, libRmath), Float64, $dtypes, x, $(pargs...), 1))
+                return convert(T, Rmath.$dfun(x, $(pargs...), true))
             end
         end
 
-        function $cdf($(pdecls...), x::Real)
-            T = float(Base.promote_typeof($(pargs...), x))
-            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 0))
+        if $(isdefined(Rmath, pfun))
+            function $cdf($(pdecls...), x::Real)
+                T = float(Base.promote_typeof($(pargs...), x))
+                return convert(T, Rmath.$pfun(x, $(pargs...), true, false))
+            end
+
+            function $ccdf($(pdecls...), x::Real)
+                T = float(Base.promote_typeof($(pargs...), x))
+                return convert(T, Rmath.$pfun(x, $(pargs...), false, false))
+            end
+
+            function $logcdf($(pdecls...), x::Real)
+                T = float(Base.promote_typeof($(pargs...), x))
+                return convert(T, Rmath.$pfun(x, $(pargs...), true, true))
+            end
+
+            function $logccdf($(pdecls...), x::Real)
+                T = float(Base.promote_typeof($(pargs...), x))
+                return convert(T, Rmath.$pfun(x, $(pargs...), false, true))
+            end
         end
 
-        function $ccdf($(pdecls...), x::Real)
-            T = float(Base.promote_typeof($(pargs...), x))
-            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 0))
+        if $(isdefined(Rmath, qfun))
+            function $invcdf($(pdecls...), q::Real)
+                T = float(Base.promote_typeof($(pargs...), q))
+                return convert(T, Rmath.$qfun(q, $(pargs...), true, false))
+            end
+
+            function $invccdf($(pdecls...), q::Real)
+                T = float(Base.promote_typeof($(pargs...), q))
+                return convert(T, Rmath.$qfun(q, $(pargs...), false, false))
+            end
+
+            function $invlogcdf($(pdecls...), lq::Real)
+                T = float(Base.promote_typeof($(pargs...), lq))
+                return convert(T, Rmath.$qfun(lq, $(pargs...), true, true))
+            end
+
+            function $invlogccdf($(pdecls...), lq::Real)
+                T = float(Base.promote_typeof($(pargs...), lq))
+                return convert(T, Rmath.$qfun(lq, $(pargs...), false, true))
+            end
         end
 
-        function $logcdf($(pdecls...), x::Real)
-            T = float(Base.promote_typeof($(pargs...), x))
-            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 1, 1))
-        end
-
-        function $logccdf($(pdecls...), x::Real)
-            T = float(Base.promote_typeof($(pargs...), x))
-            return convert(T, ccall(($pfun, libRmath), Float64, $ptypes, x, $(pargs...), 0, 1))
-        end
-
-        function $invcdf($(pdecls...), q::Real)
-            T = float(Base.promote_typeof($(pargs...), q))
-            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 1, 0))
-        end
-
-        function $invccdf($(pdecls...), q::Real)
-            T = float(Base.promote_typeof($(pargs...), q))
-            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, q, $(pargs...), 0, 0))
-        end
-
-        function $invlogcdf($(pdecls...), lq::Real)
-            T = float(Base.promote_typeof($(pargs...), lq))
-            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 1, 1))
-        end
-
-        function $invlogccdf($(pdecls...), lq::Real)
-            T = float(Base.promote_typeof($(pargs...), lq))
-            return convert(T, ccall(($qfun, libRmath), Float64, $qtypes, lq, $(pargs...), 0, 1))
-        end
-
-        if $has_rand
-            $rand($(pdecls...)) =
-                ccall(($rfun, libRmath), Float64, $rtypes, $(pargs...))
+        if $(isdefined(Rmath, rfun))
+            $rand($(pdecls...)) = Rmath.$rfun($(pargs...))
         end
     end
 end
