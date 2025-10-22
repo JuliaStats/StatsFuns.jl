@@ -1,6 +1,6 @@
 name = "StatsFuns"
 uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
-version = "1.5.1"
+version = "1.5.2"
 
 [deps]
 HypergeometricFunctions = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
@@ -31,7 +31,7 @@ JET = "0.9, 0.10"
 LogExpFunctions = "0.3.26"
 Random = "<0.0.1, 1"
 Reexport = "1"
-Rmath = "0.6.1, 0.7, 0.8"
+Rmath = "0.9"
 SpecialFunctions = "1.8.4, 2.1.4"
 Test = "<0.0.1, 1"
 julia = "1.10"

@@ -19,8 +19,6 @@ using Test
             ignore = (
                 # Ref https://github.com/JuliaTesting/ExplicitImports.jl/issues/92
                 :digamma,
-                # TODO: Directly use `Rmath.dnorm` etc. instead of private `Rmath.libRmath`
-                :libRmath,
             ),
         ) === nothing
 
@@ -30,8 +28,6 @@ using Test
             ignore = (
                 # Ref https://github.com/JuliaTesting/ExplicitImports.jl/issues/92
                 :digamma,
-                # TODO: Directly use `Rmath.dnorm` etc. instead of private `Rmath.libRmath`
-                :libRmath,
             ),
         ) === nothing
 
