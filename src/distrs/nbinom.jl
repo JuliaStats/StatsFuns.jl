@@ -12,3 +12,6 @@ using .RFunctions:
     nbinominvccdf,
     nbinominvlogcdf,
     nbinominvlogccdf
+
+nbinomlogupdf(r::Real, p::Real, x::Real) = nbinomlogpdf(r, p, x)
+nbinomlogulikelihood(r::Real, p::Real, x::Real) = nbinomlogpdf(r, p, x)

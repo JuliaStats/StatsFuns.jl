@@ -12,3 +12,6 @@ using .RFunctions:
     nfdistinvccdf,
     nfdistinvlogcdf,
     nfdistinvlogccdf
+
+nfdistlogupdf(k1::Real, k2::Real, λ::Real, x::Real) = nfdistlogpdf(k1, k2, λ, x)
+nfdistlogulikelihood(k1::Real, k2::Real, λ::Real, x::Real) = nfdistlogpdf(k1, k2, λ, x)
