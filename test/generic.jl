@@ -1,12 +1,11 @@
 using StatsFuns
-using StatsFuns: RFunctions
 using ForwardDiff: Dual
 using Test
 
 include("utils.jl")
 
-function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
-    v = @inferred(rmathfun(params..., a))
+function check_dualx(statsfun, params, a, isprob, rtol)
+    v = @inferred(statsfun(params..., a))
     rv = @inferred(statsfun(params..., Dual(a))).value
     @test v isa float(Base.promote_typeof(params..., a))
     @test rv isa float(Base.promote_typeof(params..., a))
@@ -17,24 +16,25 @@ function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     end
 end
 
-function genericcomp(basename, params, X::AbstractArray, rtol = _default_rtol(params, X))
-    pdf = string(basename, "pdf")
-    logpdf = string(basename, "logpdf")
-    stats_pdf = eval(Symbol(pdf))
-    stats_logpdf = eval(Symbol(logpdf))
-    rmath_pdf = eval(Meta.parse(string("RFunctions.", pdf)))
-    rmath_logpdf = eval(Meta.parse(string("RFunctions.", logpdf)))
-
-    @testset "pdf with params=$params, x=$x" for x in X
-        check_rmath(pdf, stats_pdf, rmath_pdf, params, "x", x, true, rtol)
+function genericcomp(basename::String, params, X::AbstractArray, rtol = _default_rtol(params, X))
+    if isdefined(@__MODULE__, Symbol(basename, :pdf))
+        stats_pdf = getproperty(@__MODULE__, Symbol(basename, :pdf))
+        @testset "pdf with params=$params, x=$x" for x in X
+            check_dualx(stats_pdf, params, x, true, rtol)
+        end
     end
 
-    return @testset "logpdf with params=$params, x=$x" for x in X
-        check_rmath(logpdf, stats_logpdf, rmath_logpdf, params, "x", x, false, rtol)
+    if isdefined(@__MODULE__, Symbol(basename, :logpdf))
+        stats_logpdf = getproperty(@__MODULE__, Symbol(basename, :logpdf))
+        @testset "logpdf with params=$params, x=$x" for x in X
+            check_dualx(stats_logpdf, params, x, false, rtol)
+        end
     end
+
+    return nothing
 end
 
-function genericcomp_tests(basename, configs)
+function genericcomp_tests(basename::String, configs)
     println("\ttesting $basename ...")
     for (params, data) in configs
         genericcomp(basename, params, data)
