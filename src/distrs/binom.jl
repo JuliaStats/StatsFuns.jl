@@ -1,18 +1,5 @@
 # functions related to binomial distribution
 
-# R implementations
-using .RFunctions:
-    # binompdf,
-    # binomlogpdf,
-    # binomcdf,
-    # binomccdf,
-    # binomlogcdf,
-    # binomlogccdf,
-    binominvcdf,
-    binominvccdf,
-    binominvlogcdf,
-    binominvlogccdf
-
 # Julia implementations
 binompdf(n::Real, p::Real, k::Real) = exp(binomlogpdf(n, p, k))
 
@@ -41,4 +28,22 @@ for l in ("", "log"), compl in (false, true)
             return res
         end
     end
+end
+
+# Rmath implementations
+function binominvcdf(n::Real, p::Real, q::Real)
+    T = float(Base.promote_typeof(n, p, q))
+    return convert(T, Rmath.qbinom(q, n, p, true, false))
+end
+function binominvccdf(n::Real, p::Real, q::Real)
+    T = float(Base.promote_typeof(n, p, q))
+    return convert(T, Rmath.qbinom(q, n, p, false, false))
+end
+function binominvlogcdf(n::Real, p::Real, lq::Real)
+    T = float(Base.promote_typeof(n, p, lq))
+    return convert(T, Rmath.qbinom(lq, n, p, true, true))
+end
+function binominvlogccdf(n::Real, p::Real, lq::Real)
+    T = float(Base.promote_typeof(n, p, lq))
+    return convert(T, Rmath.qbinom(lq, n, p, false, true))
 end
