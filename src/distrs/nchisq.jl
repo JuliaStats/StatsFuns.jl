@@ -12,3 +12,6 @@ using .RFunctions:
     nchisqinvccdf,
     nchisqinvlogcdf,
     nchisqinvlogccdf
+
+nchisqlogupdf(k::Real, λ::Real, x::Real) = nchisqlogpdf(k, λ, x)
+nchisqlogulikelihood(k::Real, λ::Real, x::Real) = nchisqlogpdf(k, λ, x)

@@ -16,9 +16,19 @@ using .RFunctions:
 # Julia implementations
 poispdf(λ::Real, x::Real) = exp(poislogpdf(λ, x))
 
-poislogpdf(λ::Real, x::Real) = poislogpdf(promote(λ, x)...)
-function poislogpdf(λ::T, x::T) where {T <: Real}
-    val = xlogy(x, λ) - λ - loggamma(x + 1)
+function poislogpdf(λ::Real, x::Real)
+    logupdf = poislogupdf(λ, x)
+    return isfinite(logupdf) ? logupdf - λ : logupdf
+end
+
+poislogupdf(λ::Real, x::Real) = poislogupdf(promote(λ, x)...)
+function poislogupdf(λ::T, x::T) where {T <: Real}
+    val = xlogy(x, λ) - loggamma(x + 1)
+    return x >= 0 && isinteger(x) ? val : oftype(val, -Inf)
+end
+
+function poislogulikelihood(λ::Real, x::Real)
+    val = xlogy(x, λ) - λ
     return x >= 0 && isinteger(x) ? val : oftype(val, -Inf)
 end
 
