@@ -1,4 +1,4 @@
-# functions related to studesrdistized range distribution
+# functions related to studentized range distribution
 
 # Rmath implementations
 function srdistcdf(k::Real, ν::Real, x::Real)
