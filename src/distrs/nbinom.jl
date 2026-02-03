@@ -2,12 +2,6 @@
 
 # R implementations
 using .RFunctions:
-    # nbinompdf,
-    # nbinomlogpdf,
-    # nbinomcdf,
-    # nbinomccdf,
-    # nbinomlogcdf,
-    # nbinomlogccdf,
     nbinominvcdf,
     nbinominvccdf,
     nbinominvlogcdf,
@@ -29,11 +23,11 @@ function nbinomccdf(r, p, x)
 end
 function nbinomlogcdf(r, p, x)
     b1, b2 = beta_inc(r, floor(x+1), p)
-    b1 > 1//10 ? log(b1) : log1p(-b2)
+    10b1 < 7 ? log1p(-b2) : log(b1)
 end
 function nbinomlogccdf(r, p, x)
     b1, b2 = beta_inc(r, floor(x+1), p)
-    b1 < 1//10 ? log1p(-b1) : log(b2)
+    10b1 < 7 ? log1p(-b1) : log(b2)
 end
 
 # TODO: impliment https://arxiv.org/abs/2001.03953
