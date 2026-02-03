@@ -8,26 +8,26 @@ using .RFunctions:
     nbinominvlogccdf
 
 function nbinompdf(r, p, x)
-    exp(nbinomlogpdf(r, p, x))
+    return exp(nbinomlogpdf(r, p, x))
 end
 
 nbinomlogpdf(n::Real, p::Real, x::Real) = nbinomlogpdf(promote(n, p, x)...)
 function nbinomlogpdf(r::T, p::T, x::T) where {T <: Real}
-    loggamma(r+x) - loggamma(x+1) - loggamma(r) + log1p(-p)*x + log(p)*r
+    return loggamma(r + x) - loggamma(x + 1) - loggamma(r) + log1p(-p) * x + log(p) * r
 end
 function nbinomcdf(r, p, x)
-    beta_inc(r, floor(x+1), p)[1]
+    return beta_inc(r, floor(x + 1), p)[1]
 end
 function nbinomccdf(r, p, x)
-    beta_inc(r, floor(x+1), p)[2]
+    return beta_inc(r, floor(x + 1), p)[2]
 end
 function nbinomlogcdf(r, p, x)
-    b1, b2 = beta_inc(r, floor(x+1), p)
-    10b1 < 7 ? log1p(-b2) : log(b1)
+    b1, b2 = beta_inc(r, floor(x + 1), p)
+    return 10 * b1 < 7 ? log1p(-b2) : log(b1)
 end
 function nbinomlogccdf(r, p, x)
-    b1, b2 = beta_inc(r, floor(x+1), p)
-    10b1 < 7 ? log1p(-b1) : log(b2)
+    b1, b2 = beta_inc(r, floor(x + 1), p)
+    return 10 * b1 < 7 ? log1p(-b1) : log(b2)
 end
 
 # TODO: impliment https://arxiv.org/abs/2001.03953
