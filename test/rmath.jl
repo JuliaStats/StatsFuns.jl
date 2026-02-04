@@ -130,16 +130,6 @@ function rmathcomp(basename, params, X::AbstractArray, rtol = _default_rtol(para
             params, "x", x, false, rtol
         )
     end
-    @testset "cdf* functions handle -Inf and Inf correctly"
-        @test stats_cdf(params..., -Inf) == 0
-        @test stats_cdf(params..., Inf) == 1
-        @test stats_ccdf(params..., -Inf) == 1
-        @test stats_ccdf(params..., Inf) == 0
-        @test stats_logcdf(params..., -Inf) == -Inf
-        @test stats_logcdf(params..., Inf) == 0
-        @test stats_logccdf(params..., -Inf) == 0
-        @test stats_logccdf(params..., Inf) == -Inf
-    end
 
     p = rmath_cdf.(params..., X)
     cp = rmath_ccdf.(params..., X)
@@ -274,6 +264,7 @@ end
             ((1, Float16(0.5)), Float16(0):Float16(1)),
             ((1, 0.5f0), Float16(0):Float16(1)),
             ((10, 1 // 2), (0 // 1):(10 // 1)),
+            ((1, 0.5), [-Inf, Inf]),
         ]
     )
 
@@ -286,6 +277,7 @@ end
             ((1,), 0.0f0:0.1f0:8.0f0),
             ((1,), Float16(0):Float16(0.1):Float16(8)),
             ((9,), (0 // 1):(8 // 1)),
+            ((1), [-Inf, Inf]),
         ]
     )
 
@@ -317,6 +309,7 @@ end
             ((1.0f0, 1.0f0), (Float16(0):Float16(0.05):Float16(12))),
             ((2, 3), ((0 // 1):(12 // 1))),
             ((3.0, 1.0e-310), (0.0:0.05:12.0)),
+            ((1, 1.0), [-Inf, Inf]),
         ]
     )
 
@@ -342,6 +335,7 @@ end
             ((Float16(1), Float16(1), Float16(0)), Float16(0.01):Float16(0.01):Float16(0.99)),
             ((1.0f0, 1.0f0, 0.0f0), Float16(0.01):Float16(0.01):Float16(0.99)),
             ((3, 4, 2), (1 // 100):(1 // 100):(99 // 100)),
+            ((1.0, 1.0, 0.0), [-Inf, Inf]),
         ]
     )
 
@@ -356,6 +350,7 @@ end
             ((1, Float16(0.5)), Float16(0):Float16(20)),
             ((3, 0.8), 0:20),
             ((3, 1 // 2), (0 // 1):(20 // 1)),
+            ((1, 0.5), [-Inf, Inf]),
         ]
     )
 
@@ -369,6 +364,7 @@ end
             ((2, 1), 0.0f0:0.2f0:8.0f0),
             ((2, 1), Float16(0):Float16(0.2):Float16(8)),
             ((2, 1), (0 // 1):(1 // 5):(8 // 1)),
+            ((2, 1), [-Inf, Inf]),
         ]
     )
 
@@ -383,6 +379,7 @@ end
             ((Float16(1), Float16(1), Float16(0)), Float16(0.1):Float16(0.1):Float16(10)),
             ((1.0f0, 1.0f0, 0.0f0), Float16(0.1):Float16(0.1):Float16(10)),
             ((2, 3, 1), (1 // 1):(10 // 1)),
+            ((1.0, 1.0, 0.0), [-Inf, Inf]),
         ]
     )
 
@@ -399,6 +396,7 @@ end
             ((0.0, 1.0), -6.0f0:0.01f0:6.0f0),
             ((0, 2), (-6 // 1):(1 // 2):(6 // 1)),
             ((0.0f0, 2.0f0), (-6 // 1):(1 // 2):(6 // 1)),
+            ((0.0, 1.0), [-Inf, Inf]),
             # Fail since `SpecialFunctions.erfcx` is not implemented for `Float16`
             #((Float16(0), Float16(1)), -Float16(6):Float16(0.01):Float16(6)),
             #((0f0, 1f0), -Float16(6):Float16(0.01):Float16(6)),
@@ -415,6 +413,7 @@ end
             ((0, 1), -4.0f0:0.1f0:10.0f0),
             ((0, 1), -Float16(4):Float16(0.1):Float16(10)),
             ((0, 1), (-4 // 1):(1 // 10):(10 // 1)),
+            ((10, 1), [-Inf, Inf]),
         ]
     )
 
@@ -444,6 +443,7 @@ end
             ((1,), (-5 // 1):(5 // 1)),
             ((Inf,), -5.0:0.1:5.0),
             ((Inf32,), -5.0f0:0.1f0:5.0f0),
+            ((1,), [-Inf, Inf]),
         ]
     )
 
