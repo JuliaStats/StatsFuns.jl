@@ -131,14 +131,14 @@ function rmathcomp(basename, params, X::AbstractArray, rtol = _default_rtol(para
         )
     end
     @testset "cdf* functions handle -Inf and Inf correctly"
-        @test stats_cdf(params... -Inf) == 0
-        @test stats_cdf(params... Inf) == 1
-        @test stats_ccdf(params... -Inf) == 1
-        @test stats_ccdf(params... Inf) == 0
-        @test stats_logcdf(params... -Inf) == -Inf
-        @test stats_logcdf(params... Inf) == 0
-        @test stats_logccdf(params... -Inf) == 0
-        @test stats_logccdf(params... Inf) == -Inf
+        @test stats_cdf(params..., -Inf) == 0
+        @test stats_cdf(params..., Inf) == 1
+        @test stats_ccdf(params..., -Inf) == 1
+        @test stats_ccdf(params..., Inf) == 0
+        @test stats_logcdf(params..., -Inf) == -Inf
+        @test stats_logcdf(params..., Inf) == 0
+        @test stats_logccdf(params..., -Inf) == 0
+        @test stats_logccdf(params..., Inf) == -Inf
     end
 
     p = rmath_cdf.(params..., X)
