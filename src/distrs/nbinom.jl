@@ -27,34 +27,38 @@ function nbinomcdf(r::Real, p::Real, x::Real)
         return zero(float(first(promote(r, p, x))))
     elseif isinf(x)
         return one(float(first(promote(r, p, x))))
+    else
+        return beta_inc(r, floor(x + 1), p)[1]
     end
-    return beta_inc(r, floor(x + 1), p)[1]
 end
 function nbinomccdf(r::Real, p::Real, x::Real)
     if x < 0
         return one(float(first(promote(r, p, x))))
     elseif isinf(x)
         return zero(float(first(promote(r, p, x))))
+    else
+        return beta_inc(r, floor(x + 1), p)[2]
     end
-    return beta_inc(r, floor(x + 1), p)[2]
 end
 function nbinomlogcdf(r::Real, p::Real, x::Real)
     if x < 0
         return oftype(float(first(promote(r, p, x))), -Inf)
     elseif isinf(x)
         return zero(float(first(promote(r, p, x))))
+    else
+        b1, b2 = beta_inc(r, floor(x + 1), p)
+        return 10 * b1 < 7 ? log1p(-b2) : log(b1)
     end
-    b1, b2 = beta_inc(r, floor(x + 1), p)
-    return 10 * b1 < 7 ? log1p(-b2) : log(b1)
 end
 function nbinomlogccdf(r::Real, p::Real, x::Real)
     if x < 0
         return zero(float(first(promote(r, p, x))))
     elseif isinf(x)
         return oftype(float(first(promote(r, p, x))), -Inf)
+    else
+        b1, b2 = beta_inc(r, floor(x + 1), p)
+        return 10 * b1 < 7 ? log1p(-b1) : log(b2)
     end
-    b1, b2 = beta_inc(r, floor(x + 1), p)
-    return 10 * b1 < 7 ? log1p(-b1) : log(b2)
 end
 
 # TODO: implement https://arxiv.org/abs/2001.03953
