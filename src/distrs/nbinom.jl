@@ -11,15 +11,17 @@ nbinompdf(r::Real, p::Real, x::Real) = exp(nbinomlogpdf(r, p, x))
 
 nbinomlogpdf(n::Real, p::Real, x::Real) = nbinomlogpdf(promote(n, p, x)...)
 function nbinomlogpdf(r::T, p::T, x::T) where {T <: Real}
-    if 0 <= p <= 1 && r > 0
-        res = loggamma(r + x) - loggamma(x + 1) - loggamma(r) + log1p(-p) * x + xlogy(r, p)
-        if !isnan(res) || isnan(x)
+    if !(0 <= p <= 1) || r <= 0
+        return float(T)(NaN)
+    elseif x >= 0 && isinteger(x)
+        res = - logbeta(x + 1, r) - log(r + x) + xlog1py(x, -p) + xlogy(r, p)
+        if !isnan(res)
             return res
         else
-            return typeof(res)(-Inf)
+            return float(T)(-Inf)
         end
     else
-        return float(T)(NaN)
+        return float(T)(isnan(x) ? NaN : -Inf)
     end
 end
 function nbinomcdf(r::Real, p::Real, x::Real)
