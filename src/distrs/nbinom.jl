@@ -1,5 +1,12 @@
 # functions related to negative binomial distribution
-
+# Implementation (log) pdf and cdfs and their inverses for the negative binomial distribution.
+#
+# Notation:
+# - r > 0 is the number of successes until the experiment is stopped (generalized to real)
+# - p ∈ [0,1] is the probability of a success (real)
+# - x ≥ 0 is the number of failures (integer)
+#
+# The probability mass function is (x + r - 1 \choose k) p^r (1-p)^x
 # R implementations
 using .RFunctions:
     nbinominvcdf,
