@@ -4,9 +4,10 @@
 # Notation:
 # - r > 0 is the number of successes until the experiment is stopped (generalized to real)
 # - p ∈ [0,1] is the probability of a success (real)
-# - x ≥ 0 is the number of failures (integer)
+# - k ≥ 0 is the number of failures (integer)
 #
-# The probability mass function is (x + r - 1 \choose k) p^r (1-p)^x
+# The probability mass function is (k + r - 1 \choose k) p^r (1-p)^k
+
 # R implementations
 using .RFunctions:
     nbinominvcdf,
@@ -14,60 +15,60 @@ using .RFunctions:
     nbinominvlogcdf,
     nbinominvlogccdf
 
-nbinompdf(r::Real, p::Real, x::Real) = exp(nbinomlogpdf(r, p, x))
+nbinompdf(r::Real, p::Real, x::Real) = exp(nbinomlogpdf(r, p, k))
 
-nbinomlogpdf(n::Real, p::Real, x::Real) = nbinomlogpdf(promote(n, p, x)...)
-function nbinomlogpdf(r::T, p::T, x::T) where {T <: Real}
+nbinomlogpdf(r::Real, p::Real, k::Real) = nbinomlogpdf(promote(r, p, k)...)
+function nbinomlogpdf(r::T, p::T, k::T) where {T <: Real}
     if !(0 <= p <= 1) || r <= 0
         return float(T)(NaN)
-    elseif x >= 0 && isinteger(x)
-        z = xlog1py(x, -p) + xlogy(r, p)
-        iszero(x) && return z
-        res = z - (logbeta(x + 1, r) + log(r + x))
+    elseif k >= 0 && isinteger(k)
+        z = xlog1py(k, -p) + xlogy(r, p)
+        iszero(k) && return z
+        res = z - (logbeta(k + 1, r) + log(r + k))
         if !isnan(res)
             return res
         else
             return float(T)(-Inf)
         end
     else
-        return float(T)(isnan(x) ? NaN : -Inf)
+        return float(T)(isnan(k) ? NaN : -Inf)
     end
 end
-function nbinomcdf(r::Real, p::Real, x::Real)
-    if x < 0
-        return zero(float(first(promote(r, p, x))))
-    elseif isinf(x)
-        return one(float(first(promote(r, p, x))))
+function nbinomcdf(r::Real, p::Real, k::Real)
+    if k < 0
+        return zero(float(first(promote(r, p, k))))
+    elseif isinf(k)
+        return one(float(first(promote(r, p, k))))
     else
-        return beta_inc(r, floor(x + 1), p)[1]
+        return beta_inc(r, floor(k + 1), p)[1]
     end
 end
-function nbinomccdf(r::Real, p::Real, x::Real)
-    if x < 0
-        return one(float(first(promote(r, p, x))))
-    elseif isinf(x)
-        return zero(float(first(promote(r, p, x))))
+function nbinomccdf(r::Real, p::Real, k::Real)
+    if k < 0
+        return one(float(first(promote(r, p, k))))
+    elseif isinf(k)
+        return zero(float(first(promote(r, p, k))))
     else
-        return beta_inc(r, floor(x + 1), p)[2]
+        return beta_inc(r, floor(k + 1), p)[2]
     end
 end
-function nbinomlogcdf(r::Real, p::Real, x::Real)
-    if x < 0
-        return oftype(float(first(promote(r, p, x))), -Inf)
-    elseif isinf(x)
-        return zero(float(first(promote(r, p, x))))
+function nbinomlogcdf(r::Real, p::Real, k::Real)
+    if k < 0
+        return oftype(float(first(promote(r, p, k))), -Inf)
+    elseif isinf(k)
+        return zero(float(first(promote(r, p, k))))
     else
-        b1, b2 = beta_inc(r, floor(x + 1), p)
+        b1, b2 = beta_inc(r, floor(k + 1), p)
         return 10 * b1 < 7 ? log1p(-b2) : log(b1)
     end
 end
-function nbinomlogccdf(r::Real, p::Real, x::Real)
-    if x < 0
-        return zero(float(first(promote(r, p, x))))
-    elseif isinf(x)
-        return oftype(float(first(promote(r, p, x))), -Inf)
+function nbinomlogccdf(r::Real, p::Real, k::Real)
+    if k < 0
+        return zero(float(first(promote(r, p, k))))
+    elseif isinf(k)
+        return oftype(float(first(promote(r, p, k))), -Inf)
     else
-        b1, b2 = beta_inc(r, floor(x + 1), p)
+        b1, b2 = beta_inc(r, floor(k + 1), p)
         return 10 * b1 < 7 ? log1p(-b1) : log(b2)
     end
 end
