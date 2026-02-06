@@ -15,7 +15,7 @@ using .RFunctions:
     nbinominvlogcdf,
     nbinominvlogccdf
 
-nbinompdf(r::Real, p::Real, x::Real) = exp(nbinomlogpdf(r, p, k))
+nbinompdf(r::Real, p::Real, k::Real) = exp(nbinomlogpdf(r, p, k))
 
 nbinomlogpdf(r::Real, p::Real, k::Real) = nbinomlogpdf(promote(r, p, k)...)
 function nbinomlogpdf(r::T, p::T, k::T) where {T <: Real}
