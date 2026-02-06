@@ -16,7 +16,7 @@ function nbinomlogpdf(r::T, p::T, x::T) where {T <: Real}
     elseif x >= 0 && isinteger(x)
         z = xlog1py(x, -p) + xlogy(r, p)
         iszero(x) && return z
-        res = x - (logbeta(x + 1, r) + log(r + x))
+        res = z - (logbeta(x + 1, r) + log(r + x))
         if !isnan(res)
             return res
         else
