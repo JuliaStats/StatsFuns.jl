@@ -110,7 +110,7 @@ function betainvlogcdf(α::Real, β::Real, p::Real)
             return log(last(promote(α, β, p, p > 0)))
         end
     end
-    b0, b1 = beta_inc_inv(α, β, p)
+    b1, b2 = beta_inc_inv(α, β, p)
     return 10 * b1 < 7 ? log1p(-b2) : log(b1)
 end
 
@@ -123,6 +123,6 @@ function betainvlogccdf(α::Real, β::Real, p::Real)
             return log(last(promote(α, β, p, false)))
         end
     end
-    b0, b1 = beta_inc_inv(α, β, p)
+    b1, b2 = beta_inc_inv(α, β, p)
     return 10 * b1 < 7 ? log1p(-b1) : log(b2)
 end
