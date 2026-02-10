@@ -2,19 +2,6 @@
 
 using HypergeometricFunctions: _₂F₁
 
-# R implementations
-using .RFunctions:
-    # betapdf,
-    # betalogpdf,
-    # betacdf,
-    # betaccdf,
-    # betalogcdf,
-    # betalogccdf,
-    # betainvcdf,
-    # betainvccdf,
-    betainvlogcdf,
-    betainvlogccdf
-
 # Julia implementations
 betapdf(α::Real, β::Real, x::Real) = exp(betalogpdf(α, β, x))
 
@@ -112,4 +99,30 @@ function betainvccdf(α::Real, β::Real, p::Real)
     end
 
     return last(beta_inc_inv(β, α, p))
+end
+
+function betainvlogcdf(α::Real, β::Real, p::Real)
+    # Handle degenerate cases
+    if 0 ≤ p ≤ 1
+        if iszero(α) && β > 0
+            return log(last(promote(α, β, p, false)))
+        elseif iszero(β) && α > 0
+            return log(last(promote(α, β, p, p > 0)))
+        end
+    end
+    b0, b1 = beta_inc_inv(α, β, p)
+    return 10 * b1 < 7 ? log1p(-b2) : log(b1)
+end
+
+function betainvlogccdf(α::Real, β::Real, p::Real)
+    # Handle degenerate cases
+    if 0 ≤ p ≤ 1
+        if iszero(α) && β > 0
+            return log(last(promote(α, β, p, p == 0)))
+        elseif iszero(β) && α > 0
+            return log(last(promote(α, β, p, false)))
+        end
+    end
+    b0, b1 = beta_inc_inv(α, β, p)
+    return 10 * b1 < 7 ? log1p(-b1) : log(b2)
 end
