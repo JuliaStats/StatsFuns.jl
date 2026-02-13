@@ -2,42 +2,55 @@
 
 # R implementations
 using .RFunctions:
-    # hyperpdf,
-    # hyperlogpdf,
-    # hypercdf,
-    # hyperccdf,
-    # hyperlogcdf,
-    # hyperlogccdf,
     hyperinvcdf,
     hyperinvccdf,
     hyperinvlogcdf,
     hyperinvlogccdf
 
-function hyperpdf(ms, mf, n, x)
-    exp(hyperlogpdf(ms, mf, n, x))
+
+hyperpdf(ms::Real, mf::Real, n::Real, x::Real) = hyperpdf(promote(ms,mf,n,x)...)
+    
+function hyperpdf(ms::T, mf::T, n::T, x::T) where T<:Real
+    M, N = ms, ms+mf
+    fxnprev = fMNprev = one(T)
+    fxn = 1 - 2x/n
+    fMN = 1 - 2M/N
+    eiprev = ones(T, Int(n+1))
+    k = 0:n
+    ei = 1 .- k .*(2/n)
+    square(x) = x^2
+    res = fma(fxn, fMN/sum(square, ei), 1/(n+1))
+    ei = collect(ei)
+    for i in 1:n-1
+        fxnnext = ((2i + 1) * (n - 2x) * fxn - i * (n + i + 1) * fxnprev) / ((i + 1) * (n - i))
+        fxn, fxnprev = fxnnext, fxn
+        fMNnext = ((2i + 1) * (N - 2M) * fMN - i * (N + i + 1) * fMNprev) / ((i + 1) * (N - i))
+        fMN, fMNprev = fMNnext, fMN
+        @. eiprev = ((2i + 1) * (n - 2k) * ei - i * (n + i + 1) * eiprev) / ((i + 1) * (n - i))
+        ei, eiprev = eiprev, ei
+        correction =  fxn*fMN/sum(square, ei)
+        abs(correction) < res*eps(T) && break
+        res += correction
+    end
+    res
 end
 
-hyperlogpdf(ms, mf, n, x) = hyperlogpdf(promote(ms,mf,n,x)...)
-
+hyperlogpdf(ms::Real, mf::Real, n::Real, x::Real) = hyperlogpdf(promote(ms,mf,n,x)...)
 function hyperlogpdf(ms::T, mf::T, n::T, x::T) where T<:Real
-    #loggamma(ms + 1) - loggamma(x + 1) - loggamma(ms - x + 1) +
-    #loggamma(mf + 1) - loggamma(n - x + 1) - loggamma(mf - n + x + 1) -
-    #loggamma(ms + mf + 1) + loggamma(n + 1) + loggamma(ms + mf - n + 1)
-    -log1p(ms) - logbeta(x + 1, ms - x + 1) -
-    log1p(mf) - logbeta(n - x + 1, mf - n + x + 1) +
-    log1p(ms+mf) + logbeta(n + 1, ms + mf - n + 1)
+    return log1p(ms+mf) - log1p(ms) - log1p(mf) + 
+    (logbeta(n + 1, ms + mf - n + 1) - logbeta(x + 1, ms - x + 1) - 
+    logbeta(n - x + 1, mf - n + x + 1))
 end
 
-
-function _hypercdf(ms, mf, n, x, invert)
+_hypercdf(ms::Real, mf::Real, n::Real, x::Real, invert::Bool) = _hypercdf(promote(ms, mf, n, x)..., invert::Bool)
+function _hypercdf(ms::T, mf::T, n::T, x::T, invert::Bool) where T<:Real
     N = ms+mf
     mode = fld((n + 1) * (ms + 1), N + 2)
     local result
     if x < mode
-        result = hyperpdf(ms, mf, n, x)
-        diff = result
+        result = diff = hyperpdf(ms, mf, n, x)
         lower_limit = max(0, n+ms-N)
-        while x != lower_limit && diff > (invert ? result : 1)*eps()
+        while x != lower_limit && diff > (invert ? result : 1)*eps(T)
             diff *= x * (N + x - n - ms) / ((1+n-x)*(1+ms -x))
             result += diff
             x -= 1
@@ -45,10 +58,9 @@ function _hypercdf(ms, mf, n, x, invert)
     else
         invert = !invert
         x += 1
-        result = hyperpdf(ms, mf, n, x)
-        diff = result
+        result = diff = hyperpdf(ms, mf, n, x)
         upper_limit = min(ms, n)
-        while x != upper_limit && diff > (invert ? 1 : result)*eps()
+        while x != upper_limit && diff > (invert ? 1 : result)*eps(T)
             diff *= (n-x) * (ms-x) / ((1+x) * (N+x+1-n-ms))
             result += diff
             x += 1

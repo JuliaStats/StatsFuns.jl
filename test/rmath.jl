@@ -9,10 +9,19 @@ function check_rmath(fname, statsfun, rmathfun, params, aname, a, isprob, rtol)
     rv = @inferred(rmathfun(params..., a))
     @test v isa float(Base.promote_typeof(params..., a))
     @test rv isa float(Base.promote_typeof(params..., a))
-    return if isprob
-        @test v ≈ rv rtol = rtol nans = true
+    # vbig == bigfloat version if available
+    vbig = try
+        statsfun(params..., big(a))
+    catch
+        rv
+    end
+    # loose accuracy test to confirm shape is right
+    @test v ≈ rv nans = true
+    # tight accuracy test to confirm implimentation is correct numerically
+    if isprob
+        @test v ≈ vbig rtol = rtol nans = true
     else
-        @test v ≈ rv atol = rtol rtol = rtol nans = true
+        @test v ≈ vbig atol = rtol rtol = rtol nans = true
     end
 end
 
