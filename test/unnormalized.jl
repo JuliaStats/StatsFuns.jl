@@ -5,118 +5,111 @@ using Test
 @testset "logupdf + logulikelihood" begin
     @testset "optimized" begin
         # Beta distribution
-        α = 0.1
-        β = 2.5
-        x = 0.7
-        @test betalogupdf(α, β, x) ≈ betalogpdf(α, β, x) + logbeta(α, β)
-        @test betalogulikelihood(α, β, x) == betalogpdf(α, β, x)
+        for ((α, β, x), T) in (((0.1, 2.5, 0.7), Float64), ((1, 2.5, 0.7), Float64), ((0.1f0, 2.5f0, 0.7f0), Float32), ((1, 2.5f0, 0.7f0), Float32))
+            @test (@inferred betalogupdf(α, β, x))::T ≈ betalogpdf(α, β, x) + logbeta(α, β)
+            @test (@inferred betalogulikelihood(α, β, x))::T == betalogpdf(α, β, x)
+        end
 
         # Binomial distribution
-        n = 9
-        p = 0.4
-        k = 6
-        @test binomlogupdf(n, p, k) ≈ binomlogpdf(n, p, k) + log(n + 1)
-        @test binomlogulikelihood(n, p, k) == binomlogpdf(n, p, k)
+        for ((n, p, k), T) in (((9, 0.4, 6), Float64), ((9.0f0, 0.4f0, 6.0f0), Float32), ((9, 0.4f0, 6), Float32))
+            @test (@inferred binomlogupdf(n, p, k))::T ≈ binomlogpdf(n, p, k) + log(T(n) + 1)
+            @test (@inferred binomlogulikelihood(n, p, k))::T == binomlogpdf(n, p, k)
+        end
 
         # Chi-squared distribution
-        k = 4.2
-        x = 3.1
-        @test chisqlogupdf(k, x) ≈ chisqlogpdf(k, x) + k / 2 * log(2) + loggamma(k / 2)
-        @test chisqlogulikelihood(k, x) ≈ chisqlogpdf(k, x) + log(x) + x / 2
+        for ((k, x), T) in (((4.2, 3.1), Float64), ((4, 3.1), Float64), ((4.2f0, 3.1f0), Float32), ((4, 3.1f0), Float32))
+            @test (@inferred chisqlogupdf(k, x))::T ≈ chisqlogpdf(k, x) + T(k) / 2 * log(T(2)) + loggamma(T(k) / 2)
+            @test (@inferred chisqlogulikelihood(k, x))::T ≈ chisqlogpdf(k, x) + log(T(x)) + T(x) / 2
+        end
 
         # F distribution
-        ν1 = 0.9
-        ν2 = 1.5
-        x = 2.1
-        @test fdistlogupdf(ν1, ν2, x) ≈ fdistlogpdf(ν1, ν2, x) + logbeta(ν1 / 2, ν2 / 2) - (ν1 * log(ν1) + ν2 * log(ν2)) / 2
-        @test fdistlogulikelihood(ν1, ν2, x) ≈ fdistlogpdf(ν1, ν2, x) - (ν1 / 2 - 1) * log(x)
+        for ((ν1, ν2, x), T) in (((0.9, 1.5, 2.1), Float64), ((1, 2, 2.1), Float64), ((0.9f0, 1.5f0, 2.1f0), Float32), ((1, 2, 2.1f0), Float32))
+            @test (@inferred fdistlogupdf(ν1, ν2, x))::T ≈ fdistlogpdf(ν1, ν2, x) + logbeta(T(ν1) / 2, T(ν2) / 2) - (T(ν1) * log(T(ν1)) + T(ν2) * log(T(ν2))) / 2
+            @test (@inferred fdistlogulikelihood(ν1, ν2, x))::T ≈ fdistlogpdf(ν1, ν2, x) - (T(ν1) / 2 - 1) * log(T(x))
+        end
 
         # Gamma distribution
-        k = 1.4
-        θ = 2.3
-        x = 1.9
-        @test gammalogupdf(k, θ, x) ≈ gammalogpdf(k, θ, x) + loggamma(k) + k * log(θ)
-        @test gammalogulikelihood(k, θ, x) ≈ gammalogpdf(k, θ, x) + log(x)
+        for ((k, θ, x), T) in (((1.4, 2.3, 1.9), Float64), ((2, 2.3, 1.9), Float64), ((1.4f0, 2.3f0, 1.9f0), Float32), ((2, 2.3f0, 1.9f0), Float32))
+            @test (@inferred gammalogupdf(k, θ, x))::T ≈ gammalogpdf(k, θ, x) + loggamma(T(k)) + T(k) * log(T(θ))
+            @test (@inferred gammalogulikelihood(k, θ, x))::T ≈ gammalogpdf(k, θ, x) + log(T(x))
+        end
 
         # Negative binomial distribution
-        r = 3
-        p = 0.7
-        x = 2
-        @test nbinomlogupdf(r, p, x) ≈ nbinomlogpdf(r, p, x) - xlogy(r, p)
-        @test nbinomlogulikelihood(r, p, x) == nbinomlogpdf(r, p, x)
+        for ((r, p, x), T) in (((3, 0.7, 2), Float64), ((3.0f0, 0.7f0, 2.0f0), Float32), ((3, 0.7f0, 2), Float32))
+            @test (@inferred nbinomlogupdf(r, p, x))::T ≈ nbinomlogpdf(r, p, x) - xlogy(T(r), T(p))
+            @test (@inferred nbinomlogulikelihood(r, p, x))::T == nbinomlogpdf(r, p, x)
+        end
+        for ((r, p, x), T) in (((3, 1.5, 2), Float64), ((-1, 0.5, 2), Float64), ((3.0f0, 1.5f0, 2.0f0), Float32))
+            @test isnan((@inferred nbinomlogupdf(r, p, x))::T)
+        end
 
         # Normal distribution
-        x = 3.1
-        @test normlogupdf(x) ≈ normlogpdf(x) + log(2 * π) / 2
-        @test normlogulikelihood(x) ≈ normlogpdf(x) + log(2 * π) / 2
-        for (μ, σ) in ((-0.1, 2.4), (-0.1, 0.0), (x, 0.0))
-            @test normlogupdf(μ, σ, x) ≈ (iszero(σ) ? normlogpdf(μ, σ, x) : normlogpdf(μ, σ, x) + log(2 * π) / 2 + log(σ))
-            @test normlogulikelihood(μ, σ, x) ≈ normlogpdf(μ, σ, x) + log(2 * π) / 2
+        for (z, T) in ((3.1, Float64), (3, Float64), (3.1f0, Float32))
+            @test (@inferred normlogupdf(z))::T ≈ normlogpdf(z) + log(T(2π)) / 2
+            @test (@inferred normlogulikelihood(z))::T ≈ normlogpdf(z) + log(T(2π)) / 2
+        end
+        for ((μ, σ, z), T) in (
+                ((-0.1, 2.4, 3.1), Float64), ((-0.1, 0.0, 3.1), Float64), ((3.1, 0.0, 3.1), Float64),
+                ((-0.1f0, 2.4f0, 3.1f0), Float32), ((-0.1f0, 0.0f0, 3.1f0), Float32), ((3.1f0, 0.0f0, 3.1f0), Float32), ((0, 2.4f0, 3.1f0), Float32),
+            )
+            @test (@inferred normlogupdf(μ, σ, z))::T ≈ (iszero(σ) ? normlogpdf(μ, σ, z) : normlogpdf(μ, σ, z) + log(T(2π)) / 2 + log(σ))
+            @test (@inferred normlogulikelihood(μ, σ, z))::T ≈ normlogpdf(μ, σ, z) + log(T(2π)) / 2
         end
 
         # Poisson distribution
-        λ = 3.5
-        x = 2
-        @test poislogupdf(λ, x) ≈ poislogpdf(λ, x) + λ
-        @test poislogulikelihood(λ, x) ≈ poislogpdf(λ, x) + loggamma(x + 1)
+        for ((λ, x), T) in (((3.5, 2), Float64), ((3.5f0, 2.0f0), Float32), ((3.5f0, 2), Float32))
+            @test (@inferred poislogupdf(λ, x))::T ≈ poislogpdf(λ, x) + T(λ)
+            @test (@inferred poislogulikelihood(λ, x))::T ≈ poislogpdf(λ, x) + loggamma(T(x) + 1)
+        end
 
         # Student's t distribution
-        ν = 4.5
-        x = 1.3
-        @test tdistlogupdf(ν, x) ≈ tdistlogpdf(ν, x) - loggamma((ν + 1) / 2) + (log(π) + log(ν)) / 2 + loggamma(ν / 2)
-        @test tdistlogulikelihood(ν, x) ≈ tdistlogpdf(ν, x) + log(π) / 2
+        for ((ν, x), T) in (((4.5, 1.3), Float64), ((5, 1.3), Float64), ((4.5f0, 1.3f0), Float32), ((5, 1.3f0), Float32))
+            @test (@inferred tdistlogupdf(ν, x))::T ≈ tdistlogpdf(ν, x) - loggamma((T(ν) + 1) / 2) + (log(T(π)) + log(T(ν))) / 2 + loggamma(T(ν) / 2)
+            @test (@inferred tdistlogulikelihood(ν, x))::T ≈ tdistlogpdf(ν, x) + log(T(π)) / 2
+        end
 
         # Wilcoxon signed rank distribution
-        n = 5
-        W = 7
-        @test signranklogupdf(n, W) ≈ signranklogpdf(n, W) + n * log(2)
-        @test signranklogulikelihood(n, W) == signranklogpdf(n, W)
+        for (n, W) in ((5, 7), (5, 7.0))
+            @test (@inferred signranklogupdf(n, W))::Float64 ≈ signranklogpdf(n, W) + n * log(2)
+            @test (@inferred signranklogulikelihood(n, W))::Float64 == signranklogpdf(n, W)
+        end
 
         # Wilcoxon rank sum distribution
-        nx = 3
-        ny = 4
-        U = 5
-        @test wilcoxlogupdf(nx, ny, U) ≈ wilcoxlogpdf(nx, ny, U) + first(logabsbinomial(nx + ny, nx))
-        @test wilcoxlogulikelihood(nx, ny, U) == wilcoxlogpdf(nx, ny, U)
+        for (nx, ny, U) in ((3, 4, 5), (3, 4, 5.0))
+            @test (@inferred wilcoxlogupdf(nx, ny, U))::Float64 ≈ wilcoxlogpdf(nx, ny, U) + first(logabsbinomial(nx + ny, nx))
+            @test (@inferred wilcoxlogulikelihood(nx, ny, U))::Float64 == wilcoxlogpdf(nx, ny, U)
+        end
     end
 
     @testset "fallback" begin
         # Hyper-geometric distribution
-        ms = 2
-        mf = 3
-        n = 4
-        x = 2
-        @test hyperlogupdf(ms, mf, n, x) == hyperlogpdf(ms, mf, n, x)
-        @test hyperlogulikelihood(ms, mf, n, x) == hyperlogpdf(ms, mf, n, x)
+        for (ms, mf, n, x) in ((2, 3, 4, 2), (2, 3, 4, 2.0))
+            @test (@inferred hyperlogupdf(ms, mf, n, x))::Float64 == hyperlogpdf(ms, mf, n, x)
+            @test (@inferred hyperlogulikelihood(ms, mf, n, x))::Float64 == hyperlogpdf(ms, mf, n, x)
+        end
 
         # Non-central beta distribution
-        α = 0.8
-        β = 2.1
-        λ = 1.1
-        x = 0.8
-        @test nbetalogupdf(α, β, λ, x) == nbetalogpdf(α, β, λ, x)
-        @test nbetalogulikelihood(α, β, λ, x) == nbetalogpdf(α, β, λ, x)
+        for ((α, β, λ, x), T) in (((0.8, 2.1, 1.1, 0.8), Float64), ((1, 2.1, 1.1, 0.8), Float64), ((0.8f0, 2.1f0, 1.1f0, 0.8f0), Float32), ((1, 2.1f0, 1.1f0, 0.8f0), Float32))
+            @test (@inferred nbetalogupdf(α, β, λ, x))::T == nbetalogpdf(α, β, λ, x)
+            @test (@inferred nbetalogulikelihood(α, β, λ, x))::T == nbetalogpdf(α, β, λ, x)
+        end
 
         # Non-central chi-squared distribution
-        k = 3.0
-        λ = 1.5
-        x = 4.2
-        @test nchisqlogupdf(k, λ, x) == nchisqlogpdf(k, λ, x)
-        @test nchisqlogulikelihood(k, λ, x) == nchisqlogpdf(k, λ, x)
+        for ((k, λ, x), T) in (((3.0, 1.5, 4.2), Float64), ((3, 1.5, 4.2), Float64), ((3.0f0, 1.5f0, 4.2f0), Float32), ((3, 1.5f0, 4.2f0), Float32))
+            @test (@inferred nchisqlogupdf(k, λ, x))::T == nchisqlogpdf(k, λ, x)
+            @test (@inferred nchisqlogulikelihood(k, λ, x))::T == nchisqlogpdf(k, λ, x)
+        end
 
         # Non-central F distribution
-        k1 = 2.0
-        k2 = 3.0
-        λ = 1.0
-        x = 1.5
-        @test nfdistlogupdf(k1, k2, λ, x) == nfdistlogpdf(k1, k2, λ, x)
-        @test nfdistlogulikelihood(k1, k2, λ, x) == nfdistlogpdf(k1, k2, λ, x)
+        for ((k1, k2, λ, x), T) in (((2.0, 3.0, 1.0, 1.5), Float64), ((2, 3, 1.0, 1.5), Float64), ((2.0f0, 3.0f0, 1.0f0, 1.5f0), Float32), ((2, 3, 1.0f0, 1.5f0), Float32))
+            @test (@inferred nfdistlogupdf(k1, k2, λ, x))::T == nfdistlogpdf(k1, k2, λ, x)
+            @test (@inferred nfdistlogulikelihood(k1, k2, λ, x))::T == nfdistlogpdf(k1, k2, λ, x)
+        end
 
         # Non-central t distribution
-        k = 5.0
-        λ = 1.2
-        x = 2.0
-        @test ntdistlogupdf(k, λ, x) == ntdistlogpdf(k, λ, x)
-        @test ntdistlogulikelihood(k, λ, x) == ntdistlogpdf(k, λ, x)
+        for ((k, λ, x), T) in (((5.0, 1.2, 2.0), Float64), ((5, 1.2, 2.0), Float64), ((5.0f0, 1.2f0, 2.0f0), Float32), ((5, 1.2f0, 2.0f0), Float32))
+            @test (@inferred ntdistlogupdf(k, λ, x))::T == ntdistlogpdf(k, λ, x)
+            @test (@inferred ntdistlogulikelihood(k, λ, x))::T == ntdistlogpdf(k, λ, x)
+        end
     end
 end

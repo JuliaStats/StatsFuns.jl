@@ -37,7 +37,8 @@ function gammalogupdf(k::T, θ::T, x::T) where {T <: Real}
     return x < 0 ? oftype(val, -Inf) : val
 end
 
-function gammalogulikelihood(k::Real, θ::Real, x::Real)
+gammalogulikelihood(k::Real, θ::Real, x::Real) = gammalogulikelihood(promote(k, θ, x)...)
+function gammalogulikelihood(k::T, θ::T, x::T) where {T <: Real}
     # we ensure that `log(x)` does not error if `x < 0`
     xθ = max(x, 0) / θ
     val = - xθ - loggamma(k)
