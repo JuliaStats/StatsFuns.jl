@@ -53,6 +53,31 @@ using Test
             @test normlogupdf(μ, σ, x) ≈ (iszero(σ) ? normlogpdf(μ, σ, x) : normlogpdf(μ, σ, x) + log(2 * π) / 2 + log(σ))
             @test normlogulikelihood(μ, σ, x) ≈ normlogpdf(μ, σ, x) + log(2 * π) / 2
         end
+
+        # Poisson distribution
+        λ = 3.5
+        x = 2
+        @test poislogupdf(λ, x) ≈ poislogpdf(λ, x) + λ
+        @test poislogulikelihood(λ, x) ≈ poislogpdf(λ, x) + loggamma(x + 1)
+
+        # Student's t distribution
+        ν = 4.5
+        x = 1.3
+        @test tdistlogupdf(ν, x) ≈ tdistlogpdf(ν, x) - loggamma((ν + 1) / 2) + (log(π) + log(ν)) / 2 + loggamma(ν / 2)
+        @test tdistlogulikelihood(ν, x) ≈ tdistlogpdf(ν, x) + log(π) / 2
+
+        # Wilcoxon signed rank distribution
+        n = 5
+        W = 7
+        @test signranklogupdf(n, W) ≈ signranklogpdf(n, W) + n * log(2)
+        @test signranklogulikelihood(n, W) == signranklogpdf(n, W)
+
+        # Wilcoxon rank sum distribution
+        nx = 3
+        ny = 4
+        U = 5
+        @test wilcoxlogupdf(nx, ny, U) ≈ wilcoxlogpdf(nx, ny, U) + first(logabsbinomial(nx + ny, nx))
+        @test wilcoxlogulikelihood(nx, ny, U) == wilcoxlogpdf(nx, ny, U)
     end
 
     @testset "fallback" begin
@@ -71,5 +96,27 @@ using Test
         x = 0.8
         @test nbetalogupdf(α, β, λ, x) == nbetalogpdf(α, β, λ, x)
         @test nbetalogulikelihood(α, β, λ, x) == nbetalogpdf(α, β, λ, x)
+
+        # Non-central chi-squared distribution
+        k = 3.0
+        λ = 1.5
+        x = 4.2
+        @test nchisqlogupdf(k, λ, x) == nchisqlogpdf(k, λ, x)
+        @test nchisqlogulikelihood(k, λ, x) == nchisqlogpdf(k, λ, x)
+
+        # Non-central F distribution
+        k1 = 2.0
+        k2 = 3.0
+        λ = 1.0
+        x = 1.5
+        @test nfdistlogupdf(k1, k2, λ, x) == nfdistlogpdf(k1, k2, λ, x)
+        @test nfdistlogulikelihood(k1, k2, λ, x) == nfdistlogpdf(k1, k2, λ, x)
+
+        # Non-central t distribution
+        k = 5.0
+        λ = 1.2
+        x = 2.0
+        @test ntdistlogupdf(k, λ, x) == ntdistlogpdf(k, λ, x)
+        @test ntdistlogulikelihood(k, λ, x) == ntdistlogpdf(k, λ, x)
     end
 end
