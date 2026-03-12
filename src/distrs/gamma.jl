@@ -21,7 +21,7 @@ gammapdf(k::Real, θ::Real, x::Real) = exp(gammalogpdf(k, θ, x))
 gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)
 function gammalogpdf(k::T, θ::T, x::T) where {T <: Real}
     logupdf = gammalogupdf(k, θ, x)
-    return isfinite(logupdf) ? logupdf - loggamma(k) - k * log(θ) : logupdf
+    return isfinite(logupdf) ? logupdf - loggamma(k) - xlogy(k, θ) : logupdf
 end
 
 gammalogupdf(k::Real, θ::Real, x::Real) = gammalogupdf(promote(k, θ, x)...)

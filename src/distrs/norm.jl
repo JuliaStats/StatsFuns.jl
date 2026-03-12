@@ -45,21 +45,21 @@ end
 normlogupdf(z::Number) = -abs2(z) / 2
 function normlogupdf(μ::Real, σ::Real, x::Number)
     return if iszero(σ) && x == μ
-        oftype(normlogupdf(zval(μ, one(σ), x)), Inf)
+        oftype(normlogupdf(zval(μ, oneunit(σ), x)), Inf)
     else
         normlogupdf(zval(μ, σ, x))
     end
 end
 
 # logulikelihood
-normlogulikelihood(z::Number) = -abs2(z) / 2
+normlogulikelihood(z::Number) = normlogupdf(z)
 function normlogulikelihood(μ::Real, σ::Real, x::Number)
     if iszero(σ)
         if x == μ
-            z = zval(μ, one(σ), x)
+            z = zval(μ, oneunit(σ), x)
         else
             z = zval(μ, σ, x)
-            σ = one(σ)
+            σ = oneunit(σ)
         end
     else
         z = zval(μ, σ, x)
