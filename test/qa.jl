@@ -52,9 +52,9 @@ using Test
 
     @testset "JET" begin
         # Check that there are no undefined global references and undefined field accesses
-        JET.test_package(StatsFuns; target_defined_modules = true, mode = :typo)
+        JET.test_package(StatsFuns; target_modules = (StatsFuns,), mode = :typo)
 
         # Analyze methods based on their declared signature
-        JET.report_package(StatsFuns; target_defined_modules = true)
+        JET.report_package(StatsFuns; target_modules = (StatsFuns,))
     end
 end

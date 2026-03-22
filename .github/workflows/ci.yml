@@ -29,7 +29,6 @@ jobs:
           - min # oldest supported version
           - lts # LTS
           - '1' # latest release
-          - pre # pre-releases
         os:
           - ubuntu-latest
           - macos-latest
