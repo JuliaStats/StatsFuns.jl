@@ -8,13 +8,6 @@
 #
 # The probability mass function is (k + r - 1 \choose k) p^r (1-p)^k
 
-# R implementations
-using .RFunctions:
-    nbinominvcdf,
-    nbinominvccdf,
-    nbinominvlogcdf,
-    nbinominvlogccdf
-
 nbinompdf(r::Real, p::Real, k::Real) = exp(nbinomlogpdf(r, p, k))
 
 nbinomlogpdf(r::Real, p::Real, k::Real) = nbinomlogpdf(promote(r, p, k)...)
@@ -73,5 +66,22 @@ function nbinomlogccdf(r::Real, p::Real, k::Real)
     end
 end
 
+# Rmath implementations
 # TODO: implement https://arxiv.org/abs/2001.03953
 # for inverting the incomplete beta function wrt the 2nd argument.
+function nbinominvcdf(r::Real, p::Real, q::Real)
+    T = float(Base.promote_typeof(r, p, q))
+    return convert(T, Rmath.qnbinom(q, r, p, true, false))
+end
+function nbinominvccdf(r::Real, p::Real, q::Real)
+    T = float(Base.promote_typeof(r, p, q))
+    return convert(T, Rmath.qnbinom(q, r, p, false, false))
+end
+function nbinominvlogcdf(r::Real, p::Real, lq::Real)
+    T = float(Base.promote_typeof(r, p, lq))
+    return convert(T, Rmath.qnbinom(lq, r, p, true, true))
+end
+function nbinominvlogccdf(r::Real, p::Real, lq::Real)
+    T = float(Base.promote_typeof(r, p, lq))
+    return convert(T, Rmath.qnbinom(lq, r, p, false, true))
+end
