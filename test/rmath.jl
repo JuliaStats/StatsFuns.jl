@@ -219,8 +219,8 @@ end
         end
     end
 
-    rmathcomp_tests(
-        "binom", [
+    @testset "binom" begin
+        configs = [
             ((1, 0.5), 0.0:1.0),
             ((1, 0.7), 0.0:1.0),
             ((8, 0.6), 0.0:8.0),
@@ -234,7 +234,52 @@ end
             ((10, 1 // 2), (0 // 1):(10 // 1)),
             ((1, 0.5), [-Inf, Inf]),
         ]
-    )
+        @testset "params: $params" for (params, data) in configs
+            (n, p) = params
+            T = float(Base.promote_typeof(n, p, first(data)))
+            rtol = _default_rtol(T)
+            @testset "pdf with x=$x" for x in data
+                check_rmath(binompdf, (a, n, p) -> Rmath.dbinom(a, n, p, false), params, x, true, rtol)
+            end
+            @testset "logpdf with x=$x" for x in data
+                check_rmath(binomlogpdf, (a, n, p) -> Rmath.dbinom(a, n, p, true), params, x, false, rtol)
+            end
+            @testset "cdf with x=$x" for x in data
+                check_rmath(binomcdf, (a, n, p) -> Rmath.pbinom(a, n, p, true, false), params, x, true, rtol)
+            end
+            @testset "ccdf with x=$x" for x in data
+                check_rmath(binomccdf, (a, n, p) -> Rmath.pbinom(a, n, p, false, false), params, x, true, rtol)
+            end
+            @testset "logcdf with x=$x" for x in data
+                check_rmath(binomlogcdf, (a, n, p) -> Rmath.pbinom(a, n, p, true, true), params, x, false, rtol)
+            end
+            @testset "logccdf with x=$x" for x in data
+                check_rmath(binomlogccdf, (a, n, p) -> Rmath.pbinom(a, n, p, false, true), params, x, false, rtol)
+            end
+            if T === Float64
+                @testset "invcdf round-trip with x=$x" for x in data
+                    q = binomcdf(n, p, x)
+                    (q == 0 || q == 1) && continue
+                    @test binominvcdf(n, p, q) ≈ x rtol = rtol nans = true
+                end
+                @testset "invccdf round-trip with x=$x" for x in data
+                    q = binomccdf(n, p, x)
+                    (q == 0 || q == 1) && continue
+                    @test binominvccdf(n, p, q) ≈ x rtol = rtol nans = true
+                end
+                @testset "invlogcdf round-trip with x=$x" for x in data
+                    lq = binomlogcdf(n, p, x)
+                    (lq == 0 || lq == -Inf) && continue
+                    @test binominvlogcdf(n, p, lq) ≈ x atol = 1 rtol = rtol nans = true
+                end
+                @testset "invlogccdf round-trip with x=$x" for x in data
+                    lq = binomlogccdf(n, p, x)
+                    (lq == 0 || lq == -Inf) && continue
+                    @test binominvlogccdf(n, p, lq) ≈ x atol = 1 rtol = rtol nans = true
+                end
+            end
+        end
+    end
 
     rmathcomp_tests(
         "chisq", [
@@ -307,8 +352,8 @@ end
         ]
     )
 
-    rmathcomp_tests(
-        "nbinom", [
+    @testset "nbinom" begin
+        configs = [
             ((1, 0.5), 0.0:20.0),
             ((3, 0.5), 0.0:20.0),
             ((3, 0.2), 0.0:20.0),
@@ -321,7 +366,60 @@ end
             ((1, 0.5), [-Inf, Inf, NaN]),
             ((1, 0.5f0), [-Inf32, Inf32, NaN32, -2, 1.1]),
         ]
-    )
+        @testset "params: $params" for (params, data) in configs
+            (r, p) = params
+            T = float(Base.promote_typeof(r, p, first(data)))
+            rtol = _default_rtol(T)
+            @testset "pdf with x=$x" for x in data
+                check_rmath(nbinompdf, (a, r, p) -> Rmath.dnbinom(a, r, p, false), params, x, true, rtol)
+            end
+            @testset "logpdf with x=$x" for x in data
+                check_rmath(nbinomlogpdf, (a, r, p) -> Rmath.dnbinom(a, r, p, true), params, x, false, rtol)
+            end
+            @testset "cdf with x=$x" for x in data
+                check_rmath(nbinomcdf, (a, r, p) -> Rmath.pnbinom(a, r, p, true, false), params, x, true, rtol)
+            end
+            @testset "ccdf with x=$x" for x in data
+                check_rmath(nbinomccdf, (a, r, p) -> Rmath.pnbinom(a, r, p, false, false), params, x, true, rtol)
+            end
+            @testset "logcdf with x=$x" for x in data
+                check_rmath(nbinomlogcdf, (a, r, p) -> Rmath.pnbinom(a, r, p, true, true), params, x, false, rtol)
+            end
+            @testset "logccdf with x=$x" for x in data
+                check_rmath(nbinomlogccdf, (a, r, p) -> Rmath.pnbinom(a, r, p, false, true), params, x, false, rtol)
+            end
+            if T === Float64
+                @testset "invcdf round-trip with x=$x" for x in data
+                    (isnan(x) || isinf(x)) && continue
+                    xf = floor(Float64(x))
+                    q = nbinomcdf(r, p, x)
+                    (q == 0 || q == 1 || xf < 0) && continue
+                    @test Float64(nbinominvcdf(r, p, q)) == xf
+                end
+                @testset "invccdf round-trip with x=$x" for x in data
+                    (isnan(x) || isinf(x)) && continue
+                    xf = floor(Float64(x))
+                    q = nbinomccdf(r, p, x)
+                    (q == 0 || q == 1 || xf < 0) && continue
+                    @test Float64(nbinominvccdf(r, p, q)) == xf
+                end
+                @testset "invlogcdf round-trip with x=$x" for x in data
+                    (isnan(x) || isinf(x)) && continue
+                    xf = floor(Float64(x))
+                    lq = nbinomlogcdf(r, p, x)
+                    (!isfinite(lq) || lq == 0 || xf < 0) && continue
+                    @test abs(Float64(nbinominvlogcdf(r, p, lq)) - xf) <= 1
+                end
+                @testset "invlogccdf round-trip with x=$x" for x in data
+                    (isnan(x) || isinf(x)) && continue
+                    xf = floor(Float64(x))
+                    lq = nbinomlogccdf(r, p, x)
+                    (!isfinite(lq) || lq == 0 || xf < 0) && continue
+                    @test abs(Float64(nbinominvlogccdf(r, p, lq)) - xf) <= 1
+                end
+            end
+        end
+    end
 
     rmathcomp_tests(
         "nchisq", [
@@ -386,8 +484,8 @@ end
         ]
     )
 
-    rmathcomp_tests(
-        "pois", [
+    @testset "pois" begin
+        configs = [
             ((0.5,), 0.0:20.0),
             ((1.0,), 0.0:20.0),
             ((2.0,), 0.0:20.0),
@@ -399,7 +497,52 @@ end
             ((0.5f0,), Float16(0):Float16(20)),
             ((1 // 2,), (0 // 1):(20 // 1)),
         ]
-    )
+        @testset "params: $params" for (params, data) in configs
+            (λ,) = params
+            T = float(Base.promote_typeof(λ, first(data)))
+            rtol = _default_rtol(T)
+            @testset "pdf with x=$x" for x in data
+                check_rmath(poispdf, (a, λ) -> Rmath.dpois(a, λ, false), params, x, true, rtol)
+            end
+            @testset "logpdf with x=$x" for x in data
+                check_rmath(poislogpdf, (a, λ) -> Rmath.dpois(a, λ, true), params, x, false, rtol)
+            end
+            @testset "cdf with x=$x" for x in data
+                check_rmath(poiscdf, (a, λ) -> Rmath.ppois(a, λ, true, false), params, x, true, rtol)
+            end
+            @testset "ccdf with x=$x" for x in data
+                check_rmath(poisccdf, (a, λ) -> Rmath.ppois(a, λ, false, false), params, x, true, rtol)
+            end
+            @testset "logcdf with x=$x" for x in data
+                check_rmath(poislogcdf, (a, λ) -> Rmath.ppois(a, λ, true, true), params, x, false, rtol)
+            end
+            @testset "logccdf with x=$x" for x in data
+                check_rmath(poislogccdf, (a, λ) -> Rmath.ppois(a, λ, false, true), params, x, false, rtol)
+            end
+            if T === Float64
+                @testset "invcdf round-trip with x=$x" for x in data
+                    q = poiscdf(λ, x)
+                    (q == 0 || q == 1) && continue
+                    @test poisinvcdf(λ, q) ≈ x rtol = rtol nans = true
+                end
+                @testset "invccdf round-trip with x=$x" for x in data
+                    q = poisccdf(λ, x)
+                    (q == 0 || q == 1) && continue
+                    @test poisinvccdf(λ, q) ≈ x rtol = rtol nans = true
+                end
+                @testset "invlogcdf round-trip with x=$x" for x in data
+                    lq = poislogcdf(λ, x)
+                    (lq == 0 || lq == -Inf) && continue
+                    @test poisinvlogcdf(λ, lq) ≈ x atol = 1 rtol = rtol nans = true
+                end
+                @testset "invlogccdf round-trip with x=$x" for x in data
+                    lq = poislogccdf(λ, x)
+                    (lq == 0 || lq == -Inf) && continue
+                    @test poisinvlogccdf(λ, lq) ≈ x atol = 1 rtol = rtol nans = true
+                end
+            end
+        end
+    end
 
     rmathcomp_tests(
         "tdist", [
@@ -483,13 +626,36 @@ end
             ((1, 1), [-10, -6, 2, 24]),
         ]
     )
-    rmathcomp_tests(
-        "binom", [
+    @testset "binom (edge cases)" begin
+        configs = [
             ((5, 0.5), [-8, -2.3, 1.2, 5.4, 11.9]),
             ((5, 1 // 2), [-8, -23 // 10, 6 // 5, 27 // 5, 119 // 10]),
             ((5, 1 // 2), [-8, -2, 6, 12]),
         ]
-    )
+        @testset "params: $params" for (params, data) in configs
+            (n, p) = params
+            T = float(Base.promote_typeof(n, p, first(data)))
+            rtol = _default_rtol(T)
+            @testset "pdf with x=$x" for x in data
+                check_rmath(binompdf, (a, n, p) -> Rmath.dbinom(a, n, p, false), params, x, true, rtol)
+            end
+            @testset "logpdf with x=$x" for x in data
+                check_rmath(binomlogpdf, (a, n, p) -> Rmath.dbinom(a, n, p, true), params, x, false, rtol)
+            end
+            @testset "cdf with x=$x" for x in data
+                check_rmath(binomcdf, (a, n, p) -> Rmath.pbinom(a, n, p, true, false), params, x, true, rtol)
+            end
+            @testset "ccdf with x=$x" for x in data
+                check_rmath(binomccdf, (a, n, p) -> Rmath.pbinom(a, n, p, false, false), params, x, true, rtol)
+            end
+            @testset "logcdf with x=$x" for x in data
+                check_rmath(binomlogcdf, (a, n, p) -> Rmath.pbinom(a, n, p, true, true), params, x, false, rtol)
+            end
+            @testset "logccdf with x=$x" for x in data
+                check_rmath(binomlogccdf, (a, n, p) -> Rmath.pbinom(a, n, p, false, true), params, x, false, rtol)
+            end
+        end
+    end
     rmathcomp_tests(
         "fdist", [
             ((1.0, 1.0), [-10.0, -6.3]),
@@ -504,11 +670,34 @@ end
             ((1, 1), [-10, -6]),
         ]
     )
-    rmathcomp_tests(
-        "pois", [
+    @testset "pois (edge cases)" begin
+        configs = [
             ((0.5,), [-10, -2.5, 1.3, 8.7]),
             ((1 // 2,), [-10, -5 // 2, 13 // 10, 87 // 10]),
             ((1,), [-10, -3]),
         ]
-    )
+        @testset "params: $params" for (params, data) in configs
+            (λ,) = params
+            T = float(Base.promote_typeof(λ, first(data)))
+            rtol = _default_rtol(T)
+            @testset "pdf with x=$x" for x in data
+                check_rmath(poispdf, (a, λ) -> Rmath.dpois(a, λ, false), params, x, true, rtol)
+            end
+            @testset "logpdf with x=$x" for x in data
+                check_rmath(poislogpdf, (a, λ) -> Rmath.dpois(a, λ, true), params, x, false, rtol)
+            end
+            @testset "cdf with x=$x" for x in data
+                check_rmath(poiscdf, (a, λ) -> Rmath.ppois(a, λ, true, false), params, x, true, rtol)
+            end
+            @testset "ccdf with x=$x" for x in data
+                check_rmath(poisccdf, (a, λ) -> Rmath.ppois(a, λ, false, false), params, x, true, rtol)
+            end
+            @testset "logcdf with x=$x" for x in data
+                check_rmath(poislogcdf, (a, λ) -> Rmath.ppois(a, λ, true, true), params, x, false, rtol)
+            end
+            @testset "logccdf with x=$x" for x in data
+                check_rmath(poislogccdf, (a, λ) -> Rmath.ppois(a, λ, false, true), params, x, false, rtol)
+            end
+        end
+    end
 end
