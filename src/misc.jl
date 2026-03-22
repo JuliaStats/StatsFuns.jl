@@ -155,3 +155,109 @@ function ab_minus_cd(a::Float64, b::Float64, c::Float64, d::Float64)
     return fma(a, b, -w) - fma(c, d, -w)
 end
 ab_minus_cd(a::Real, b::Real, c::Real, d::Real) = ab_minus_cd(Float64(a), Float64(b), Float64(c), Float64(d))
+
+# Noncentral distribution helpers (based on VBA code by Ian Smith)
+
+const _minLog1Value = -0.79149064
+
+"""
+    _logdif(pr, prob)
+
+Accurate computation of `log(pr / prob)`. Uses `log1pmx`-based computation
+when `pr` is close to `prob` to avoid cancellation.
+Based on VBA `logdif` by Ian Smith.
+"""
+function _logdif(pr::Float64, prob::Float64)
+    temp = (pr - prob) / prob
+    if abs(temp) >= 0.5
+        return log(pr / prob)
+    else
+        return log1p(temp) # log(1 + temp) = log(pr/prob)
+    end
+end
+
+"""
+    _poisson_term(i, n, diffFromMean, logAdd)
+
+High-precision Poisson PMF: probability that a Poisson variate with mean `n`
+has value `i`, where `diffFromMean = n - i`. The result is multiplied by
+`exp(logAdd)`. Uses Stirling corrections for accuracy.
+Based on VBA `poissonTerm` by Ian Smith.
+"""
+function _poisson_term(i::Float64, n::Float64, diffFromMean::Float64, logAdd::Float64)
+    if (i <= -1.0) || (n < 0.0)
+        if i == 0.0
+            return exp(logAdd)
+        else
+            return 0.0
+        end
+    elseif (i < 0.0) && (n == 0.0)
+        return NaN
+    else
+        c3 = i
+        c2 = c3 + 1.0
+        c1 = (diffFromMean - 1.0) / c2
+        if c1 < _minLog1Value
+            if i == 0.0
+                logpoissonTerm = -n
+                return exp(logpoissonTerm + logAdd)
+            else
+                logpoissonTerm = (c3 * log(n / c2) - (diffFromMean - 1.0)) - logfbit(c3)
+                r = exp(logpoissonTerm + logAdd)
+                (isfinite(r)) || return 0.0
+                return r / sqrt(c2) * Float64(invsqrt2π)
+            end
+        else
+            logpoissonTerm = c3 * log1pmx(c1) - c1 - logfbit(c3)
+            return exp(logpoissonTerm + logAdd) / sqrt(c2) * Float64(invsqrt2π)
+        end
+    end
+end
+
+"""
+    _binomial_term(i, j, p, q, diffFromMean, logAdd)
+
+High-precision binomial PMF: probability that a binomial variate with sample
+size `i + j` and event probability `p` (where `q = 1 - p`) has value `i`,
+where `diffFromMean = (i + j) * p - i`. The result is multiplied by `exp(logAdd)`.
+Uses Stirling corrections for accuracy.
+Based on VBA `binomialTerm` by Ian Smith.
+"""
+function _binomial_term(i::Float64, j::Float64, p::Float64, q::Float64, diffFromMean::Float64, logAdd::Float64)
+    if (i == 0.0) && (j <= 0.0)
+        return exp(logAdd)
+    elseif (i <= -1.0) || (j < 0.0)
+        return 0.0
+    else
+        if p < q
+            c2 = i
+            c3 = j
+            ps = p
+            dfm = diffFromMean
+        else
+            c3 = i
+            c2 = j
+            ps = q
+            dfm = -diffFromMean
+        end
+        c5 = (dfm - (1.0 - ps)) / (c2 + 1.0)
+        c6 = -(dfm + ps) / (c3 + 1.0)
+        if c5 < _minLog1Value
+            if c2 == 0.0
+                logbinomialTerm = c3 * log1p(-ps)
+                return exp(logbinomialTerm + logAdd)
+            elseif (ps == 0.0) && (c2 > 0.0)
+                return 0.0
+            else
+                c1 = (i + 1.0) + j
+                c4 = lfbaccdif1(j, i) + logfbit(j)
+                logbinomialTerm = c2 * (log((ps * c1) / (c2 + 1.0)) - c5) - c5 + c3 * log1pmx(c6) - c6 - c4
+                return exp(logbinomialTerm + logAdd) * sqrt(c1 / ((c2 + 1.0) * (c3 + 1.0))) * Float64(invsqrt2π)
+            end
+        else
+            c4 = lfbaccdif1(j, i) + logfbit(j)
+            logbinomialTerm = (c2 * log1pmx(c5) - c5) + (c3 * log1pmx(c6) - c6) - c4
+            return exp(logbinomialTerm + logAdd) * sqrt((1.0 + j / (i + 1.0)) / (j + 1.0)) * Float64(invsqrt2π)
+        end
+    end
+end
