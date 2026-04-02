@@ -101,12 +101,97 @@ function betainvccdf(α::Real, β::Real, p::Real)
     return last(beta_inc_inv(β, α, p))
 end
 
-# Rmath implementations
-function betainvlogcdf(α::Real, β::Real, lq::Real)
-    T = float(Base.promote_typeof(α, β, lq))
-    return convert(T, Rmath.qbeta(lq, α, β, true, true))
+# Newton iteration in log-space for inverting log-CDF.
+# Solves betalogcdf(α, β, x) = lp for x.
+# Uses the identity: d/dx log(F(x)) = f(x)/F(x) = exp(logpdf - logcdf)
+# Newton step: x_{n+1} = x_n - (logcdf(x_n) - lp) / exp(logpdf(x_n) - logcdf(x_n))
+#            = x_n - (logcdf(x_n) - lp) * exp(logcdf(x_n) - logpdf(x_n))
+function _betainvlogcdf(α::Float64, β::Float64, lp::Float64)
+    if lp > -1
+        # Moderate lp: use -expm1(lp) = 1-exp(lp) for accuracy near lp=0
+        return Float64(betainvccdf(α, β, -expm1(lp)))
+    end
+
+    # Use Newton iteration in log-space.
+    # Initial estimate from small-x asymptotic: I_x(α,β) ≈ x^α / (α·B(α,β))
+    # ⟹ log(I_x) ≈ α·log(x) - log(α) - logbeta(α,β)
+    # ⟹ x₀ ≈ exp((lp + log(α) + logbeta(α,β)) / α)
+    logx = (lp + log(α) + logbeta(α, β)) / α
+    if logx < log(nextfloat(0.0))
+        return 0.0  # answer underflows Float64
+    end
+    x = exp(logx)
+    x = min(x, 1.0 - eps(1.0))
+
+    for _ in 1:200
+        lcdf = Float64(betalogcdf(α, β, x))
+        residual = lcdf - lp
+        if abs(residual) <= 2 * eps(max(abs(lp), 1.0))
+            break
+        end
+        lpdf = Float64(betalogpdf(α, β, x))
+        # Newton step: Δx = residual * F(x)/f(x) = residual * exp(logcdf - logpdf)
+        dx = residual * exp(lcdf - lpdf)
+        # Guard: don't let x go negative or jump too far
+        x_new = x - clamp(dx, -x / 2, x / 2)
+        x_new = clamp(x_new, nextfloat(0.0), 1.0 - eps(1.0))
+        if x_new == x
+            break
+        end
+        x = x_new
+    end
+
+    return x
 end
-function betainvlogccdf(α::Real, β::Real, lq::Real)
-    T = float(Base.promote_typeof(α, β, lq))
-    return convert(T, Rmath.qbeta(lq, α, β, false, true))
+
+function betainvlogcdf(α::Real, β::Real, lp::Real)
+    T = float(Base.promote_typeof(α, β, lp))
+    _lp = Float64(lp)
+
+    if isnan(_lp) || _lp > 0
+        return convert(T, NaN)
+    elseif _lp == 0
+        return one(T)
+    elseif isinf(_lp)  # -Inf
+        return zero(T)
+    end
+
+    # Handle degenerate cases
+    _α = Float64(α); _β = Float64(β)
+    if iszero(_α) && _β > 0
+        return zero(T)
+    elseif iszero(_β) && _α > 0
+        return _lp > log1p(-1.0) ? one(T) : zero(T)
+    end
+
+    return convert(T, _betainvlogcdf(_α, _β, _lp))
+end
+
+function betainvlogccdf(α::Real, β::Real, lp::Real)
+    T = float(Base.promote_typeof(α, β, lp))
+    _lp = Float64(lp)
+
+    if isnan(_lp) || _lp > 0
+        return convert(T, NaN)
+    elseif _lp == 0
+        return zero(T)
+    elseif isinf(_lp)  # -Inf
+        return one(T)
+    end
+
+    # Handle degenerate cases
+    _α = Float64(α); _β = Float64(β)
+    if iszero(_α) && _β > 0
+        return _lp > log1p(-1.0) ? zero(T) : one(T)
+    elseif iszero(_β) && _α > 0
+        return one(T)
+    end
+
+    # For moderate lp (near 0): use -expm1(lp) = 1-exp(lp) for accuracy
+    if _lp > -1
+        return convert(T, Float64(betainvcdf(_α, _β, -expm1(_lp))))
+    end
+
+    # For very negative lp: betainvlogccdf(α, β, lp) = 1 - betainvlogcdf(β, α, lp)
+    return convert(T, 1.0 - _betainvlogcdf(_β, _α, _lp))
 end
