@@ -1,13 +1,5 @@
 # functions related to hyper-geometric distribution
 
-# R implementations
-using .RFunctions:
-    hyperinvcdf,
-    hyperinvccdf,
-    hyperinvlogcdf,
-    hyperinvlogccdf
-
-
 hyperpdf(ms::Real, mf::Real, n::Real, x::Real) = hyperpdf(promote(ms,mf,n,x)...)
     
 function hyperpdf(ms::T, mf::T, n::T, x::T) where T<:Real
@@ -86,4 +78,21 @@ end
 function hyperlogccdf(ms, mf, n, x)
     result, invert = _hypercdf(ms, mf, n, x, true)
     invert ? log1p(-result) : log(result)
+
+# Rmath implementations
+function hyperinvcdf(ms::Real, mf::Real, n::Real, q::Real)
+    T = float(Base.promote_typeof(ms, mf, n, q))
+    return convert(T, Rmath.qhyper(q, ms, mf, n, true, false))
+end
+function hyperinvccdf(ms::Real, mf::Real, n::Real, q::Real)
+    T = float(Base.promote_typeof(ms, mf, n, q))
+    return convert(T, Rmath.qhyper(q, ms, mf, n, false, false))
+end
+function hyperinvlogcdf(ms::Real, mf::Real, n::Real, lq::Real)
+    T = float(Base.promote_typeof(ms, mf, n, lq))
+    return convert(T, Rmath.qhyper(lq, ms, mf, n, true, true))
+end
+function hyperinvlogccdf(ms::Real, mf::Real, n::Real, lq::Real)
+    T = float(Base.promote_typeof(ms, mf, n, lq))
+    return convert(T, Rmath.qhyper(lq, ms, mf, n, false, true))
 end

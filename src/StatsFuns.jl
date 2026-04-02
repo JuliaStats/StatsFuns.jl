@@ -2,6 +2,7 @@ module StatsFuns
 
 using Base: Math.@horner
 using Reexport: @reexport
+using Rmath: Rmath
 using SpecialFunctions: beta_inc, beta_inc_inv, digamma,
     erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logbeta, loggamma
 
@@ -264,10 +265,7 @@ export
 
 ## source files
 include("misc.jl")
-include("rmath.jl")
 include("tvpack.jl")
-
-using .RFunctions
 
 include("distrs/beta.jl")
 include("distrs/binom.jl")
