@@ -12,10 +12,16 @@ nbinompdf(r::Real, p::Real, k::Real) = exp(nbinomlogpdf(r, p, k))
 
 nbinomlogpdf(r::Real, p::Real, k::Real) = nbinomlogpdf(promote(r, p, k)...)
 function nbinomlogpdf(r::T, p::T, k::T) where {T <: Real}
+    logupdf = nbinomlogupdf(r, p, k)
+    return isfinite(logupdf) ? logupdf + xlogy(r, p) : logupdf
+end
+
+nbinomlogupdf(r::Real, p::Real, k::Real) = nbinomlogupdf(promote(r, p, k)...)
+function nbinomlogupdf(r::T, p::T, k::T) where {T <: Real}
     if !(0 <= p <= 1) || r <= 0
         return float(T)(NaN)
     elseif k >= 0 && isinteger(k)
-        z = xlog1py(k, -p) + xlogy(r, p)
+        z = xlog1py(k, -p)
         iszero(k) && return z
         res = z - (logbeta(k + 1, r) + log(r + k))
         if !isnan(res)
@@ -27,6 +33,9 @@ function nbinomlogpdf(r::T, p::T, k::T) where {T <: Real}
         return float(T)(isnan(k) ? NaN : -Inf)
     end
 end
+
+nbinomlogulikelihood(r::Real, p::Real, k::Real) = nbinomlogpdf(r, p, k)
+
 function nbinomcdf(r::Real, p::Real, k::Real)
     if k < 0
         return zero(float(first(promote(r, p, k))))

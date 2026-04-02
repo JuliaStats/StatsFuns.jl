@@ -1,5 +1,8 @@
 # functions related to noncentral F distribution
 
+nfdistlogupdf(k1::Real, k2::Real, λ::Real, x::Real) = nfdistlogpdf(k1, k2, λ, x)
+nfdistlogulikelihood(k1::Real, k2::Real, λ::Real, x::Real) = nfdistlogpdf(k1, k2, λ, x)
+
 # Rmath implementations
 function nfdistpdf(k1::Real, k2::Real, λ::Real, x::Real)
     T = float(Base.promote_typeof(k1, k2, λ, x))

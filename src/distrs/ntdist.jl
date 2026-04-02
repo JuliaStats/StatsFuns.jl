@@ -1,5 +1,8 @@
 # functions related to noncentral T distribution
 
+ntdistlogupdf(k::Real, λ::Real, x::Real) = ntdistlogpdf(k, λ, x)
+ntdistlogulikelihood(k::Real, λ::Real, x::Real) = ntdistlogpdf(k, λ, x)
+
 # Rmath implementations
 function ntdistpdf(k::Real, λ::Real, x::Real)
     T = float(Base.promote_typeof(k, λ, x))
