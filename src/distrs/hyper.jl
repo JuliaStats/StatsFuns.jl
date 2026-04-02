@@ -78,6 +78,7 @@ end
 function hyperlogccdf(ms, mf, n, x)
     result, invert = _hypercdf(ms, mf, n, x, true)
     invert ? log1p(-result) : log(result)
+end
 
 # Rmath implementations
 function hyperinvcdf(ms::Real, mf::Real, n::Real, q::Real)
