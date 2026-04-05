@@ -291,6 +291,152 @@ end
         ]
     )
 
+    # Additional hypergeometric tests with larger parameters for coverage.
+    # Uses self-consistency round-trips for inverse functions since our CDF
+    # differs from Rmath's by ~1 ULP which can flip discrete answers.
+    @testset "hyper (extended)" begin
+        for (ms, mf, n, xs) in [
+                (10, 20, 15, 0.0:15.0),
+                (50, 100, 80, 0.0:50.0),
+                (0, 10, 5, 0.0:5.0),     # ms=0
+                (10, 0, 5, 0.0:5.0),     # mf=0
+                (5, 5, 10, 0.0:5.0),     # n=ms+mf
+            ]
+            @testset "params: ($ms, $mf, $n)" begin
+                @testset "pdf/cdf match Rmath for x=$x" for x in xs
+                    @test hyperpdf(ms, mf, n, x) ≈
+                        Rmath.dhyper(Float64(x), Float64(ms), Float64(mf), Float64(n), false) nans = true
+                    @test hypercdf(ms, mf, n, x) ≈
+                        Rmath.phyper(Float64(x), Float64(ms), Float64(mf), Float64(n), true, false) nans = true
+                    @test hyperccdf(ms, mf, n, x) ≈
+                        Rmath.phyper(Float64(x), Float64(ms), Float64(mf), Float64(n), false, false) nans = true
+                end
+                @testset "invcdf round-trip x=$x" for x in xs
+                    xf = floor(Float64(x))
+                    q = hypercdf(ms, mf, n, x)
+                    (0 < q < 1 && xf >= 0) || continue
+                    @test Float64(hyperinvcdf(ms, mf, n, q)) == xf
+                end
+                @testset "invccdf round-trip x=$x" for x in xs
+                    xf = floor(Float64(x))
+                    q = hyperccdf(ms, mf, n, x)
+                    (0 < q < 1 && xf >= 0) || continue
+                    @test Float64(hyperinvccdf(ms, mf, n, q)) == xf
+                end
+            end
+        end
+    end
+
+    # Hypergeometric with non-integer parameters (exercises VBA continuous paths)
+    @testset "hyper (non-integer params)" begin
+        # Non-integer ms/mf exercises the non-allIntegral swap branches,
+        # fractional amkji paths, and non-integer CF summation limits
+        for (ms, mf, n) in [(2.5, 3.5, 4), (5.5, 10.5, 8), (0.5, 9.5, 5)]
+            mn = max(0, n - mf)
+            mx = min(ms, n)
+            @testset "params: ($ms, $mf, $n)" begin
+                for x in floor(mn):floor(mx)
+                    pdf = @inferred hyperpdf(ms, mf, n, x)
+                    cdf = @inferred hypercdf(ms, mf, n, x)
+                    ccdf = @inferred hyperccdf(ms, mf, n, x)
+                    @test pdf >= 0
+                    @test 0 <= cdf <= 1
+                    @test 0 <= ccdf <= 1
+                    @test cdf + ccdf ≈ 1 atol = 1.0e-3
+                end
+                # CDF should be monotonically non-decreasing
+                xs = floor(mn):floor(mx)
+                cdfs = [hypercdf(ms, mf, n, x) for x in xs]
+                @test issorted(cdfs)
+            end
+        end
+    end
+
+    # Hypergeometric edge cases
+    @testset "hyper (edge cases)" begin
+        # NaN for invalid params
+        @test isnan(hyperinvcdf(2, 3, 4, -0.1))
+        @test isnan(hyperinvccdf(2, 3, 4, -0.1))
+        # Boundary probabilities
+        @test hyperinvcdf(10, 20, 15, 0.0) == 0.0
+        @test hyperinvcdf(10, 20, 15, 1.0) == 10.0
+        @test hyperinvccdf(10, 20, 15, 0.0) == 10.0
+        @test hyperinvccdf(10, 20, 15, 1.0) == 0.0
+        # ms=0: only x=0 possible
+        @test hyperpdf(0, 10, 5, 0) == 1.0
+        @test hypercdf(0, 10, 5, 0) == 1.0
+        # mf=0: x must equal n (if n <= ms) — degenerate PMF=1 (line 30)
+        @test hyperpdf(10, 0, 5, 5) == 1.0
+        @test hyperpdf(5, 0, 5, 5) == 1.0
+        @test hypercdf(10, 0, 5, 5) == 1.0
+        # Skewed params triggering minLog1Value fallback in PMF (lines 42, 57, 65)
+        @test hyperpdf(100, 5, 100, 99) > 0   # c5_1 < minLog1Value
+        @test hyperpdf(100, 5, 5, 4) > 0      # c5_3 < minLog1Value
+        @test hyperpdf(5, 100, 5, 1) > 0      # c5_4 < minLog1Value
+        @test hyperpdf(100, 5, 100, 100) >= 0
+        # Skewed distribution where PMF dominates CDF (lines 258-282, 314-343)
+        @test hyperinvcdf(1, 1000, 500, 0.3) == 0.0
+        @test hyperinvccdf(1, 1000, 500, 0.3) == 1.0
+        @test hyperinvcdf(1, 1000, 500, 0.9) == 1.0
+        @test hyperinvccdf(1, 1000, 500, 0.9) == 0.0
+        # Inverse edge cases for ms=0, mf=0, n=0
+        @test hyperinvcdf(0, 10, 5, 0.0) == 0.0
+        @test hyperinvcdf(0, 10, 5, 0.5) == 0.0   # ms=0 → 0 (line 366)
+        @test hyperinvcdf(5, 10, 0, 0.5) == 0.0    # n=0 → 0 (line 366)
+        @test hyperinvcdf(10, 0, 5, 0.5) == 5.0    # mf=0 → ms (line 368)
+        @test hyperinvccdf(0, 10, 5, 0.5) == 0.0   # ms=0 → 0 (line 403)
+        @test hyperinvccdf(5, 10, 0, 0.5) == 0.0   # n=0 → 0 (line 403)
+        @test hyperinvccdf(10, 0, 5, 0.5) == 5.0   # mf=0 → ms (line 405)
+        @test hyperinvccdf(10, 20, 15, 0.0) == 10.0
+        # Skewed distribution where initial guess overshoots (exercises search)
+        @test hyperinvcdf(100, 200, 150, 0.001) isa Float64
+        @test hyperinvccdf(100, 200, 150, 0.001) isa Float64
+        @test hyperinvcdf(100, 200, 150, 0.999) isa Float64
+        @test hyperinvccdf(100, 200, 150, 0.999) isa Float64
+        # Very large population triggers NaN (line 24, 119)
+        @test isnan(hyperpdf(2^53, 1, 1, 1))
+        @test isnan(hypercdf(2^53, 1, 1, 1))
+        # Exact boundary path in CDF (lines 123-124)
+        @test hypercdf(5, 5, 10, 10) == 1.0
+    end
+
+    # Tests calling internal functions directly with non-integer args to exercise
+    # code paths that are unreachable from the public integer-parameter API.
+    @testset "hyper (internal non-integer)" begin
+        using StatsFuns: _hypergeometric_term, _hypergeometric
+
+        # Fractional amkji between -1 and 0 (lines 83-85)
+        @test _hypergeometric(1.0, 3.0, 2.0, -0.5, false) ≈ 0.09955360139478697
+        @test _hypergeometric(1.0, 3.0, 2.0, -0.5, true) ≈ 0.900446398605213
+
+        # Fractional ai < 1 (lines 100-101)
+        @test 0 < _hypergeometric(0.5, 3.5, 2.0, 1.0, false) < 1
+
+        # Fractional aji < 1 (lines 102-103)
+        @test 0 < _hypergeometric(2.0, 0.5, 2.0, 1.0, false) < 1
+
+        # Fractional aki < 1 (lines 102-103)
+        @test 0 < _hypergeometric(2.0, 3.0, 0.5, 1.0, false) < 1
+
+        # Non-integer, ai >= 100 (line 105)
+        @test 0 < _hypergeometric(100.0, 50.0, 100.5, 50.5, false) < 1
+
+        # aji < 1 with ai >= 100, swapped=false (line 103)
+        @test 0 < _hypergeometric(100.0, 0.5, 50.0, 2.0, false) < 1
+
+        # Exact boundary with fractional params (lines 123-124)
+        @test _hypergeometric(1.0, 0.0, 2.0, -0.3, false) == 1.0
+
+        # minLog1Value fallback for c5_2 (line 49)
+        @test _hypergeometric_term(5.0, 30.0, 0.2, 0.1) > 0
+
+        # minLog1Value fallback for c5_3 (line 57)
+        @test _hypergeometric_term(5.0, 0.2, 30.0, 0.1) > 0
+
+        # minLog1Value fallback for c5_4 (line 65)
+        @test _hypergeometric_term(0.2, 0.2, 0.2, 30.0) > 0
+    end
+
     rmathcomp_tests(
         "nbeta", [
             ((1.0, 1.0, 0.0), 0.01:0.01:0.99),
