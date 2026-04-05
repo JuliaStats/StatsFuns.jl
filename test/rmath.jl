@@ -1,153 +1,153 @@
-using StatsFuns
-using Rmath: Rmath
-using Test
+@testitem "RMath" setup=[Utils] begin
+    using StatsFuns
+    using Rmath: Rmath
+    using Test
 
-include("utils.jl")
+    _default_rtol = Utils._default_rtol
 
-function check_rmath(statsfun, rmathfun, params, a, isprob, rtol)
-    v = @inferred(statsfun(params..., a))
-    rv = @inferred(rmathfun(a, params...))
-    @test v isa float(Base.promote_typeof(params..., a))
-    return if isprob
-        @test v ≈ oftype(v, rv) rtol = rtol nans = true
-    else
-        @test v ≈ oftype(v, rv) atol = rtol rtol = rtol nans = true
-    end
-end
-
-function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_rtol(params, X))
-    rbasename = if basename == "nfdist"
-        "nf"
-    elseif basename == "ntdist"
-        "nt"
-    elseif basename == "srdist"
-        "tukey"
-    else
-        basename
-    end
-
-    if isdefined(Rmath, Symbol(:d, rbasename))
-        stats_pdf = getproperty(@__MODULE__, Symbol(basename, :pdf))
-        rmath_pdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
-            (a, params...) -> f(a, params..., false)
-        end
-        @testset "pdf with x=$x" for x in X
-            check_rmath(
-                stats_pdf, rmath_pdf,
-                params, x, true, rtol
-            )
-        end
-
-        stats_logpdf = getproperty(@__MODULE__, Symbol(basename, :logpdf))
-        rmath_logpdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
-            (a, params...) -> f(a, params..., true)
-        end
-        @testset "logpdf with x=$x" for x in X
-            check_rmath(
-                stats_logpdf, rmath_logpdf,
-                params, x, false, rtol
-            )
+    function check_rmath(statsfun, rmathfun, params, a, isprob, rtol)
+        v = @inferred(statsfun(params..., a))
+        rv = @inferred(rmathfun(a, params...))
+        @test v isa float(Base.promote_typeof(params..., a))
+        return if isprob
+            @test v ≈ oftype(v, rv) rtol = rtol nans = true
+        else
+            @test v ≈ oftype(v, rv) atol = rtol rtol = rtol nans = true
         end
     end
 
-    if isdefined(Rmath, Symbol(:p, rbasename))
-        stats_cdf = getproperty(@__MODULE__, Symbol(basename, :cdf))
-        rmath_cdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., true, false)
-        end
-        @testset "cdf with x=$x" for x in X
-            check_rmath(stats_cdf, rmath_cdf, params, x, true, rtol)
-        end
-
-        stats_ccdf = getproperty(@__MODULE__, Symbol(basename, :ccdf))
-        rmath_ccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., false, false)
-        end
-        @testset "ccdf with x=$x" for x in X
-            check_rmath(stats_ccdf, rmath_ccdf, params, x, true, rtol)
+    function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_rtol(params, X))
+        rbasename = if basename == "nfdist"
+            "nf"
+        elseif basename == "ntdist"
+            "nt"
+        elseif basename == "srdist"
+            "tukey"
+        else
+            basename
         end
 
-        stats_logcdf = getproperty(@__MODULE__, Symbol(basename, :logcdf))
-        rmath_logcdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., true, true)
-        end
-        @testset "logcdf with x=$x" for x in X
-            check_rmath(stats_logcdf, rmath_logcdf, params, x, false, rtol)
+        if isdefined(Rmath, Symbol(:d, rbasename))
+            stats_pdf = getproperty(@__MODULE__, Symbol(basename, :pdf))
+            rmath_pdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
+                (a, params...) -> f(a, params..., false)
+            end
+            @testset "pdf with x=$x" for x in X
+                check_rmath(
+                    stats_pdf, rmath_pdf,
+                    params, x, true, rtol
+                )
+            end
+
+            stats_logpdf = getproperty(@__MODULE__, Symbol(basename, :logpdf))
+            rmath_logpdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
+                (a, params...) -> f(a, params..., true)
+            end
+            @testset "logpdf with x=$x" for x in X
+                check_rmath(
+                    stats_logpdf, rmath_logpdf,
+                    params, x, false, rtol
+                )
+            end
         end
 
-        stats_logccdf = getproperty(@__MODULE__, Symbol(basename, :logccdf))
-        rmath_logccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., false, true)
-        end
-        @testset "logccdf with x=$x" for x in X
-            check_rmath(stats_logccdf, rmath_logccdf, params, x, false, rtol)
-        end
-
-        #=
-        R version of signrank has system variation
-        julia> psignrank(18,10,false,true) # windows
-        -0.2076393647782445
-        julia> psignrank(18,10,false,true) # linux
-        -0.20763936477824452
-        This slight difference causes test failures for the inverse functions,
-        due to a slight shift in the location of the discontinuity.
-    
-        This also holds true for wilcox.
-        =#
-        test_inv = (basename != "signrank" && basename != "wilcox") || !Sys.islinux()
-        if isdefined(Rmath, Symbol(:q, rbasename)) && test_inv
-            stats_invcdf = getproperty(@__MODULE__, Symbol(basename, :invcdf))
-            rmath_invcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+        if isdefined(Rmath, Symbol(:p, rbasename))
+            stats_cdf = getproperty(@__MODULE__, Symbol(basename, :cdf))
+            rmath_cdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
                 (a, params...) -> f(a, params..., true, false)
             end
-            p = rmath_cdf.(X, params...)
-            @testset "invcdf with q=$_p" for _p in p
-                check_rmath(stats_invcdf, rmath_invcdf, params, _p, false, rtol)
+            @testset "cdf with x=$x" for x in X
+                check_rmath(stats_cdf, rmath_cdf, params, x, true, rtol)
             end
 
-            stats_invccdf = getproperty(@__MODULE__, Symbol(basename, :invccdf))
-            rmath_invccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+            stats_ccdf = getproperty(@__MODULE__, Symbol(basename, :ccdf))
+            rmath_ccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
                 (a, params...) -> f(a, params..., false, false)
             end
-            cp = rmath_ccdf.(X, params...)
-            @testset "invccdf with q=$_p" for _p in cp
-                check_rmath(stats_invccdf, rmath_invccdf, params, _p, false, rtol)
+            @testset "ccdf with x=$x" for x in X
+                check_rmath(stats_ccdf, rmath_ccdf, params, x, true, rtol)
             end
 
-            stats_invlogcdf = getproperty(@__MODULE__, Symbol(basename, :invlogcdf))
-            rmath_invlogcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+            stats_logcdf = getproperty(@__MODULE__, Symbol(basename, :logcdf))
+            rmath_logcdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
                 (a, params...) -> f(a, params..., true, true)
             end
-            lp = rmath_logcdf.(X, params...)
-            @testset "invlogcdf with log(q)=$_p" for _p in lp
-                check_rmath(stats_invlogcdf, rmath_invlogcdf, params, _p, false, rtol)
+            @testset "logcdf with x=$x" for x in X
+                check_rmath(stats_logcdf, rmath_logcdf, params, x, false, rtol)
             end
 
-            stats_invlogccdf = getproperty(@__MODULE__, Symbol(basename, :invlogccdf))
-            rmath_invlogccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+            stats_logccdf = getproperty(@__MODULE__, Symbol(basename, :logccdf))
+            rmath_logccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
                 (a, params...) -> f(a, params..., false, true)
             end
-            lcp = rmath_logccdf.(X, params...)
-            @testset "invlogccdf with log(q)=$_p" for _p in lcp
-                check_rmath(stats_invlogccdf, rmath_invlogccdf, params, _p, false, rtol)
+            @testset "logccdf with x=$x" for x in X
+                check_rmath(stats_logccdf, rmath_logccdf, params, x, false, rtol)
+            end
+
+            #=
+            R version of signrank has system variation
+            julia> psignrank(18,10,false,true) # windows
+            -0.2076393647782445
+            julia> psignrank(18,10,false,true) # linux
+            -0.20763936477824452
+            This slight difference causes test failures for the inverse functions,
+            due to a slight shift in the location of the discontinuity.
+
+            This also holds true for wilcox.
+            =#
+            test_inv = (basename != "signrank" && basename != "wilcox") || !Sys.islinux()
+            if isdefined(Rmath, Symbol(:q, rbasename)) && test_inv
+                stats_invcdf = getproperty(@__MODULE__, Symbol(basename, :invcdf))
+                rmath_invcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+                    (a, params...) -> f(a, params..., true, false)
+                end
+                p = rmath_cdf.(X, params...)
+                @testset "invcdf with q=$_p" for _p in p
+                    check_rmath(stats_invcdf, rmath_invcdf, params, _p, false, rtol)
+                end
+
+                stats_invccdf = getproperty(@__MODULE__, Symbol(basename, :invccdf))
+                rmath_invccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+                    (a, params...) -> f(a, params..., false, false)
+                end
+                cp = rmath_ccdf.(X, params...)
+                @testset "invccdf with q=$_p" for _p in cp
+                    check_rmath(stats_invccdf, rmath_invccdf, params, _p, false, rtol)
+                end
+
+                stats_invlogcdf = getproperty(@__MODULE__, Symbol(basename, :invlogcdf))
+                rmath_invlogcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+                    (a, params...) -> f(a, params..., true, true)
+                end
+                lp = rmath_logcdf.(X, params...)
+                @testset "invlogcdf with log(q)=$_p" for _p in lp
+                    check_rmath(stats_invlogcdf, rmath_invlogcdf, params, _p, false, rtol)
+                end
+
+                stats_invlogccdf = getproperty(@__MODULE__, Symbol(basename, :invlogccdf))
+                rmath_invlogccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+                    (a, params...) -> f(a, params..., false, true)
+                end
+                lcp = rmath_logccdf.(X, params...)
+                @testset "invlogccdf with log(q)=$_p" for _p in lcp
+                    check_rmath(stats_invlogccdf, rmath_invlogccdf, params, _p, false, rtol)
+                end
+            end
+        end
+
+        return nothing
+    end
+
+    function rmathcomp_tests(basename::String, configs)
+        return @testset "$basename" begin
+            @testset "params: $params" for (params, data) in configs
+                rmathcomp(basename, params, data)
             end
         end
     end
 
-    return nothing
-end
+    ### Test cases
 
-function rmathcomp_tests(basename::String, configs)
-    return @testset "$basename" begin
-        @testset "params: $params" for (params, data) in configs
-            rmathcomp(basename, params, data)
-        end
-    end
-end
-
-### Test cases
-
-@testset "RMath" begin
     rmathcomp_tests(
         "beta", [
             ((0.1, 1.0), 0.0:0.01:1.0),

@@ -1,3 +1,5 @@
+@testmodule Utils begin
+
 # default relative tolerance for comparisons with Rmath
 function _default_rtol(params, X::AbstractArray)
     # has to take into account `params` as well since otherwise e.g. `X::Array{<:Rational}`
@@ -12,3 +14,5 @@ end
 _default_rtol(::Type{Float64}) = eps(Float64)^(7 // 8) # ~2.0e-14
 _default_rtol(::Type{Float32}) = eps(Float32)^(3 // 4) # ~6.4e-6
 _default_rtol(::Type{Float16}) = eps(Float16)^(2 // 3) # ~9.9e-3
+
+end

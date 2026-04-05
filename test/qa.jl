@@ -1,10 +1,10 @@
-using StatsFuns
-using Aqua: Aqua
-using ExplicitImports: ExplicitImports
-using JET: JET
-using Test
+@testitem "QA" begin
+    using StatsFuns
+    using Aqua: Aqua
+    using ExplicitImports: ExplicitImports
+    using JET: JET
+    using Test
 
-@testset "QA" begin
     @testset "Aqua" begin
         Aqua.test_all(StatsFuns)
     end
