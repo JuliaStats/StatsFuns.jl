@@ -8,6 +8,16 @@ function check_rmath(statsfun, rmathfun, params, a, isprob, rtol)
     v = @inferred(statsfun(params..., a))
     rv = @inferred(rmathfun(a, params...))
     @test v isa float(Base.promote_typeof(params..., a))
+    @test rv isa float(Base.promote_typeof(params..., a))
+    # vbig == bigfloat version if available
+    vbig = try
+        statsfun(params..., big(a))
+    catch
+        rv
+    end
+    # loose accuracy test to confirm shape is right
+    @test v ≈ rv nans = true
+    # tight accuracy test to confirm implimentation is correct numerically
     return if isprob
         @test v ≈ oftype(v, rv) rtol = rtol nans = true
     else
@@ -288,6 +298,7 @@ end
             ((2, 3, 4), 0.0f0:4.0f0),
             ((2, 3, 4), Float16(0):Float16(4)),
             ((2, 3, 4), (0 // 1):(4 // 1)),
+            ((40, 60, 40), 0.0:50.0),
         ]
     )
 
