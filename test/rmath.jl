@@ -1,153 +1,160 @@
-using StatsFuns
-using Rmath: Rmath
-using Test
+@testsnippet RMathHelpers begin
+    using Rmath: Rmath
 
-include("utils.jl")
-
-function check_rmath(statsfun, rmathfun, params, a, isprob, rtol)
-    v = @inferred(statsfun(params..., a))
-    rv = @inferred(rmathfun(a, params...))
-    @test v isa float(Base.promote_typeof(params..., a))
-    return if isprob
-        @test v ≈ oftype(v, rv) rtol = rtol nans = true
-    else
-        @test v ≈ oftype(v, rv) atol = rtol rtol = rtol nans = true
+    # default relative tolerance for comparisons with Rmath
+    function _default_rtol(params, X::AbstractArray)
+        return _default_rtol(float(promote_type(Base.promote_typeof(params...), eltype(X))))
     end
-end
+    _default_rtol(::Type{Float64}) = eps(Float64)^(7 // 8)
+    _default_rtol(::Type{Float32}) = eps(Float32)^(3 // 4)
+    _default_rtol(::Type{Float16}) = eps(Float16)^(2 // 3)
 
-function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_rtol(params, X))
-    rbasename = if basename == "nfdist"
-        "nf"
-    elseif basename == "ntdist"
-        "nt"
-    elseif basename == "srdist"
-        "tukey"
-    else
-        basename
-    end
-
-    if isdefined(Rmath, Symbol(:d, rbasename))
-        stats_pdf = getproperty(@__MODULE__, Symbol(basename, :pdf))
-        rmath_pdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
-            (a, params...) -> f(a, params..., false)
-        end
-        @testset "pdf with x=$x" for x in X
-            check_rmath(
-                stats_pdf, rmath_pdf,
-                params, x, true, rtol
-            )
-        end
-
-        stats_logpdf = getproperty(@__MODULE__, Symbol(basename, :logpdf))
-        rmath_logpdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
-            (a, params...) -> f(a, params..., true)
-        end
-        @testset "logpdf with x=$x" for x in X
-            check_rmath(
-                stats_logpdf, rmath_logpdf,
-                params, x, false, rtol
-            )
+    function check_rmath(statsfun, rmathfun, params, a, isprob, rtol)
+        v = @inferred(statsfun(params..., a))
+        rv = @inferred(rmathfun(a, params...))
+        @test v isa float(Base.promote_typeof(params..., a))
+        return if isprob
+            @test v ≈ oftype(v, rv) rtol = rtol nans = true
+        else
+            @test v ≈ oftype(v, rv) atol = rtol rtol = rtol nans = true
         end
     end
 
-    if isdefined(Rmath, Symbol(:p, rbasename))
-        stats_cdf = getproperty(@__MODULE__, Symbol(basename, :cdf))
-        rmath_cdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., true, false)
-        end
-        @testset "cdf with x=$x" for x in X
-            check_rmath(stats_cdf, rmath_cdf, params, x, true, rtol)
-        end
-
-        stats_ccdf = getproperty(@__MODULE__, Symbol(basename, :ccdf))
-        rmath_ccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., false, false)
-        end
-        @testset "ccdf with x=$x" for x in X
-            check_rmath(stats_ccdf, rmath_ccdf, params, x, true, rtol)
+    function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_rtol(params, X))
+        rbasename = if basename == "nfdist"
+            "nf"
+        elseif basename == "ntdist"
+            "nt"
+        elseif basename == "srdist"
+            "tukey"
+        else
+            basename
         end
 
-        stats_logcdf = getproperty(@__MODULE__, Symbol(basename, :logcdf))
-        rmath_logcdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., true, true)
-        end
-        @testset "logcdf with x=$x" for x in X
-            check_rmath(stats_logcdf, rmath_logcdf, params, x, false, rtol)
+        if isdefined(Rmath, Symbol(:d, rbasename))
+            stats_pdf = getproperty(@__MODULE__, Symbol(basename, :pdf))
+            rmath_pdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
+                (a, params...) -> f(a, params..., false)
+            end
+            @testset "pdf with x=$x" for x in X
+                check_rmath(
+                    stats_pdf, rmath_pdf,
+                    params, x, true, rtol
+                )
+            end
+
+            stats_logpdf = getproperty(@__MODULE__, Symbol(basename, :logpdf))
+            rmath_logpdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
+                (a, params...) -> f(a, params..., true)
+            end
+            @testset "logpdf with x=$x" for x in X
+                check_rmath(
+                    stats_logpdf, rmath_logpdf,
+                    params, x, false, rtol
+                )
+            end
         end
 
-        stats_logccdf = getproperty(@__MODULE__, Symbol(basename, :logccdf))
-        rmath_logccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., false, true)
-        end
-        @testset "logccdf with x=$x" for x in X
-            check_rmath(stats_logccdf, rmath_logccdf, params, x, false, rtol)
-        end
-
-        #=
-        R version of signrank has system variation
-        julia> psignrank(18,10,false,true) # windows
-        -0.2076393647782445
-        julia> psignrank(18,10,false,true) # linux
-        -0.20763936477824452
-        This slight difference causes test failures for the inverse functions,
-        due to a slight shift in the location of the discontinuity.
-    
-        This also holds true for wilcox.
-        =#
-        test_inv = (basename != "signrank" && basename != "wilcox") || !Sys.islinux()
-        if isdefined(Rmath, Symbol(:q, rbasename)) && test_inv
-            stats_invcdf = getproperty(@__MODULE__, Symbol(basename, :invcdf))
-            rmath_invcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+        if isdefined(Rmath, Symbol(:p, rbasename))
+            stats_cdf = getproperty(@__MODULE__, Symbol(basename, :cdf))
+            rmath_cdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
                 (a, params...) -> f(a, params..., true, false)
             end
-            p = rmath_cdf.(X, params...)
-            @testset "invcdf with q=$_p" for _p in p
-                check_rmath(stats_invcdf, rmath_invcdf, params, _p, false, rtol)
+            @testset "cdf with x=$x" for x in X
+                check_rmath(stats_cdf, rmath_cdf, params, x, true, rtol)
             end
 
-            stats_invccdf = getproperty(@__MODULE__, Symbol(basename, :invccdf))
-            rmath_invccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+            stats_ccdf = getproperty(@__MODULE__, Symbol(basename, :ccdf))
+            rmath_ccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
                 (a, params...) -> f(a, params..., false, false)
             end
-            cp = rmath_ccdf.(X, params...)
-            @testset "invccdf with q=$_p" for _p in cp
-                check_rmath(stats_invccdf, rmath_invccdf, params, _p, false, rtol)
+            @testset "ccdf with x=$x" for x in X
+                check_rmath(stats_ccdf, rmath_ccdf, params, x, true, rtol)
             end
 
-            stats_invlogcdf = getproperty(@__MODULE__, Symbol(basename, :invlogcdf))
-            rmath_invlogcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+            stats_logcdf = getproperty(@__MODULE__, Symbol(basename, :logcdf))
+            rmath_logcdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
                 (a, params...) -> f(a, params..., true, true)
             end
-            lp = rmath_logcdf.(X, params...)
-            @testset "invlogcdf with log(q)=$_p" for _p in lp
-                check_rmath(stats_invlogcdf, rmath_invlogcdf, params, _p, false, rtol)
+            @testset "logcdf with x=$x" for x in X
+                check_rmath(stats_logcdf, rmath_logcdf, params, x, false, rtol)
             end
 
-            stats_invlogccdf = getproperty(@__MODULE__, Symbol(basename, :invlogccdf))
-            rmath_invlogccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+            stats_logccdf = getproperty(@__MODULE__, Symbol(basename, :logccdf))
+            rmath_logccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
                 (a, params...) -> f(a, params..., false, true)
             end
-            lcp = rmath_logccdf.(X, params...)
-            @testset "invlogccdf with log(q)=$_p" for _p in lcp
-                check_rmath(stats_invlogccdf, rmath_invlogccdf, params, _p, false, rtol)
+            @testset "logccdf with x=$x" for x in X
+                check_rmath(stats_logccdf, rmath_logccdf, params, x, false, rtol)
+            end
+
+            #=
+            R version of signrank has system variation
+            julia> psignrank(18,10,false,true) # windows
+            -0.2076393647782445
+            julia> psignrank(18,10,false,true) # linux
+            -0.20763936477824452
+            This slight difference causes test failures for the inverse functions,
+            due to a slight shift in the location of the discontinuity.
+
+            This also holds true for wilcox.
+            =#
+            test_inv = (basename != "signrank" && basename != "wilcox") || !Sys.islinux()
+            if isdefined(Rmath, Symbol(:q, rbasename)) && test_inv
+                stats_invcdf = getproperty(@__MODULE__, Symbol(basename, :invcdf))
+                rmath_invcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+                    (a, params...) -> f(a, params..., true, false)
+                end
+                p = rmath_cdf.(X, params...)
+                @testset "invcdf with q=$_p" for _p in p
+                    check_rmath(stats_invcdf, rmath_invcdf, params, _p, false, rtol)
+                end
+
+                stats_invccdf = getproperty(@__MODULE__, Symbol(basename, :invccdf))
+                rmath_invccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+                    (a, params...) -> f(a, params..., false, false)
+                end
+                cp = rmath_ccdf.(X, params...)
+                @testset "invccdf with q=$_p" for _p in cp
+                    check_rmath(stats_invccdf, rmath_invccdf, params, _p, false, rtol)
+                end
+
+                stats_invlogcdf = getproperty(@__MODULE__, Symbol(basename, :invlogcdf))
+                rmath_invlogcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+                    (a, params...) -> f(a, params..., true, true)
+                end
+                lp = rmath_logcdf.(X, params...)
+                @testset "invlogcdf with log(q)=$_p" for _p in lp
+                    check_rmath(stats_invlogcdf, rmath_invlogcdf, params, _p, false, rtol)
+                end
+
+                stats_invlogccdf = getproperty(@__MODULE__, Symbol(basename, :invlogccdf))
+                rmath_invlogccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
+                    (a, params...) -> f(a, params..., false, true)
+                end
+                lcp = rmath_logccdf.(X, params...)
+                @testset "invlogccdf with log(q)=$_p" for _p in lcp
+                    check_rmath(stats_invlogccdf, rmath_invlogccdf, params, _p, false, rtol)
+                end
+            end
+        end
+
+        return nothing
+    end
+
+    function rmathcomp_tests(basename::String, configs)
+        return @testset "$basename" begin
+            @testset "params: $params" for (params, data) in configs
+                rmathcomp(basename, params, data)
             end
         end
     end
-
-    return nothing
 end
 
-function rmathcomp_tests(basename::String, configs)
-    return @testset "$basename" begin
-        @testset "params: $params" for (params, data) in configs
-            rmathcomp(basename, params, data)
-        end
-    end
-end
+@testitem "RMath beta" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
-### Test cases
-
-@testset "RMath" begin
     rmathcomp_tests(
         "beta", [
             ((0.1, 1.0), 0.0:0.01:1.0),
@@ -219,6 +226,20 @@ end
         end
     end
 
+    # Test values outside of the support
+    rmathcomp_tests(
+        "beta", [
+            ((1.0, 1.0), [-10.0, -6.3, 2.1, 23.5]),
+            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10, 21 // 10, 47 // 2]),
+            ((1, 1), [-10, -6, 2, 24]),
+        ]
+    )
+end
+
+@testitem "RMath binom" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "binom", [
             ((1, 0.5), 0.0:1.0),
@@ -236,6 +257,20 @@ end
         ]
     )
 
+    # Test values outside of the support
+    rmathcomp_tests(
+        "binom", [
+            ((5, 0.5), [-8, -2.3, 1.2, 5.4, 11.9]),
+            ((5, 1 // 2), [-8, -23 // 10, 6 // 5, 27 // 5, 119 // 10]),
+            ((5, 1 // 2), [-8, -2, 6, 12]),
+        ]
+    )
+end
+
+@testitem "RMath chisq" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "chisq", [
             ((1,), 0.0:0.1:8.0),
@@ -248,6 +283,11 @@ end
             ((1), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath fdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "fdist", [
@@ -262,6 +302,20 @@ end
             ((10, 3), (0 // 1):(5 // 1)),
         ]
     )
+
+    # Test values outside of the support
+    rmathcomp_tests(
+        "fdist", [
+            ((1.0, 1.0), [-10.0, -6.3]),
+            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
+            ((1, 1), [-10, -6]),
+        ]
+    )
+end
+
+@testitem "RMath gamma" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "gamma", [
@@ -281,6 +335,20 @@ end
         ]
     )
 
+    # Test values outside of the support
+    rmathcomp_tests(
+        "gamma", [
+            ((1.0, 1.0), [-10.0, -6.3]),
+            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
+            ((1, 1), [-10, -6]),
+        ]
+    )
+end
+
+@testitem "RMath hyper" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "hyper", [
             ((2, 3, 4), 0.0:4.0),
@@ -290,6 +358,11 @@ end
             ((2, 3, 4), (0 // 1):(4 // 1)),
         ]
     )
+end
+
+@testitem "RMath nbeta" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "nbeta", [
@@ -306,6 +379,11 @@ end
             ((1.0, 1.0, 0.0), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath nbinom" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "nbinom", [
@@ -322,6 +400,11 @@ end
             ((1, 0.5f0), [-Inf32, Inf32, NaN32, -2, 1.1]),
         ]
     )
+end
+
+@testitem "RMath nchisq" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "nchisq", [
@@ -336,6 +419,11 @@ end
             ((2, 1), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath nfdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "nfdist", [
@@ -351,6 +439,11 @@ end
             ((1.0, 1.0, 0.0), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath norm" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "norm", [
@@ -371,6 +464,11 @@ end
             #((0f0, 1f0), -Float16(6):Float16(0.01):Float16(6)),
         ]
     )
+end
+
+@testitem "RMath ntdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "ntdist", [
@@ -385,6 +483,11 @@ end
             ((10, 1), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath pois" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "pois", [
@@ -401,6 +504,20 @@ end
         ]
     )
 
+    # Test values outside of the support
+    rmathcomp_tests(
+        "pois", [
+            ((0.5,), [-10, -2.5, 1.3, 8.7]),
+            ((1 // 2,), [-10, -5 // 2, 13 // 10, 87 // 10]),
+            ((1,), [-10, -3]),
+        ]
+    )
+end
+
+@testitem "RMath tdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "tdist", [
             ((1,), -5.0:0.1:5.0),
@@ -415,6 +532,11 @@ end
             ((1,), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath signrank" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "signrank", [
@@ -433,6 +555,11 @@ end
     @test signrankinvlogccdf.(50, signranklogccdf.(50, -1:1274)) == [0; 0:1274]
     @test isnan(signrankinvlogccdf.(50, signranklogccdf.(50, 1275)))
     @test isnan(signrankinvlogccdf.(50, signranklogccdf.(50, 1276)))
+end
+
+@testitem "RMath srdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "srdist", [
@@ -447,6 +574,19 @@ end
         ]
     )
 
+    # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
+    # Reduced df or k allows convergence. This test documents this behavior.
+    x = 0.15
+    q = srdistcdf(10, 5, 0.15)
+    rx = srdistinvcdf(10, 5, q)
+    rtol = 100eps(1.0)
+    @test_broken x ≈ rx atol = rtol rtol = rtol nans = true
+end
+
+@testitem "RMath wilcox" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "wilcox", [
             ((3, 4), -2:13),
@@ -458,7 +598,6 @@ end
         ]
     )
 
-
     @test wilcoxinvcdf.(10, 10, wilcoxcdf.(10, 10, -1:101)) == [0; 0:100; 100]
     @test wilcoxinvccdf.(10, 10, wilcoxccdf.(10, 10, -1:101)) == [0; 0:100; 100]
     @test wilcoxinvlogcdf.(10, 10, wilcoxlogcdf.(10, 10, 0:101)) == [0:100; 100]
@@ -466,49 +605,4 @@ end
     @test wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, -1:99)) == [0; 0:99]
     @test isnan(wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, 100)))
     @test isnan(wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, 101)))
-
-    # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
-    # Reduced df or k allows convergence. This test documents this behavior.
-    x = 0.15
-    q = srdistcdf(10, 5, 0.15)
-    rx = srdistinvcdf(10, 5, q)
-    rtol = 100eps(1.0)
-    @test_broken x ≈ rx atol = rtol rtol = rtol nans = true
-
-    # Test values outside of the support
-    rmathcomp_tests(
-        "beta", [
-            ((1.0, 1.0), [-10.0, -6.3, 2.1, 23.5]),
-            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10, 21 // 10, 47 // 2]),
-            ((1, 1), [-10, -6, 2, 24]),
-        ]
-    )
-    rmathcomp_tests(
-        "binom", [
-            ((5, 0.5), [-8, -2.3, 1.2, 5.4, 11.9]),
-            ((5, 1 // 2), [-8, -23 // 10, 6 // 5, 27 // 5, 119 // 10]),
-            ((5, 1 // 2), [-8, -2, 6, 12]),
-        ]
-    )
-    rmathcomp_tests(
-        "fdist", [
-            ((1.0, 1.0), [-10.0, -6.3]),
-            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
-            ((1, 1), [-10, -6]),
-        ]
-    )
-    rmathcomp_tests(
-        "gamma", [
-            ((1.0, 1.0), [-10.0, -6.3]),
-            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
-            ((1, 1), [-10, -6]),
-        ]
-    )
-    rmathcomp_tests(
-        "pois", [
-            ((0.5,), [-10, -2.5, 1.3, 8.7]),
-            ((1 // 2,), [-10, -5 // 2, 13 // 10, 87 // 10]),
-            ((1,), [-10, -3]),
-        ]
-    )
 end
