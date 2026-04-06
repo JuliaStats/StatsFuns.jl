@@ -1,9 +1,13 @@
-@testitem "RMath" setup=[Utils] begin
-    using StatsFuns
+@testsnippet RMathHelpers begin
     using Rmath: Rmath
-    using Test
 
-    _default_rtol = Utils._default_rtol
+    # default relative tolerance for comparisons with Rmath
+    function _default_rtol(params, X::AbstractArray)
+        return _default_rtol(float(promote_type(Base.promote_typeof(params...), eltype(X))))
+    end
+    _default_rtol(::Type{Float64}) = eps(Float64)^(7 // 8)
+    _default_rtol(::Type{Float32}) = eps(Float32)^(3 // 4)
+    _default_rtol(::Type{Float16}) = eps(Float16)^(2 // 3)
 
     function check_rmath(statsfun, rmathfun, params, a, isprob, rtol)
         v = @inferred(statsfun(params..., a))
@@ -154,8 +158,11 @@
             end
         end
     end
+end
 
-    ### Test cases
+@testitem "RMath beta" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "beta", [
@@ -228,6 +235,20 @@
         end
     end
 
+    # Test values outside of the support
+    rmathcomp_tests(
+        "beta", [
+            ((1.0, 1.0), [-10.0, -6.3, 2.1, 23.5]),
+            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10, 21 // 10, 47 // 2]),
+            ((1, 1), [-10, -6, 2, 24]),
+        ]
+    )
+end
+
+@testitem "RMath binom" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "binom", [
             ((1, 0.5), 0.0:1.0),
@@ -245,6 +266,20 @@
         ]
     )
 
+    # Test values outside of the support
+    rmathcomp_tests(
+        "binom", [
+            ((5, 0.5), [-8, -2.3, 1.2, 5.4, 11.9]),
+            ((5, 1 // 2), [-8, -23 // 10, 6 // 5, 27 // 5, 119 // 10]),
+            ((5, 1 // 2), [-8, -2, 6, 12]),
+        ]
+    )
+end
+
+@testitem "RMath chisq" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "chisq", [
             ((1,), 0.0:0.1:8.0),
@@ -257,6 +292,11 @@
             ((1), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath fdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "fdist", [
@@ -271,6 +311,20 @@
             ((10, 3), (0 // 1):(5 // 1)),
         ]
     )
+
+    # Test values outside of the support
+    rmathcomp_tests(
+        "fdist", [
+            ((1.0, 1.0), [-10.0, -6.3]),
+            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
+            ((1, 1), [-10, -6]),
+        ]
+    )
+end
+
+@testitem "RMath gamma" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "gamma", [
@@ -290,6 +344,20 @@
         ]
     )
 
+    # Test values outside of the support
+    rmathcomp_tests(
+        "gamma", [
+            ((1.0, 1.0), [-10.0, -6.3]),
+            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
+            ((1, 1), [-10, -6]),
+        ]
+    )
+end
+
+@testitem "RMath hyper" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "hyper", [
             ((2, 3, 4), 0.0:4.0),
@@ -299,6 +367,11 @@
             ((2, 3, 4), (0 // 1):(4 // 1)),
         ]
     )
+end
+
+@testitem "RMath nbeta" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "nbeta", [
@@ -315,6 +388,11 @@
             ((1.0, 1.0, 0.0), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath nbinom" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "nbinom", [
@@ -331,6 +409,11 @@
             ((1, 0.5f0), [-Inf32, Inf32, NaN32, -2, 1.1]),
         ]
     )
+end
+
+@testitem "RMath nchisq" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "nchisq", [
@@ -345,6 +428,11 @@
             ((2, 1), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath nfdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "nfdist", [
@@ -360,6 +448,11 @@
             ((1.0, 1.0, 0.0), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath norm" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "norm", [
@@ -380,6 +473,11 @@
             #((0f0, 1f0), -Float16(6):Float16(0.01):Float16(6)),
         ]
     )
+end
+
+@testitem "RMath ntdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "ntdist", [
@@ -394,6 +492,11 @@
             ((10, 1), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath pois" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "pois", [
@@ -410,6 +513,20 @@
         ]
     )
 
+    # Test values outside of the support
+    rmathcomp_tests(
+        "pois", [
+            ((0.5,), [-10, -2.5, 1.3, 8.7]),
+            ((1 // 2,), [-10, -5 // 2, 13 // 10, 87 // 10]),
+            ((1,), [-10, -3]),
+        ]
+    )
+end
+
+@testitem "RMath tdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "tdist", [
             ((1,), -5.0:0.1:5.0),
@@ -424,6 +541,11 @@
             ((1,), [-Inf, Inf]),
         ]
     )
+end
+
+@testitem "RMath signrank" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "signrank", [
@@ -462,6 +584,11 @@
             @test sum(signrankpdf(n, W) for W in 0:((n * (n + 1)) ÷ 2)) ≈ 1
         end
     end
+end
+
+@testitem "RMath srdist" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
 
     rmathcomp_tests(
         "srdist", [
@@ -476,6 +603,32 @@
         ]
     )
 
+    # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
+    # Reduced df or k allows convergence. This test documents this behavior.
+    x = 0.15
+    q = srdistcdf(10, 5, 0.15)
+    rx = srdistinvcdf(10, 5, q)
+    rtol = 100eps(1.0)
+    @test_broken x ≈ rx atol = rtol rtol = rtol nans = true
+
+    # `nranges=1` must be passed to Rmath.ptukey/qtukey; without it the Bool
+    # flags shift into the `nranges` slot and CDF↔CCDF invert.
+    @testset "srdist boundary behaviour" begin
+        @test iszero(srdistcdf(2.0, 2.0, 0.0))
+        @test isone(srdistccdf(2.0, 2.0, 0.0))
+        @test srdistlogcdf(2.0, 2.0, 0.0) == -Inf
+        @test iszero(srdistlogccdf(2.0, 2.0, 0.0))
+        @test isone(srdistcdf(2.0, 2.0, Inf))
+        @test iszero(srdistccdf(2.0, 2.0, Inf))
+        @test iszero(srdistlogcdf(2.0, 2.0, Inf))
+        @test srdistlogccdf(2.0, 2.0, Inf) == -Inf
+    end
+end
+
+@testitem "RMath wilcox" setup=[RMathHelpers] begin
+    using StatsFuns
+    using Test
+
     rmathcomp_tests(
         "wilcox", [
             ((3, 4), -2:13),
@@ -486,7 +639,6 @@
             ((1, 7), -2:8),
         ]
     )
-
 
     @test wilcoxinvcdf.(10, 10, wilcoxcdf.(10, 10, -1:101)) == [0; 0:100; 100]
     @test wilcoxinvccdf.(10, 10, wilcoxccdf.(10, 10, -1:101)) == [0; 0:100; 100]
@@ -543,62 +695,4 @@
             @test wilcoxcdf(524, 556, 20000) < wilcoxcdf(524, 556, 20001)
         end
     end
-
-    # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
-    # Reduced df or k allows convergence. This test documents this behavior.
-    x = 0.15
-    q = srdistcdf(10, 5, 0.15)
-    rx = srdistinvcdf(10, 5, q)
-    rtol = 100eps(1.0)
-    @test_broken x ≈ rx atol = rtol rtol = rtol nans = true
-
-    # `nranges=1` must be passed to Rmath.ptukey/qtukey; without it the Bool
-    # flags shift into the `nranges` slot and CDF↔CCDF invert.
-    @testset "srdist boundary behaviour" begin
-        @test iszero(srdistcdf(2.0, 2.0, 0.0))
-        @test isone(srdistccdf(2.0, 2.0, 0.0))
-        @test srdistlogcdf(2.0, 2.0, 0.0) == -Inf
-        @test iszero(srdistlogccdf(2.0, 2.0, 0.0))
-        @test isone(srdistcdf(2.0, 2.0, Inf))
-        @test iszero(srdistccdf(2.0, 2.0, Inf))
-        @test iszero(srdistlogcdf(2.0, 2.0, Inf))
-        @test srdistlogccdf(2.0, 2.0, Inf) == -Inf
-    end
-
-    # Test values outside of the support
-    rmathcomp_tests(
-        "beta", [
-            ((1.0, 1.0), [-10.0, -6.3, 2.1, 23.5]),
-            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10, 21 // 10, 47 // 2]),
-            ((1, 1), [-10, -6, 2, 24]),
-        ]
-    )
-    rmathcomp_tests(
-        "binom", [
-            ((5, 0.5), [-8, -2.3, 1.2, 5.4, 11.9]),
-            ((5, 1 // 2), [-8, -23 // 10, 6 // 5, 27 // 5, 119 // 10]),
-            ((5, 1 // 2), [-8, -2, 6, 12]),
-        ]
-    )
-    rmathcomp_tests(
-        "fdist", [
-            ((1.0, 1.0), [-10.0, -6.3]),
-            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
-            ((1, 1), [-10, -6]),
-        ]
-    )
-    rmathcomp_tests(
-        "gamma", [
-            ((1.0, 1.0), [-10.0, -6.3]),
-            ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
-            ((1, 1), [-10, -6]),
-        ]
-    )
-    rmathcomp_tests(
-        "pois", [
-            ((0.5,), [-10, -2.5, 1.3, 8.7]),
-            ((1 // 2,), [-10, -5 // 2, 13 // 10, 87 // 10]),
-            ((1,), [-10, -3]),
-        ]
-    )
 end
