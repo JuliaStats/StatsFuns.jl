@@ -9,6 +9,20 @@ function tdistlogpdf(ν::T, x::T) where {T <: Real}
     return loggamma(νp12) - (logπ + log(ν)) / 2 - loggamma(ν / 2) - νp12 * log1p(x^2 / ν)
 end
 
+tdistlogupdf(ν::Real, x::Real) = tdistlogupdf(promote(ν, x)...)
+function tdistlogupdf(ν::T, x::T) where {T <: Real}
+    isinf(ν) && return normlogupdf(x)
+    νp12 = (ν + 1) / 2
+    return - νp12 * log1p(x^2 / ν)
+end
+
+tdistlogulikelihood(ν::Real, x::Real) = tdistlogulikelihood(promote(ν, x)...)
+function tdistlogulikelihood(ν::T, x::T) where {T <: Real}
+    isinf(ν) && return normlogulikelihood(x)
+    νp12 = (ν + 1) / 2
+    return loggamma(νp12) - log(ν) / 2 - loggamma(ν / 2) - νp12 * log1p(x^2 / ν)
+end
+
 function tdistcdf(ν::T, x::T) where {T <: Real}
     if isinf(ν)
         return normcdf(x)

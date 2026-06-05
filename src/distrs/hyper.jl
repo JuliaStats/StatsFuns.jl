@@ -1,5 +1,8 @@
 # functions related to hyper-geometric distribution
 
+hyperlogupdf(ms::Real, mf::Real, n::Real, x::Real) = hyperlogpdf(ms, mf, n, x)
+hyperlogulikelihood(ms::Real, mf::Real, n::Real, x::Real) = hyperlogpdf(ms, mf, n, x)
+
 # Rmath implementations
 function hyperpdf(ms::Real, mf::Real, n::Real, x::Real)
     T = float(Base.promote_typeof(ms, mf, n, x))
