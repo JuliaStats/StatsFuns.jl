@@ -55,14 +55,14 @@ function owens_t_T1(h::T, a::T, m::Integer) where {T <: Real}
     j, jj = one(m), T(1)
     while true
         val += dj * aj / jj
-        m <= j && return val
+        m <= j && break
         j += one(m)
         jj += 2
         aj *= as
         dj = gj - dj
         gj *= hs / j
     end
-    return zero(T) # unreachable, but required by Runic.jl
+    return val
 end
 
 # compute the value of Owen's T function with method T2 from the reference paper
@@ -77,12 +77,12 @@ function owens_t_T2(h::T, a::T, m::Integer, ah::T) where {T <: Real}
     z = owens_t_znorm1(ah) / h
     while true
         val += z
-        maxii <= ii && return val * exp(-hs / 2) * invsqrt2π
+        maxii <= ii && break
         z = y * (vi - ii * z)
         vi *= as
         ii += oftype(ii, 2)
     end
-    return zero(T) # unreachable, but required by Runic.jl
+    return val * exp(-hs / 2) * invsqrt2π
 end
 
 # compute the value of Owen's T function with method T3 from the reference paper
@@ -107,13 +107,13 @@ let c2 = (
         i = 1
         while true
             val += zi * c2[i]
-            i == lastindex(c2) && return val * exp(-hs / 2) * invsqrt2π
+            i == lastindex(c2) && break
             i += 1
             zi = y * (ii * zi - vi)
             vi *= as
             ii += 2
         end
-        return 0.0 # unreachable, but required by Runic.jl
+        return val * exp(-hs / 2) * invsqrt2π
     end
 end
 
@@ -128,12 +128,12 @@ function owens_t_T4(h::T, a::T, m::Integer) where {T <: Real}
     val = zero(T)
     while true
         val += ai * yi
-        maxii <= ii && return val
+        maxii <= ii && break
         ii += 2
         yi = (1 - hs * yi) / ii
         ai *= as
     end
-    return zero(T) # unreachable, but required by Runic.jl
+    return val
 end
 
 # compute the value of Owen's T function with method T5 from the reference paper
