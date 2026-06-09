@@ -4,7 +4,7 @@ using Base: Math.@horner
 using Reexport: @reexport
 using Rmath: Rmath
 using SpecialFunctions: beta_inc, beta_inc_inv, digamma,
-    erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logbeta, loggamma
+    erf, erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logbeta, loggamma
 
 # reexports
 @reexport using IrrationalConstants:
@@ -124,9 +124,6 @@ export
     hyperinvccdf, # inverse-ccdf of hypergeometric distribution
     hyperinvlogcdf, # inverse-logcdf of hypergeometric distribution
     hyperinvlogccdf, # inverse-logccdf of hypergeometric distribution
-
-    # distrs/owens_t
-    owens_t,
 
     # distrs/nbeta
     nbetapdf, # pdf of noncentral beta distribution
@@ -263,11 +260,15 @@ export
     logmvbeta, # logarithm of multivariate beta function
     lstirling_asym,
 
+    # owens_t
+    owens_t,
+
     # tvpack
     bvncdf    # bivariate standard normal cdf
 
 ## source files
 include("misc.jl")
+include("owens_t.jl")
 include("tvpack.jl")
 
 include("distrs/beta.jl")
@@ -276,7 +277,6 @@ include("distrs/chisq.jl")
 include("distrs/fdist.jl")
 include("distrs/gamma.jl")
 include("distrs/hyper.jl")
-include("distrs/owens_t.jl")
 include("distrs/nbeta.jl")
 include("distrs/nbinom.jl")
 include("distrs/nchisq.jl")

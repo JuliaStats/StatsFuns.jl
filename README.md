@@ -61,7 +61,9 @@ softmax!,       # inplace softmax
 
 # misc
 logmvgamma,     # logarithm of multivariate gamma function
-lstirling_asym
+lstirling_asym,
+
+owens_t         # Owen's T function
 ```
 
 ## Distribution-related functions
@@ -140,9 +142,6 @@ hyperinvcdf,        # inverse-cdf of hypergeometric distribution
 hyperinvccdf,       # inverse-ccdf of hypergeometric distribution
 hyperinvlogcdf,     # inverse-logcdf of hypergeometric distribution
 hyperinvlogccdf,    # inverse-logccdf of hypergeometric distribution
-
-# distrs/owens_t
-owens_t,            # Owen's T function
 
 # distrs/nbeta
 nbetapdf,           # pdf of noncentral beta distribution
