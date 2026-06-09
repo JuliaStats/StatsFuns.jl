@@ -198,7 +198,7 @@ function owens_t_dispatch(h::Float64, a::Float64, ah::Float64)
     method == 3 && return owens_t_T3(h, a, ah)
     method == 4 && return owens_t_T4(h, a, m)
     method == 5 && return owens_t_T5(h, a)
-    return method == 6 && return owens_t_T6(h, a)
+    return owens_t_T6(h, a)
 end
 
 # compute Owen's T function, T(h,a), for arbitrary values of h and a

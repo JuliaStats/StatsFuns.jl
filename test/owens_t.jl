@@ -420,4 +420,7 @@ owens_t_test_data(T) = [
         ]
         @test owens_t(h, a) ≈ exact rtol = 1.0e-15
     end
+
+    # type stability
+    @inferred owens_t(0.1, 0.2)
 end
