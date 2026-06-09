@@ -241,4 +241,4 @@ T(h,a) = \\frac{1}{2\\pi} \\int_0^a \\frac{e^{-h^2(1+x^2)/2}{1 + x^2} dx
 (This is the probability of ``X > h`` and ``0 < Y < aX``, where ``X`` and ``Y`` are
 i.i.d. standard normal random variables.)
 """
-owens_t(h::Real, a::Real) = _owens_t(promote(float(h), float(a))...)
+owens_t(h::Real, a::Real) = _owens_t(map(float, promote(h, a))...)
