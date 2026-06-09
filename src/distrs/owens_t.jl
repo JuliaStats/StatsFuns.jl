@@ -8,9 +8,6 @@
 # Algorithm based on Mike Patefield and David Tandy, "Fast and accurate calculation
 # of Owen's T-function," Journal of Statistical Software, 5, pp. 1-25 (2000).
 
-using SpecialFunctions: erf, erfc
-using IrrationalConstants: inv2π, invsqrt2π
-
 # P(-∞<Z<=x)-0.5 with Z being normally distributed.
 owens_t_znorm1(x::Real) = erf(x * invsqrt2) / 2
 
