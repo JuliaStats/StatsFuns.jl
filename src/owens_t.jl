@@ -226,8 +226,8 @@ function _owens_t(h::Float64, a::Float64)
     return a < 0 ? -val : val # exploit that T(h,-a) == -T(h,a)
 end
 
-_owens_t(h::Float32, a::Float32) = Float32(Float64(h), Float64(a))
-_owens_t(h::Float16, a::Float16) = Float16(Float64(h), Float64(a))
+_owens_t(h::Float32, a::Float32) = Float32(owens_t(Float64(h), Float64(a)))
+_owens_t(h::Float16, a::Float16) = Float16(owens_t(Float64(h), Float64(a)))
 
 """
     owens_t(h::Real, a::Real)

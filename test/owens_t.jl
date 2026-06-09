@@ -425,4 +425,7 @@ owens_t_test_data(T) = [
 
     # type stability
     @inferred owens_t(0.1, 0.2)
+
+    @test owens_t(0.25f0, 0.5f0) == Float32(owens_t(0.25, 0.5))
+    @test owens_t(Float16(0.25), Float16(0.5)) == Float16(owens_t(0.25, 0.5))
 end
