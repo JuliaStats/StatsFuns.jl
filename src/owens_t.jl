@@ -62,7 +62,7 @@ function owens_t_T1(h::T, a::T, m::Integer) where {T <: Real}
         dj = gj - dj
         gj *= hs / j
     end
-    return
+    return zero(T) # unreachable, but required by Runic.jl
 end
 
 # compute the value of Owen's T function with method T2 from the reference paper
@@ -82,7 +82,7 @@ function owens_t_T2(h::T, a::T, m::Integer, ah::T) where {T <: Real}
         vi *= as
         ii += oftype(ii, 2)
     end
-    return
+    return zero(T) # unreachable, but required by Runic.jl
 end
 
 # compute the value of Owen's T function with method T3 from the reference paper
@@ -113,7 +113,7 @@ let c2 = (
             vi *= as
             ii += 2
         end
-        return
+        return 0.0 # unreachable, but required by Runic.jl
     end
 end
 
@@ -133,7 +133,7 @@ function owens_t_T4(h::T, a::T, m::Integer) where {T <: Real}
         yi = (1 - hs * yi) / ii
         ai *= as
     end
-    return
+    return zero(T) # unreachable, but required by Runic.jl
 end
 
 # compute the value of Owen's T function with method T5 from the reference paper
