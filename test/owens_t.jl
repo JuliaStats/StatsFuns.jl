@@ -428,4 +428,6 @@ owens_t_test_data(T) = [
 
     @test owens_t(0.25f0, 0.5f0) == Float32(owens_t(0.25, 0.5))
     @test owens_t(Float16(0.25), Float16(0.5)) == Float16(owens_t(0.25, 0.5))
+    @test owens_t(1, 2)::Float64 ≈ 0.0784681869930840963449419956315630528597353240494991328142744082 rtol = 1.0e-15
+    @test owens_t(1, 2.0f0)::Float32 ≈ 0.07846819f0 rtol = 1.0e-7
 end
