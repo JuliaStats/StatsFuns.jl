@@ -50,4 +50,9 @@ using Random
     _, pb = rrule(poislogpdf, 0.0, 1)
     _, x̄1, _ = pb(1)
     @test x̄1 == Inf
+
+    h = randn()
+    a = randn()
+    test_frule(owens_t, h, a)
+    test_rrule(owens_t, h, a)
 end

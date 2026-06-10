@@ -4,7 +4,7 @@ using Base: Math.@horner
 using Reexport: @reexport
 using Rmath: Rmath
 using SpecialFunctions: beta_inc, beta_inc_inv, digamma,
-    erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logbeta, loggamma
+    erf, erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logbeta, loggamma
 
 # reexports
 @reexport using IrrationalConstants:
@@ -260,11 +260,15 @@ export
     logmvbeta, # logarithm of multivariate beta function
     lstirling_asym,
 
+    # owens_t
+    owens_t,
+
     # tvpack
     bvncdf    # bivariate standard normal cdf
 
 ## source files
 include("misc.jl")
+include("owens_t.jl")
 include("tvpack.jl")
 
 include("distrs/beta.jl")

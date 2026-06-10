@@ -61,7 +61,9 @@ softmax!,       # inplace softmax
 
 # misc
 logmvgamma,     # logarithm of multivariate gamma function
-lstirling_asym
+lstirling_asym,
+
+owens_t         # Owen's T function
 ```
 
 ## Distribution-related functions

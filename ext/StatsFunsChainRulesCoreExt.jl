@@ -1,7 +1,8 @@
 module StatsFunsChainRulesCoreExt
 
 using StatsFuns
-using StatsFuns: digamma
+using SpecialFunctions: digamma, erf
+
 import ChainRulesCore
 
 ChainRulesCore.@scalar_rule(
@@ -79,6 +80,14 @@ ChainRulesCore.@scalar_rule(
     (
         (digamma(νp1 / 2) - digamma(ν / 2) + a * b - log1p(a) - invν) / 2,
         - x * b,
+    ),
+)
+
+ChainRulesCore.@scalar_rule(
+    owens_t(h::Real, a::Real),
+    (
+        invsqrt2π * exp(-h^2 / 2) * erf((h * a) * invsqrt2) / -2,
+        inv2π * exp(-h^2 * (1 + a^2) / 2) / (1 + a^2),
     ),
 )
 
