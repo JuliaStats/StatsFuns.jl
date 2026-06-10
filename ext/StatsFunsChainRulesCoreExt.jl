@@ -85,7 +85,6 @@ ChainRulesCore.@scalar_rule(
 
 ChainRulesCore.@scalar_rule(
     owens_t(h::Real, a::Real),
-    @setup(),
     (
         invsqrt2π * exp(-h^2 / 2) * erf((h * a) * invsqrt2) / -2,
         inv2π * exp(-h^2 * (1 + a^2) / 2) / (1 + a^2),
