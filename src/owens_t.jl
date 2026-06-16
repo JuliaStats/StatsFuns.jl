@@ -227,7 +227,7 @@ _owens_t(h::Float16, a::Float16) = Float16(owens_t(Float64(h), Float64(a)))
 Return [Owen's T function](https://en.wikipedia.org/wiki/Owen%27s_T_function)
 
 ```math
-T(h, a) = \\frac{1}{2\\pi} \\int_0^a \\frac{e^{-h^2(1+x^2)/2}}{1 + x^2} \, dx
+T(h, a) = \\frac{1}{2\\pi} \\int_0^a \\frac{e^{-h^2(1+x^2)/2}}{1 + x^2} \\, dx
 ```
 
 This is the probability of ``X > h`` and ``0 < Y < aX``, where ``X`` and ``Y`` are
