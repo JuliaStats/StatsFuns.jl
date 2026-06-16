@@ -48,7 +48,7 @@ function owens_t_T1(h::Float64, a::Float64, m::Int)
     dj = expm1(hs)
     gj = hs * exp(hs)
     val = atan(a) * inv2π
-    j, jj = one(m), T(1)
+    j, jj = one(m), oftype(h, 1)
     while true
         val += dj * aj / jj
         m <= j && break
@@ -68,7 +68,7 @@ function owens_t_T2(h::Float64, a::Float64, m::Int, ah::Float64)
     as = -a * a
     y = inv(hs)
     ii = one(m)
-    val = zero(T)
+    val = zero(h)
     vi = a * exp(-ah * ah / 2) * invsqrt2π
     z = owens_t_znorm1(ah) / h
     while true
@@ -118,8 +118,8 @@ function owens_t_T4(h::Float64, a::Float64, m::Int)
     as = -a * a
     ii = 1
     ai = a * exp(-hs * (1 - as) / 2) * inv2π
-    yi = one(T)
-    val = zero(T)
+    yi = one(h)
+    val = zero(h)
     while true
         val += ai * yi
         maxii <= ii && break
