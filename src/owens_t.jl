@@ -29,19 +29,19 @@ const owens_t_select = (
     2, 3, 4, 4, 6, 6, 8, 8, 17, 17, 17, 17, 17, 12, 12,
     2, 3, 4, 4, 6, 6, 18, 18, 18, 18, 17, 17, 17, 12, 12,
 ) # 1-based indices (in 8x15 "matrix")
-function owens_t_compute_code(h::Real, a::Real)
+function owens_t_compute_code(h::Float64, a::Float64)
     ihint = something(findfirst(>=(h), owens_t_hrange), length(owens_t_hrange) + 1)
     iaint = something(findfirst(>=(a), owens_t_arange), length(owens_t_arange) + 1)
     return owens_t_select[(iaint - 1) * 15 + ihint]
 end
 
 const owens_t_ord = (2, 3, 4, 5, 7, 10, 12, 18, 10, 20, 30, 0, 4, 7, 8, 20, 0, 0) # 53-bit precision table
-function owens_t_get_order(icode::Integer, ::Type{Float64})
+function owens_t_get_order(icode::Int, ::Type{Float64})
     return owens_t_ord[icode]
 end
 
 # compute the value of Owen's T function with method T1 from the reference paper
-function owens_t_T1(h::T, a::T, m::Integer) where {T <: Real}
+function owens_t_T1(h::Float64, a::Float64, m::Int)
     hs = -h * h / 2
     as = a * a
     aj = a * inv2π
@@ -62,7 +62,7 @@ function owens_t_T1(h::T, a::T, m::Integer) where {T <: Real}
 end
 
 # compute the value of Owen's T function with method T2 from the reference paper
-function owens_t_T2(h::T, a::T, m::Integer, ah::T) where {T <: Real}
+function owens_t_T2(h::Float64, a::Float64, m::Int, ah::Float64)
     maxii = m + m + one(m)
     hs = h * h
     as = -a * a
@@ -112,7 +112,7 @@ function owens_t_T3(h::Float64, a::Float64, ah::Float64)
 end
 
 # compute the value of Owen's T function with method T4 from the reference paper
-function owens_t_T4(h::T, a::T, m::Integer) where {T <: Real}
+function owens_t_T4(h::Float64, a::Float64, m::Int)
     maxii = m + m + one(m)
     hs = h * h
     as = -a * a
@@ -159,7 +159,7 @@ function owens_t_T5(h::Float64, a::Float64)
 end
 
 # compute the value of Owen's T function with method T6 from the reference paper
-function owens_t_T6(h::T, a::T) where {T <: Float64}
+function owens_t_T6(h::Float64, a::Float64)
     normh = owens_t_znorm2(h)
     y = 1 - a
     r = atan(y, 1 + a)
@@ -224,13 +224,13 @@ _owens_t(h::Float16, a::Float16) = Float16(owens_t(Float64(h), Float64(a)))
 """
     owens_t(h::Real, a::Real)
 
-Returns Owen's T function
+Return Owen's T function
 
 ```math
-T(h,a) = \\frac{1}{2\\pi} \\int_0^a \\frac{e^{-h^2(1+x^2)/2}{1 + x^2} dx
+T(h, a) = \\frac{1}{2\\pi} \\int_0^a \\frac{e^{-h^2(1+x^2)/2}}{1 + x^2} \, dx
 ```
 
-(This is the probability of ``X > h`` and ``0 < Y < aX``, where ``X`` and ``Y`` are
-i.i.d. standard normal random variables.)
+This is the probability of ``X > h`` and ``0 < Y < aX``, where ``X`` and ``Y`` are
+i.i.d. standard normal random variables.
 """
 owens_t(h::Real, a::Real) = _owens_t(map(float, promote(h, a))...)
