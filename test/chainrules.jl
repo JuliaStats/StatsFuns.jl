@@ -4,42 +4,55 @@ using ChainRulesTestUtils
 using Random
 
 @testset "chainrules" begin
-    x = exp(randn())
-    y = exp(randn())
-    z = logistic(randn())
+    # `test_frule`/`test_rrule` finite-difference the log-pdfs, which throw `DomainError`
+    # outside their domain. ChainRulesTestUtils evaluates the reference at `input ± reach`
+    # with `reach = max_range * |tangent|`. With its defaults (`max_range = 1e-2` and, for
+    # `Float64`, `|tangent| ≤ 9` since tangents are drawn from `-9:0.01:9`) the reach is at
+    # most `0.09`. Drawing every differentiated argument ≥ 0.1 from its boundary therefore
+    # keeps the stencil inside the domain by construction (`0.09 < 0.1`), for any draw or
+    # seed, so we can rely on the CRTU defaults without a custom `fdm` or tangents. This
+    # margin assumes those CRTU defaults; if `max_range` or the tangent range grows, the
+    # `0.1` anchor below must grow with it. A fixed seed makes any failure reproducible.
+    Random.seed!(1234)
+    pos() = 0.1 + randexp()    # positive args (shape/df/rate/λ/eval point)
+    unit01() = 0.1 + 0.8rand() # args in (0, 1): beta `x`, binom `p`
+
+    x = pos()
+    y = pos()
+    z = unit01()
     test_frule(betalogpdf, x, y, z)
     test_rrule(betalogpdf, x, y, z)
 
-    x = exp(randn())
-    y = exp(randn())
-    z = exp(randn())
+    x = pos()
+    y = pos()
+    z = pos()
     test_frule(gammalogpdf, x, y, z)
     test_rrule(gammalogpdf, x, y, z)
 
-    x = exp(randn())
-    y = exp(randn())
+    x = pos()
+    y = pos()
     test_frule(chisqlogpdf, x, y)
     test_rrule(chisqlogpdf, x, y)
 
-    x = exp(randn())
-    y = exp(randn())
-    z = exp(randn())
+    x = pos()
+    y = pos()
+    z = pos()
     test_frule(fdistlogpdf, x, y, z)
     test_rrule(fdistlogpdf, x, y, z)
 
-    x = exp(randn())
-    y = randn()
+    x = pos()
+    y = randn()  # location: unbounded
     test_frule(tdistlogpdf, x, y)
     test_rrule(tdistlogpdf, x, y)
 
-    x = rand(1:100)
-    y = logistic(randn())
-    z = rand(1:x)
+    x = rand(1:100)  # `n`: integer, NoTangent
+    y = unit01()
+    z = rand(1:x)    # `k`: integer, NoTangent
     test_frule(binomlogpdf, x, y, z)
     test_rrule(binomlogpdf, x, y, z)
 
-    x = exp(randn())
-    y = rand(1:100)
+    x = pos()
+    y = rand(1:100)  # `k`: integer, NoTangent
     test_frule(poislogpdf, x, y)
     test_rrule(poislogpdf, x, y)
 
