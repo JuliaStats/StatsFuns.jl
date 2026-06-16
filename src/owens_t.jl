@@ -206,6 +206,8 @@ function _owens_t(h::Float64, a::Float64)
 
     val = if abs_a <= 1
         owens_t_dispatch(h, abs_a, abs_ah)
+    elseif !isfinite(abs_a)
+        isnan(abs_a) ? oftype(h, NaN) : erfc(h * invsqrt2) / 4
     elseif h <= oftype(h, 0.67)
         normh = owens_t_znorm1(h)
         normah = owens_t_znorm1(abs_ah)
@@ -215,7 +217,7 @@ function _owens_t(h::Float64, a::Float64)
         normah = owens_t_znorm2(abs_ah)
         (normh + normah) / 2 - normh * normah - owens_t_dispatch(abs_ah, inv(abs_a), h)
     end
-    return a < 0 ? -val : val # exploit that T(h,-a) == -T(h,a)
+    return copysign(val, a) # exploit that T(h,-a) == -T(h,a)
 end
 
 _owens_t(h::Float32, a::Float32) = Float32(owens_t(Float64(h), Float64(a)))
