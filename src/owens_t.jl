@@ -11,9 +11,6 @@
 # P(-∞<Z<=x)-0.5 with Z being normally distributed.
 owens_t_znorm1(x::Real) = erf(x * invsqrt2) / 2
 
-# P(x<=Z<∞) with Z being normally distributed.
-owens_t_znorm2(x::Real) = erfc(x * invsqrt2) / 2
-
 # Auxiliary function, it computes an array key that is used to determine
 # the specific computation method for Owen's T and the order thereof
 # used in owens_t_dispatch.  Differs from C++ in using 1-based indices
@@ -160,7 +157,7 @@ end
 
 # compute the value of Owen's T function with method T6 from the reference paper
 function owens_t_T6(h::Float64, a::Float64)
-    normh = owens_t_znorm2(h)
+    normh = normccdf(h)
     y = 1 - a
     r = atan(y, 1 + a)
     val = normh * (1 - normh) / 2
@@ -176,7 +173,7 @@ function owens_t_dispatch(h::Float64, a::Float64, ah::Float64)
     # page 1077 of Owen's original paper:
     iszero(h) && return atan(a) * inv2π
     iszero(a) && return zero(h)
-    a == 1 && return owens_t_znorm2(-h) * owens_t_znorm2(h) / 2
+    a == 1 && return normccdf(-h) * normccdf(h) / 2
     @assert a <= 1 # when a>1 we call this routine with 1/a:
 
     icode = owens_t_compute_code(h, a)
@@ -213,8 +210,8 @@ function _owens_t(h::Float64, a::Float64)
         normah = owens_t_znorm1(abs_ah)
         1 // 4 - normh * normah - owens_t_dispatch(abs_ah, inv(abs_a), h)
     else
-        normh = owens_t_znorm2(h)
-        normah = owens_t_znorm2(abs_ah)
+        normh = normccdf(h)
+        normah = normccdf(abs_ah)
         (normh + normah) / 2 - normh * normah - owens_t_dispatch(abs_ah, inv(abs_a), h)
     end
     return copysign(val, a) # exploit that T(h,-a) == -T(h,a)
