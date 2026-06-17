@@ -69,7 +69,7 @@ function owens_t_T2(h::Float64, a::Float64, m::Int, ah::Float64)
     y = inv(hs)
     ii = one(m)
     val = zero(h)
-    vi = a * exp(-ah * ah / 2) * invsqrt2π
+    vi = a * normpdf(ah)
     z = owens_t_znorm1(ah) / h
     while true
         val += z
@@ -78,7 +78,7 @@ function owens_t_T2(h::Float64, a::Float64, m::Int, ah::Float64)
         vi *= as
         ii += oftype(ii, 2)
     end
-    return val * exp(-hs / 2) * invsqrt2π
+    return val * normpdf(h)
 end
 
 # compute the value of Owen's T function with method T3 from the reference paper
@@ -96,7 +96,7 @@ function owens_t_T3(h::Float64, a::Float64, ah::Float64)
     hs = h * h
     y = inv(hs)
     ii = one(h)
-    vi = a * exp(-ah * ah / 2) * invsqrt2π
+    vi = a * normpdf(ah)
     zi = owens_t_znorm1(ah) / h
     val = zero(h)
     i = 1
@@ -108,7 +108,7 @@ function owens_t_T3(h::Float64, a::Float64, ah::Float64)
         vi *= as
         ii += 2
     end
-    return val * exp(-hs / 2) * invsqrt2π
+    return val * normpdf(h)
 end
 
 # compute the value of Owen's T function with method T4 from the reference paper
@@ -207,7 +207,7 @@ function _owens_t(h::Float64, a::Float64)
     val = if abs_a <= 1
         owens_t_dispatch(h, abs_a, abs_ah)
     elseif !isfinite(abs_a)
-        isnan(abs_a) ? oftype(h, NaN) : erfc(h * invsqrt2) / 4
+        isnan(abs_a) ? oftype(h, NaN) : normcdf(-h) / 2
     elseif h <= oftype(h, 0.67)
         normh = owens_t_znorm1(h)
         normah = owens_t_znorm1(abs_ah)
