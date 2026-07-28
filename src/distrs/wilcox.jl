@@ -34,16 +34,6 @@ H. B. Mann, D. R. Whitney. "On a Test of Whether one of Two Random Variables is 
 A. Löffler: "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test." Wissenschaftliche Zeitschrift der Martin-Luther-Universität Halle-Wittenberg; Mathematisch-Naturwissenschaftliche Reihe, XXXII'83 M, Heft 5, 87–89; available as https://upload.wikimedia.org/wikipedia/commons/f/f5/LoefflerWilcoxonMannWhitneyTest.pdf
 =#
 
-# `1 / binomial(n, k)`, without ever forming a coefficient that overflows `Int`.
-# `binomial(n, k)` is exact and converts to `Float64` exactly while it stays below `2^53`,
-# so it is used whenever that is guaranteed (`exp(36.7) < 2^53`). Above that we fall back to
-# `logabsbinomial`, which evaluates the coefficient as a beta function,
-# `1 / binomial(n, k) = (n + 1) * beta(k + 1, n - k + 1)`, and hence never overflows.
-function inv_binomial(n::Int, k::Int)
-    logbinom = first(logabsbinomial(n, k))
-    return logbinom < 36.7 ? inv(Float64(binomial(n, k))) : exp(-logbinom)
-end
-
 #=
 The recurrence below is linear and homogeneous in `pₘ,ₙ`, so seeding it with
 `1 / binomial(nx + ny, nx)` instead of `1` yields the probabilities directly.
@@ -76,9 +66,13 @@ function wilcox_probabilities(nx::Int, ny::Int, U::Int)
         end
     end
 
-    # Recursively compute pₘ,ₙ(a) / binomial(nx + ny, nx) for 0 <= a <= U
+    # Recursively compute pₘ,ₙ(a) / binomial(nx + ny, nx) for 0 <= a <= U.
+    # The seed is evaluated with `logabsbinomial` since `binomial(nx + ny, nx)` itself
+    # overflows `Int` from `nx + ny = 68` onwards. `logabsbinomial` evaluates the coefficient
+    # as a beta function, `1 / binomial(n, k) = (n + 1) * beta(k + 1, n - k + 1)`,
+    # and hence cannot overflow.
     probabilities = Vector{Float64}(undef, U + 1)
-    probabilities[1] = inv_binomial(nx + ny, nx)
+    probabilities[1] = exp(-first(logabsbinomial(nx + ny, nx)))
     for a in 1:U
         p = 0.0
         for i in 1:a
