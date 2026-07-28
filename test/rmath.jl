@@ -1,5 +1,6 @@
 using StatsFuns
 using StatsFuns: RFunctions
+using Rmath: Rmath
 using Test
 
 include("utils.jl")
@@ -455,6 +456,26 @@ end
     @test isnan(signrankinvlogccdf.(50, signranklogccdf.(50, 1275)))
     @test isnan(signrankinvlogccdf.(50, signranklogccdf.(50, 1276)))
 
+    # The subset counts grow like 2^n, so accumulating them in `Int` silently wrapped
+    # around and returned invalid probabilities from n = 72 onwards (#219)
+    @testset "signrank: large n" begin
+        @testset "n = $n" for n in (71, 72, 73, 74, 80, 100, 120, 200)
+            # The distribution is symmetric about n * (n + 1) / 4
+            W = (n * (n + 1)) ÷ 4
+            @test signrankpdf(n, W) ≈ Rmath.dsignrank(W, n, false)
+            @test signrankcdf(n, W) ≈ Rmath.psignrank(W, n, true, false)
+            @test signrankccdf(n, W) ≈ Rmath.psignrank(W, n, false, false)
+            # Deep in the left tail, where the probabilities are tiny but still normal
+            W2 = W ÷ 3
+            @test signrankpdf(n, W2) ≈ Rmath.dsignrank(W2, n, false)
+            @test signrankcdf(n, W2) ≈ Rmath.psignrank(W2, n, true, false)
+        end
+
+        @testset "pdf sums to one, n = $n" for n in (70, 80, 100)
+            @test sum(signrankpdf(n, W) for W in 0:((n * (n + 1)) ÷ 2)) ≈ 1
+        end
+    end
+
     rmathcomp_tests(
         "srdist", [
             ((1, 2), (0.0:0.2:5.0)),
@@ -487,6 +508,26 @@ end
     @test wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, -1:99)) == [0; 0:99]
     @test isnan(wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, 100)))
     @test isnan(wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, 101)))
+
+    # The partition counts and their normaliser `binomial(nx + ny, nx)` exceed `typemax(Int)`
+    # from nx + ny = 68 onwards, which used to throw an `OverflowError` (#219)
+    @testset "wilcox: large nx and ny" begin
+        @testset "nx = $nx, ny = $ny" for (nx, ny) in ((33, 33), (34, 34), (40, 40), (50, 50), (5, 200), (150, 40))
+            # The distribution is symmetric about nx * ny / 2
+            U = (nx * ny) ÷ 2
+            @test wilcoxpdf(nx, ny, U) ≈ Rmath.dwilcox(U, nx, ny, false)
+            @test wilcoxcdf(nx, ny, U) ≈ Rmath.pwilcox(U, nx, ny, true, false)
+            @test wilcoxccdf(nx, ny, U) ≈ Rmath.pwilcox(U, nx, ny, false, false)
+            # Deep in the left tail, where the probabilities are tiny but still normal
+            U2 = U ÷ 3
+            @test wilcoxpdf(nx, ny, U2) ≈ Rmath.dwilcox(U2, nx, ny, false)
+            @test wilcoxcdf(nx, ny, U2) ≈ Rmath.pwilcox(U2, nx, ny, true, false)
+        end
+
+        @testset "pdf sums to one, nx = $nx, ny = $ny" for (nx, ny) in ((34, 34), (50, 50), (5, 200))
+            @test sum(wilcoxpdf(nx, ny, U) for U in 0:(nx * ny)) ≈ 1
+        end
+    end
 
     # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
     # Reduced df or k allows convergence. This test documents this behavior.

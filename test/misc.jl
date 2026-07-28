@@ -72,6 +72,22 @@ end
     end
 end
 
+@testset "inv_binomial" begin
+    @testset "n = $n, k = $k" for (n, k) in ((1, 0), (4, 2), (22, 10), (52, 26), (56, 28), (58, 29), (68, 34), (200, 100), (1000, 3), (2000, 1000))
+        @test StatsFuns.inv_binomial(n, k) ≈ Float64(1 / binomial(big(n), big(k)))
+    end
+
+    # The fast branch computes `binomial(n, k)` in `Int` and converts it to `Float64`,
+    # which is only exact while the coefficient stays below 2^53
+    @testset "the exact branch is only taken when it is exact" begin
+        @test all(
+            binomial(big(n), big(k)) <= 2^53
+                for n in 1:200 for k in 0:n
+                if first(SpecialFunctions.logabsbinomial(n, k)) < 36.7
+        )
+    end
+end
+
 @testset "lstirling_asym" begin
     # can test for equality here because the lhs is the way the value is created
     @test Float32(lstirling_asym(1.0)) == @inferred lstirling_asym(1.0f0)
