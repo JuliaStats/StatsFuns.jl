@@ -97,3 +97,61 @@ function lstirling_asym(x::Float32)
         8.417508417508f-4
     ) / x #  1/1188 x^-9
 end
+
+"""
+    logfbit(x)
+
+Stirling error term for log-factorial:
+
+    logfbit(x) = log(x!) - log(√2π) + (x+1) - (x+0.5)*log(x+1)
+
+Equivalent to `lstirling_asym(x + 1)`.
+"""
+logfbit(x) = lstirling_asym(x + one(x))
+
+"""
+    lfbaccdif1(a, b)
+
+Accurate computation of `logfbit(b) - logfbit(a + b)`.
+Uses a polynomial expansion for `b ≥ 8` that avoids cancellation.
+Based on VBA code by Ian Smith.
+"""
+function lfbaccdif1(a::Float64, b::Float64)
+    if a < 0
+        return -lfbaccdif1(-a, b + a)
+    end
+    if b >= 8
+        y1 = b + 1.0
+        y2 = inv(y1 * y1)
+        x1 = a + b + 1.0
+        x2 = inv(x1 * x1)
+
+        # Initialize with innermost tuned coefficient (lfbc9)
+        x3 = x2 * 1.6769380337122674863
+        y3 = y2 * 1.6769380337122674863
+        acc = x2 * (a * (x1 + y1) * y3)
+
+        # Unroll from lfbc8 down to lfbc2
+        for c in (0.35068485511628418514, 1 / 13, 691 / 30030, 1 / 99, 1 / 140, 1 / 105, 1 / 30)
+            x3 = x2 * (c - x3)
+            y3 = y2 * (c - y3)
+            acc = x2 * (a * (x1 + y1) * y3 - acc)
+        end
+
+        return (a * (1.0 - y3) - y1 * acc) / (12.0 * x1 * y1)
+    else
+        return logfbit(b) - logfbit(a + b)
+    end
+end
+lfbaccdif1(a::Real, b::Real) = lfbaccdif1(Float64(a), Float64(b))
+
+"""
+    ab_minus_cd(a, b, c, d)
+
+Accurate computation of `a * b - c * d` using FMA.
+"""
+function ab_minus_cd(a::Float64, b::Float64, c::Float64, d::Float64)
+    w = c * d
+    return fma(a, b, -w) - fma(c, d, -w)
+end
+ab_minus_cd(a::Real, b::Real, c::Real, d::Real) = ab_minus_cd(Float64(a), Float64(b), Float64(c), Float64(d))
