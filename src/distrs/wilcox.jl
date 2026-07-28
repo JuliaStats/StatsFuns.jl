@@ -66,13 +66,22 @@ function wilcox_probabilities(nx::Int, ny::Int, U::Int)
         end
     end
 
-    # Recursively compute pₘ,ₙ(a) / binomial(nx + ny, nx) for 0 <= a <= U.
-    # The seed is evaluated with `logabsbinomial` since `binomial(nx + ny, nx)` itself
-    # overflows `Int` from `nx + ny = 68` onwards. `logabsbinomial` evaluates the coefficient
-    # as a beta function, `1 / binomial(n, k) = (n + 1) * beta(k + 1, n - k + 1)`,
-    # and hence cannot overflow.
+    # Recursively compute pₘ,ₙ(a) / binomial(nx + ny, nx) for 0 <= a <= U, in units of
+    # 2^shift. The coefficient is evaluated with `logabsbinomial`, since `binomial(nx + ny,
+    # nx)` itself overflows `Int` from `nx + ny = 68` onwards, whereas `logabsbinomial`
+    # evaluates it as a beta function, `1 / binomial(n, k) = (n + 1) * beta(k + 1, n - k + 1)`.
+    #
+    # The seed is the probability of the least likely outcome, so it leaves the normal range
+    # long before the probabilities of interest do: it is subnormal from `nx + ny = 1030` and
+    # zero from `nx + ny = 1090`, and since the recurrence is homogeneous a seed of zero
+    # would silently zero every probability. Working in units of 2^shift avoids that. The
+    # recurrence is homogeneous so the choice of unit cannot affect the result, `ldexp`
+    # removes it from the scalar result exactly, and `shift` is zero whenever the seed is
+    # normal, which leaves every input that already worked bit for bit unchanged.
+    logbinom = first(logabsbinomial(nx + ny, nx))
+    shift = max(0, ceil(Int, (logbinom - 700) / logtwo))
     probabilities = Vector{Float64}(undef, U + 1)
-    probabilities[1] = exp(-first(logabsbinomial(nx + ny, nx)))
+    probabilities[1] = exp(shift * logtwo - logbinom)
     for a in 1:U
         p = 0.0
         for i in 1:a
@@ -81,7 +90,7 @@ function wilcox_probabilities(nx::Int, ny::Int, U::Int)
         probabilities[a + 1] = p / a
     end
 
-    return probabilities
+    return probabilities, shift
 end
 
 function wilcoxpdf(nx::Int, ny::Int, U::Float64)
@@ -93,8 +102,8 @@ function wilcoxpdf(nx::Int, ny::Int, U::Int)
         return 0.0
     end
     U = min(U, max_U - U)
-    probabilities = wilcox_probabilities(nx, ny, U)
-    return probabilities[end]
+    probabilities, shift = wilcox_probabilities(nx, ny, U)
+    return ldexp(probabilities[end], -shift)
 end
 
 function wilcoxlogpdf(nx::Int, ny::Int, U::Union{Float64, Int})
@@ -112,8 +121,8 @@ function wilcoxcdf(nx::Int, ny::Int, U::Int)
         return 1.0
     else
         U2 = max_U - U - 1
-        probabilities = wilcox_probabilities(nx, ny, min(U, U2))
-        p = sum(probabilities)
+        probabilities, shift = wilcox_probabilities(nx, ny, min(U, U2))
+        p = ldexp(sum(probabilities), -shift)
         return U2 < U ? 1.0 - p : p
     end
 end

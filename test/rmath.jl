@@ -523,6 +523,25 @@ end
         @testset "pdf sums to one, nx = $nx, ny = $ny" for (nx, ny) in ((30, 30), (33, 33), (34, 34), (50, 50), (5, 200))
             @test sum(wilcoxpdf(nx, ny, U) for U in 0:(nx * ny)) ≈ 1
         end
+
+        # `1 / binomial(nx + ny, nx)` is the probability of the least likely outcome and
+        # leaves the normal range from nx + ny = 1030. It seeds the recurrence, which is
+        # homogeneous, so once it reaches zero every probability follows it and the results
+        # are silently zero rather than merely imprecise. The recurrence therefore works in
+        # units of a power of two, which these check has not disturbed anything.
+        @testset "seed below the normal range, nx = ny = $m" for m in (515, 520, 530, 535)
+            # the pdf at U = 0 is exactly the seed, so this pins the scaling down directly
+            @test wilcoxpdf(m, m, 0) ≈ Float64(1 / BigFloat(binomial(big(2m), big(m)), precision = 512))
+        end
+
+        @testset "seed at zero without scaling" begin
+            # `1 / binomial(1080, 524)` is zero in `Float64`, so every one of these was
+            # exactly 0.0 before the recurrence was rescaled
+            @test 0 < wilcoxpdf(524, 556, 20000) < 1
+            @test 0 < wilcoxcdf(524, 556, 20000) < 1
+            @test wilcoxpdf(524, 556, 20000) <= wilcoxcdf(524, 556, 20000)
+            @test wilcoxcdf(524, 556, 20000) < wilcoxcdf(524, 556, 20001)
+        end
     end
 
     # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
