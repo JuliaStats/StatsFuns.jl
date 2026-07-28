@@ -160,7 +160,7 @@
     end
 end
 
-@testitem "RMath beta" setup=[RMathHelpers] begin
+@testitem "RMath beta" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -245,7 +245,7 @@ end
     )
 end
 
-@testitem "RMath binom" setup=[RMathHelpers] begin
+@testitem "RMath binom" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -276,7 +276,7 @@ end
     )
 end
 
-@testitem "RMath chisq" setup=[RMathHelpers] begin
+@testitem "RMath chisq" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -294,7 +294,7 @@ end
     )
 end
 
-@testitem "RMath fdist" setup=[RMathHelpers] begin
+@testitem "RMath fdist" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -322,7 +322,7 @@ end
     )
 end
 
-@testitem "RMath gamma" setup=[RMathHelpers] begin
+@testitem "RMath gamma" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -354,7 +354,7 @@ end
     )
 end
 
-@testitem "RMath hyper" setup=[RMathHelpers] begin
+@testitem "RMath hyper" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -369,7 +369,7 @@ end
     )
 end
 
-@testitem "RMath nbeta" setup=[RMathHelpers] begin
+@testitem "RMath nbeta" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -390,7 +390,7 @@ end
     )
 end
 
-@testitem "RMath nbinom" setup=[RMathHelpers] begin
+@testitem "RMath nbinom" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -411,7 +411,7 @@ end
     )
 end
 
-@testitem "RMath nchisq" setup=[RMathHelpers] begin
+@testitem "RMath nchisq" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -430,7 +430,7 @@ end
     )
 end
 
-@testitem "RMath nfdist" setup=[RMathHelpers] begin
+@testitem "RMath nfdist" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -450,7 +450,7 @@ end
     )
 end
 
-@testitem "RMath norm" setup=[RMathHelpers] begin
+@testitem "RMath norm" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -475,7 +475,7 @@ end
     )
 end
 
-@testitem "RMath ntdist" setup=[RMathHelpers] begin
+@testitem "RMath ntdist" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -494,7 +494,7 @@ end
     )
 end
 
-@testitem "RMath pois" setup=[RMathHelpers] begin
+@testitem "RMath pois" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -523,7 +523,7 @@ end
     )
 end
 
-@testitem "RMath tdist" setup=[RMathHelpers] begin
+@testitem "RMath tdist" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -543,7 +543,7 @@ end
     )
 end
 
-@testitem "RMath signrank" setup=[RMathHelpers] begin
+@testitem "RMath signrank" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -586,7 +586,7 @@ end
     end
 end
 
-@testitem "RMath srdist" setup=[RMathHelpers] begin
+@testitem "RMath srdist" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
@@ -625,7 +625,7 @@ end
     end
 end
 
-@testitem "RMath wilcox" setup=[RMathHelpers] begin
+@testitem "RMath wilcox" setup = [RMathHelpers] begin
     using StatsFuns
     using Test
 
