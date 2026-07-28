@@ -1,4 +1,4 @@
-tests = ["rmath", "generic", "misc", "chainrules", "inverse", "tvpack", "unnormalized", "qa"]
+tests = ["owens_t", "rmath", "generic", "misc", "chainrules", "inverse", "tvpack", "unnormalized", "qa"]
 
 for t in tests
     fp = "$t.jl"

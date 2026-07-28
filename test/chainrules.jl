@@ -68,4 +68,9 @@ using Random
         _, x̄1, _ = pb(1)
         @test x̄1 == Inf
     end
+
+    h = randn()
+    a = randn()
+    test_frule(owens_t, h, a)
+    test_rrule(owens_t, h, a)
 end

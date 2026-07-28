@@ -26,6 +26,12 @@ function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_r
         basename
     end
 
+    # Rmath.ptukey / Rmath.qtukey take an extra `nranges` positional argument
+    # (defaulting to 1.0) between the distribution parameters and the
+    # `lower_tail`/`log_p` flags. Inject it explicitly for tukey so the test
+    # lambdas line up with the Rmath C signature.
+    extra_rmath_args = rbasename == "tukey" ? (1,) : ()
+
     if isdefined(Rmath, Symbol(:d, rbasename))
         stats_pdf = getproperty(@__MODULE__, Symbol(basename, :pdf))
         rmath_pdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
@@ -52,32 +58,32 @@ function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_r
 
     if isdefined(Rmath, Symbol(:p, rbasename))
         stats_cdf = getproperty(@__MODULE__, Symbol(basename, :cdf))
-        rmath_cdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., true, false)
+        rmath_cdf = let f = getproperty(Rmath, Symbol(:p, rbasename)), extra = extra_rmath_args
+            (a, params...) -> f(a, params..., extra..., true, false)
         end
         @testset "cdf with x=$x" for x in X
             check_rmath(stats_cdf, rmath_cdf, params, x, true, rtol)
         end
 
         stats_ccdf = getproperty(@__MODULE__, Symbol(basename, :ccdf))
-        rmath_ccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., false, false)
+        rmath_ccdf = let f = getproperty(Rmath, Symbol(:p, rbasename)), extra = extra_rmath_args
+            (a, params...) -> f(a, params..., extra..., false, false)
         end
         @testset "ccdf with x=$x" for x in X
             check_rmath(stats_ccdf, rmath_ccdf, params, x, true, rtol)
         end
 
         stats_logcdf = getproperty(@__MODULE__, Symbol(basename, :logcdf))
-        rmath_logcdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., true, true)
+        rmath_logcdf = let f = getproperty(Rmath, Symbol(:p, rbasename)), extra = extra_rmath_args
+            (a, params...) -> f(a, params..., extra..., true, true)
         end
         @testset "logcdf with x=$x" for x in X
             check_rmath(stats_logcdf, rmath_logcdf, params, x, false, rtol)
         end
 
         stats_logccdf = getproperty(@__MODULE__, Symbol(basename, :logccdf))
-        rmath_logccdf = let f = getproperty(Rmath, Symbol(:p, rbasename))
-            (a, params...) -> f(a, params..., false, true)
+        rmath_logccdf = let f = getproperty(Rmath, Symbol(:p, rbasename)), extra = extra_rmath_args
+            (a, params...) -> f(a, params..., extra..., false, true)
         end
         @testset "logccdf with x=$x" for x in X
             check_rmath(stats_logccdf, rmath_logccdf, params, x, false, rtol)
@@ -97,8 +103,8 @@ function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_r
         test_inv = (basename != "signrank" && basename != "wilcox") || !Sys.islinux()
         if isdefined(Rmath, Symbol(:q, rbasename)) && test_inv
             stats_invcdf = getproperty(@__MODULE__, Symbol(basename, :invcdf))
-            rmath_invcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
-                (a, params...) -> f(a, params..., true, false)
+            rmath_invcdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
+                (a, params...) -> f(a, params..., extra..., true, false)
             end
             p = rmath_cdf.(X, params...)
             @testset "invcdf with q=$_p" for _p in p
@@ -106,8 +112,8 @@ function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_r
             end
 
             stats_invccdf = getproperty(@__MODULE__, Symbol(basename, :invccdf))
-            rmath_invccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
-                (a, params...) -> f(a, params..., false, false)
+            rmath_invccdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
+                (a, params...) -> f(a, params..., extra..., false, false)
             end
             cp = rmath_ccdf.(X, params...)
             @testset "invccdf with q=$_p" for _p in cp
@@ -115,8 +121,8 @@ function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_r
             end
 
             stats_invlogcdf = getproperty(@__MODULE__, Symbol(basename, :invlogcdf))
-            rmath_invlogcdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
-                (a, params...) -> f(a, params..., true, true)
+            rmath_invlogcdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
+                (a, params...) -> f(a, params..., extra..., true, true)
             end
             lp = rmath_logcdf.(X, params...)
             @testset "invlogcdf with log(q)=$_p" for _p in lp
@@ -124,8 +130,8 @@ function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_r
             end
 
             stats_invlogccdf = getproperty(@__MODULE__, Symbol(basename, :invlogccdf))
-            rmath_invlogccdf = let f = getproperty(Rmath, Symbol(:q, rbasename))
-                (a, params...) -> f(a, params..., false, true)
+            rmath_invlogccdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
+                (a, params...) -> f(a, params..., extra..., false, true)
             end
             lcp = rmath_logccdf.(X, params...)
             @testset "invlogccdf with log(q)=$_p" for _p in lcp
@@ -474,6 +480,19 @@ end
     rx = srdistinvcdf(10, 5, q)
     rtol = 100eps(1.0)
     @test_broken x ≈ rx atol = rtol rtol = rtol nans = true
+
+    # `nranges=1` must be passed to Rmath.ptukey/qtukey; without it the Bool
+    # flags shift into the `nranges` slot and CDF↔CCDF invert.
+    @testset "srdist boundary behaviour" begin
+        @test iszero(srdistcdf(2.0, 2.0, 0.0))
+        @test isone(srdistccdf(2.0, 2.0, 0.0))
+        @test srdistlogcdf(2.0, 2.0, 0.0) == -Inf
+        @test iszero(srdistlogccdf(2.0, 2.0, 0.0))
+        @test isone(srdistcdf(2.0, 2.0, Inf))
+        @test iszero(srdistccdf(2.0, 2.0, Inf))
+        @test iszero(srdistlogcdf(2.0, 2.0, Inf))
+        @test srdistlogccdf(2.0, 2.0, Inf) == -Inf
+    end
 
     # Test values outside of the support
     rmathcomp_tests(
