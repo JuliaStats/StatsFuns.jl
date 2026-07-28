@@ -34,14 +34,30 @@ H. B. Mann, D. R. Whitney. "On a Test of Whether one of Two Random Variables is 
 A. Löffler: "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test." Wissenschaftliche Zeitschrift der Martin-Luther-Universität Halle-Wittenberg; Mathematisch-Naturwissenschaftliche Reihe, XXXII'83 M, Heft 5, 87–89; available as https://upload.wikimedia.org/wikipedia/commons/f/f5/LoefflerWilcoxonMannWhitneyTest.pdf
 =#
 
-@inline function wilcox_partitions(nx::Int, ny::Int, U::Int)
+# `1 / binomial(n, k)`, without ever forming a coefficient that overflows `Int`.
+# `binomial(n, k)` is exact and converts to `Float64` exactly while it stays below `2^53`,
+# so it is used whenever that is guaranteed (`exp(36.7) < 2^53`). Above that we fall back to
+# `logabsbinomial`, which evaluates the coefficient as a beta function,
+# `1 / binomial(n, k) = (n + 1) * beta(k + 1, n - k + 1)`, and hence never overflows.
+function inv_binomial(n::Int, k::Int)
+    logbinom = first(logabsbinomial(n, k))
+    return logbinom < 36.7 ? inv(Float64(binomial(n, k))) : exp(-logbinom)
+end
+
+#=
+The recurrence below is linear and homogeneous in `pₘ,ₙ`, so seeding it with
+`1 / binomial(nx + ny, nx)` instead of `1` yields the probabilities directly.
+This matters because the counts themselves grow like `binomial(nx + ny, nx)` and overflow
+`Int` from `nx + ny = 68` onwards, whereas the probabilities are bounded by 1.
+=#
+function wilcox_probabilities(nx::Int, ny::Int, U::Int)
     # This internal function expects 0 <= U <= nx * ny / 2
     if !(0 <= U <= (nx * ny) / 2)
-        throw(ArgumentError("`wilcox_partitions(nx, ny, U)` is only implemented for 0 <= U <= (nx * ny) / 2"))
+        throw(ArgumentError("`wilcox_probabilities(nx, ny, U)` is only implemented for 0 <= U <= (nx * ny) / 2"))
     end
 
-    # Due to symmetry, `wilcox_partitions(nx, ny, U) = wilcox_partitions(ny, nx, U)`
-    # Hence for simplicity we only consider the case `wilcox_partitions(min(nx, ny), max(nx, ny), U)` here
+    # Due to symmetry, `wilcox_probabilities(nx, ny, U) = wilcox_probabilities(ny, nx, U)`
+    # Hence for simplicity we only consider the case `wilcox_probabilities(min(nx, ny), max(nx, ny), U)` here
     m, n = minmax(nx, ny)
 
     # Compute σ(k) = ∑_{d|k} ϵ(d) d where
@@ -60,18 +76,18 @@ A. Löffler: "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Tes
         end
     end
 
-    # Recursively compute the number of partitions pₘ,ₙ(a) for 0 <= a <= U
-    partitions = Vector{Int}(undef, U + 1)
-    partitions[1] = 1
+    # Recursively compute pₘ,ₙ(a) / binomial(nx + ny, nx) for 0 <= a <= U
+    probabilities = Vector{Float64}(undef, U + 1)
+    probabilities[1] = inv_binomial(nx + ny, nx)
     for a in 1:U
-        p = 0
+        p = 0.0
         for i in 1:a
-            p += partitions[i] * sigmas[a + 1 - i]
+            p += probabilities[i] * sigmas[a + 1 - i]
         end
-        partitions[a + 1] = p ÷ a
+        probabilities[a + 1] = p / a
     end
 
-    return partitions
+    return probabilities
 end
 
 function wilcoxpdf(nx::Int, ny::Int, U::Float64)
@@ -83,8 +99,8 @@ function wilcoxpdf(nx::Int, ny::Int, U::Int)
         return 0.0
     end
     U = min(U, max_U - U)
-    partitions = wilcox_partitions(nx, ny, U)
-    return partitions[end] / binomial(nx + ny, nx)
+    probabilities = wilcox_probabilities(nx, ny, U)
+    return probabilities[end]
 end
 
 function wilcoxlogpdf(nx::Int, ny::Int, U::Union{Float64, Int})
@@ -102,8 +118,8 @@ function wilcoxcdf(nx::Int, ny::Int, U::Int)
         return 1.0
     else
         U2 = max_U - U - 1
-        partitions = wilcox_partitions(nx, ny, min(U, U2))
-        p = sum(float, partitions) / binomial(nx + ny, nx)
+        probabilities = wilcox_probabilities(nx, ny, min(U, U2))
+        p = sum(probabilities)
         return U2 < U ? 1.0 - p : p
     end
 end
