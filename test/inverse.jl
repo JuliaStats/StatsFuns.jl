@@ -1,4 +1,4 @@
-@testitem "Inverse" begin
+@testitem "Inverse" tags = [:autodiff] begin
     using StatsFuns
     using Test
     using InverseFunctions

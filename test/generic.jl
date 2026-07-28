@@ -1,4 +1,4 @@
-@testitem "Generic" setup = [Utils] begin
+@testitem "Generic" setup = [Utils] tags = [:autodiff] begin
     using StatsFuns
     using ForwardDiff: Dual
     using Test

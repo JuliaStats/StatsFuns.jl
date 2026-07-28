@@ -1,4 +1,4 @@
-@testitem "ChainRules" begin
+@testitem "ChainRules" tags = [:autodiff] begin
     using StatsFuns, Test
     using ChainRulesCore
     using ChainRulesTestUtils

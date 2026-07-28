@@ -1,4 +1,4 @@
-@testitem "QA" begin
+@testitem "QA" tags = [:qa] begin
     using StatsFuns
     using Aqua: Aqua
     using ExplicitImports: ExplicitImports
