@@ -15,7 +15,7 @@ using Random
     # `0.1` anchor below must grow with it. A fixed seed makes any failure reproducible.
     Random.seed!(1234)
     pos() = 0.1 + randexp()    # positive args (shape/df/rate/λ/eval point)
-    unit01() = 0.1 + 0.8rand() # args in (0, 1): beta `x`, binom `p`
+    unit01() = 0.1 + 0.8rand() # args in [0.1, 0.9): beta `x`, binom `p`
 
     x = pos()
     y = pos()
