@@ -67,9 +67,8 @@ function wilcox_probabilities(nx::Int, ny::Int, U::Int)
     end
 
     # Recursively compute pₘ,ₙ(a) / binomial(nx + ny, nx) for 0 <= a <= U, in units of
-    # 2^shift. The coefficient is evaluated with `logabsbinomial`, since `binomial(nx + ny,
-    # nx)` itself overflows `Int` from `nx + ny = 68` onwards, whereas `logabsbinomial`
-    # evaluates it as a beta function, `1 / binomial(n, k) = (n + 1) * beta(k + 1, n - k + 1)`.
+    # 2^shift. The logarithm of the coefficient is used since `binomial(nx + ny, nx)` itself
+    # overflows `Int` from `nx + ny = 68` onwards.
     #
     # The seed is the probability of the least likely outcome, so it leaves the normal range
     # long before the probabilities of interest do: it is subnormal from `nx + ny = 1030` and
@@ -77,7 +76,7 @@ function wilcox_probabilities(nx::Int, ny::Int, U::Int)
     # would silently zero every probability. Working in units of 2^shift avoids that. The
     # recurrence is homogeneous so the choice of unit cannot affect the result, `ldexp`
     # removes it from the scalar result exactly, and `shift` is zero whenever the seed is
-    # normal, which leaves every input that already worked bit for bit unchanged.
+    # normal.
     logbinom = first(logabsbinomial(nx + ny, nx))
     shift = max(0, ceil(Int, (logbinom - 700) / logtwo))
     probabilities = Vector{Float64}(undef, U + 1)

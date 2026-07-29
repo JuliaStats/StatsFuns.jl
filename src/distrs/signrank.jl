@@ -17,8 +17,9 @@ i.e. the number of such subsets divided by the 2^j subsets in total.
 The counts themselves grow like 2^n and overflow `Int` well before the
 distribution stops being of interest, so the recursion is normalised as it goes
 rather than divided by 2^n at the end. Halving is exact in binary floating
-point, so this is bit-for-bit what dividing the counts by 2^n would give, but
-the entries stay in [0,1] and can never overflow.
+point, so while every count stays below 2^53 this gives exactly the counts
+divided by 2^n; beyond that the additions round, but the entries stay in [0,1]
+and can never overflow.
  =#
 
 function signrankDP(n, W)
