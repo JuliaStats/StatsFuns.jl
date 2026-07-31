@@ -4,7 +4,7 @@ using Base: Math.@horner
 using Reexport: @reexport
 using Rmath: Rmath
 using SpecialFunctions: beta_inc, beta_inc_inv, digamma,
-    erf, erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logbeta, loggamma
+    erf, erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logabsbinomial, logbeta, loggamma
 
 # reexports
 @reexport using IrrationalConstants:

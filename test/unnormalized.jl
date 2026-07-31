@@ -67,18 +67,6 @@ using Test
             @test (@inferred tdistlogupdf(ν, x))::T ≈ tdistlogpdf(ν, x) - loggamma((T(ν) + 1) / 2) + (log(T(π)) + log(T(ν))) / 2 + loggamma(T(ν) / 2)
             @test (@inferred tdistlogulikelihood(ν, x))::T ≈ tdistlogpdf(ν, x) + log(T(π)) / 2
         end
-
-        # Wilcoxon signed rank distribution
-        for (n, W) in ((5, 7), (5, 7.0))
-            @test (@inferred signranklogupdf(n, W))::Float64 ≈ signranklogpdf(n, W) + n * log(2)
-            @test (@inferred signranklogulikelihood(n, W))::Float64 == signranklogpdf(n, W)
-        end
-
-        # Wilcoxon rank sum distribution
-        for (nx, ny, U) in ((3, 4, 5), (3, 4, 5.0))
-            @test (@inferred wilcoxlogupdf(nx, ny, U))::Float64 ≈ wilcoxlogpdf(nx, ny, U) + first(logabsbinomial(nx + ny, nx))
-            @test (@inferred wilcoxlogulikelihood(nx, ny, U))::Float64 == wilcoxlogpdf(nx, ny, U)
-        end
     end
 
     @testset "fallback" begin
@@ -110,6 +98,18 @@ using Test
         for ((k, λ, x), T) in (((5.0, 1.2, 2.0), Float64), ((5, 1.2, 2.0), Float64), ((5.0f0, 1.2f0, 2.0f0), Float32), ((5, 1.2f0, 2.0f0), Float32))
             @test (@inferred ntdistlogupdf(k, λ, x))::T == ntdistlogpdf(k, λ, x)
             @test (@inferred ntdistlogulikelihood(k, λ, x))::T == ntdistlogpdf(k, λ, x)
+        end
+
+        # Wilcoxon signed rank distribution
+        for (n, W) in ((5, 7), (5, 7.0))
+            @test (@inferred signranklogupdf(n, W))::Float64 == signranklogpdf(n, W)
+            @test (@inferred signranklogulikelihood(n, W))::Float64 == signranklogpdf(n, W)
+        end
+
+        # Wilcoxon rank sum distribution
+        for (nx, ny, U) in ((3, 4, 5), (3, 4, 5.0))
+            @test (@inferred wilcoxlogupdf(nx, ny, U))::Float64 == wilcoxlogpdf(nx, ny, U)
+            @test (@inferred wilcoxlogulikelihood(nx, ny, U))::Float64 == wilcoxlogpdf(nx, ny, U)
         end
     end
 end

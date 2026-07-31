@@ -90,17 +90,20 @@ function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_r
         end
 
         #=
-        R version of signrank has system variation
+        signrank and wilcox are implemented natively rather than by delegating to Rmath, so
+        their inverse functions are not expected to reproduce the Rmath quantile functions
+        bit for bit. The inverses locate a discontinuity by searching for the first argument
+        at which the cdf reaches `q`, and the `q` tested here are themselves cdf values, so
+        the comparison is decided by the last bit of the cdf and is not stable across
+        platforms. R's own signrank already varies this way:
         julia> psignrank(18,10,false,true) # windows
         -0.2076393647782445
         julia> psignrank(18,10,false,true) # linux
         -0.20763936477824452
-        This slight difference causes test failures for the inverse functions,
-        due to a slight shift in the location of the discontinuity.
-    
-        This also holds true for wilcox.
+        As for the other natively implemented discrete distributions, the inverse functions
+        are instead tested by round tripping through our own cdf further down.
         =#
-        test_inv = (basename != "signrank" && basename != "wilcox") || !Sys.islinux()
+        test_inv = basename != "signrank" && basename != "wilcox"
         if isdefined(Rmath, Symbol(:q, rbasename)) && test_inv
             stats_invcdf = getproperty(@__MODULE__, Symbol(basename, :invcdf))
             rmath_invcdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
@@ -440,6 +443,26 @@ end
     @test isnan(signrankinvlogccdf.(50, signranklogccdf.(50, 1275)))
     @test isnan(signrankinvlogccdf.(50, signranklogccdf.(50, 1276)))
 
+    # The subset counts grow like 2^n, so accumulating them in `Int` silently wrapped
+    # around and returned invalid probabilities from n = 72 onwards (#219)
+    @testset "signrank: large n" begin
+        @testset "n = $n" for n in (71, 72, 73, 74, 80, 100, 120, 200)
+            # The distribution is symmetric about n * (n + 1) / 4
+            W = (n * (n + 1)) ÷ 4
+            @test signrankpdf(n, W) ≈ Rmath.dsignrank(W, n, false)
+            @test signrankcdf(n, W) ≈ Rmath.psignrank(W, n, true, false)
+            @test signrankccdf(n, W) ≈ Rmath.psignrank(W, n, false, false)
+            # Deep in the left tail, where the probabilities are tiny but still normal
+            W2 = W ÷ 3
+            @test signrankpdf(n, W2) ≈ Rmath.dsignrank(W2, n, false)
+            @test signrankcdf(n, W2) ≈ Rmath.psignrank(W2, n, true, false)
+        end
+
+        @testset "pdf sums to one, n = $n" for n in (70, 80, 100)
+            @test sum(signrankpdf(n, W) for W in 0:((n * (n + 1)) ÷ 2)) ≈ 1
+        end
+    end
+
     rmathcomp_tests(
         "srdist", [
             ((1, 2), (0.0:0.2:5.0)),
@@ -472,6 +495,54 @@ end
     @test wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, -1:99)) == [0; 0:99]
     @test isnan(wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, 100)))
     @test isnan(wilcoxinvlogccdf.(10, 10, wilcoxlogccdf.(10, 10, 101)))
+
+    # Accumulating the partition counts in `Int` used to break down in two separate ways:
+    # the counts themselves wrapped around and returned silently invalid probabilities (#220),
+    # and their normaliser `binomial(nx + ny, nx)` threw an `OverflowError` from
+    # nx + ny = 68 onwards (#219). The silent limit is the lower of the two, and it is set by
+    # `binomial(nx + ny, nx)` rather than by `nx + ny`: the Löffler recurrence subtracts as
+    # well as adds, so its intermediates overshoot the counts and wrap first. Unbalanced
+    # groups therefore stayed correct much further out, which is why the cases below are not
+    # all balanced.
+    @testset "wilcox: large nx and ny" begin
+        @testset "nx = $nx, ny = $ny" for (nx, ny) in (
+                (32, 32), (33, 33), (34, 34), (40, 40), (50, 50),
+                (30, 36), (20, 48), (20, 60), (10, 325), (10, 326), (5, 200), (150, 40),
+            )
+            # The distribution is symmetric about nx * ny / 2
+            U = (nx * ny) ÷ 2
+            @test wilcoxpdf(nx, ny, U) ≈ Rmath.dwilcox(U, nx, ny, false)
+            @test wilcoxcdf(nx, ny, U) ≈ Rmath.pwilcox(U, nx, ny, true, false)
+            @test wilcoxccdf(nx, ny, U) ≈ Rmath.pwilcox(U, nx, ny, false, false)
+            # Deep in the left tail, where the probabilities are tiny but still normal
+            U2 = U ÷ 3
+            @test wilcoxpdf(nx, ny, U2) ≈ Rmath.dwilcox(U2, nx, ny, false)
+            @test wilcoxcdf(nx, ny, U2) ≈ Rmath.pwilcox(U2, nx, ny, true, false)
+        end
+
+        @testset "pdf sums to one, nx = $nx, ny = $ny" for (nx, ny) in ((30, 30), (33, 33), (34, 34), (50, 50), (5, 200))
+            @test sum(wilcoxpdf(nx, ny, U) for U in 0:(nx * ny)) ≈ 1
+        end
+
+        # `1 / binomial(nx + ny, nx)` is the probability of the least likely outcome and
+        # leaves the normal range from nx + ny = 1030. It seeds the recurrence, which is
+        # homogeneous, so once it reaches zero every probability follows it and the results
+        # are silently zero rather than merely imprecise. The recurrence therefore works in
+        # units of a power of two, which these check has not disturbed anything.
+        @testset "seed below the normal range, nx = ny = $m" for m in (515, 520, 530, 535)
+            # the pdf at U = 0 is exactly the seed, so this pins the scaling down directly
+            @test wilcoxpdf(m, m, 0) ≈ Float64(1 / BigFloat(binomial(big(2m), big(m)), precision = 512))
+        end
+
+        @testset "seed at zero without scaling" begin
+            # `1 / binomial(1080, 524)` is zero in `Float64`, so every one of these was
+            # exactly 0.0 before the recurrence was rescaled
+            @test 0 < wilcoxpdf(524, 556, 20000) < 1
+            @test 0 < wilcoxcdf(524, 556, 20000) < 1
+            @test wilcoxpdf(524, 556, 20000) <= wilcoxcdf(524, 556, 20000)
+            @test wilcoxcdf(524, 556, 20000) < wilcoxcdf(524, 556, 20001)
+        end
+    end
 
     # Note: Convergence fails in srdist with cdf values below 0.16 with df = 10, k = 5.
     # Reduced df or k allows convergence. This test documents this behavior.
