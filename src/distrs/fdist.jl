@@ -5,11 +5,17 @@ fdistpdf(ν1::Real, ν2::Real, x::Real) = exp(fdistlogpdf(ν1, ν2, x))
 
 fdistlogpdf(ν1::Real, ν2::Real, x::Real) = fdistlogpdf(promote(ν1, ν2, x)...)
 function fdistlogpdf(ν1::T, ν2::T, x::T) where {T <: Real}
-    # we ensure that `log(x)` does not error if `x < 0`
-    ν1ν2 = ν1 / ν2
-    y = max(x, 0)
-    val = (xlogy(ν1, ν1ν2) + xlogy(ν1 - 2, y) - xlogy(ν1 + ν2, 1 + ν1ν2 * y)) / 2 - logbeta(ν1 / 2, ν2 / 2)
-    return x < 0 ? oftype(val, -Inf) : val
+    lbeta = logbeta(ν1 / 2, ν2 / 2)
+    return if x > 0
+        # in terms of the beta variate `u = ν1 * x / (ν1 * x + ν2)`, which is symmetric in
+        # `ν1` and `ν2`: neither is absorbed by an explicit `1 +`, nor cancels the other
+        -xlog1py(ν1 / 2, ν2 / (ν1 * x)) - xlog1py(ν2 / 2, ν1 * x / ν2) - log(x) - lbeta
+    elseif x < 0
+        oftype(lbeta, -Inf)
+    else
+        # at zero the density behaves like `x^(ν1 / 2 - 1)`; NaN propagates through `xlogy`
+        (xlogy(ν1, ν1 / ν2) + xlogy(ν1 - 2, x)) / 2 - lbeta
+    end
 end
 
 for f in ("cdf", "ccdf", "logcdf", "logccdf")
