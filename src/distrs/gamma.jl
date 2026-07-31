@@ -5,8 +5,11 @@ using HypergeometricFunctions: _₁F₁
 # Julia implementations
 gammapdf(k::Real, θ::Real, x::Real) = exp(gammalogpdf(k, θ, x))
 
-gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)
-function gammalogpdf(k::T, θ::T, x::T) where {T <: Real}
+# `@inline` for `ForwardDiff.Dual` arguments, and so that callers such as
+# `chisqlogpdf` inline it into their bodies (#223). Both methods need it,
+# otherwise the un-annotated wrapper becomes the inlining barrier instead.
+@inline gammalogpdf(k::Real, θ::Real, x::Real) = gammalogpdf(promote(k, θ, x)...)
+@inline function gammalogpdf(k::T, θ::T, x::T) where {T <: Real}
     # we ensure that `log(x)` does not error if `x < 0`
     xθ = max(x, 0) / θ
     val = -loggamma(k) - log(θ) - xθ

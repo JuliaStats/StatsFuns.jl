@@ -1,5 +1,9 @@
 # functions related to normal distribution
 
+# The `@inline` annotations below are needed for `ForwardDiff.Dual` arguments: the
+# expansion of `exp`/`erfc`/`log` pushes these bodies over the inlining cost
+# threshold, so without them the functions are not inlined at their call sites (#223)
+
 function xval(μ::Real, σ::Real, z::Number)
     return if isinf(z) && iszero(σ)
         μ + one(σ) * z
@@ -10,8 +14,8 @@ end
 zval(μ::Real, σ::Real, x::Number) = (x - μ) / σ
 
 # pdf
-normpdf(z::Number) = exp(-abs2(z) / 2) * invsqrt2π
-function normpdf(μ::Real, σ::Real, x::Number)
+@inline normpdf(z::Number) = exp(-abs2(z) / 2) * invsqrt2π
+@inline function normpdf(μ::Real, σ::Real, x::Number)
     if iszero(σ)
         if x == μ
             z = zval(μ, one(σ), x)
@@ -26,8 +30,8 @@ function normpdf(μ::Real, σ::Real, x::Number)
 end
 
 # logpdf
-normlogpdf(z::Number) = -(abs2(z) + log2π) / 2
-function normlogpdf(μ::Real, σ::Real, x::Number)
+@inline normlogpdf(z::Number) = -(abs2(z) + log2π) / 2
+@inline function normlogpdf(μ::Real, σ::Real, x::Number)
     if iszero(σ)
         if x == μ
             z = zval(μ, one(σ), x)
@@ -42,8 +46,8 @@ function normlogpdf(μ::Real, σ::Real, x::Number)
 end
 
 # cdf
-normcdf(z::Number) = erfc(-z * invsqrt2) / 2
-function normcdf(μ::Real, σ::Real, x::Number)
+@inline normcdf(z::Number) = erfc(-z * invsqrt2) / 2
+@inline function normcdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
     else
@@ -52,8 +56,8 @@ function normcdf(μ::Real, σ::Real, x::Number)
     return normcdf(z)
 end
 # ccdf
-normccdf(z::Number) = erfc(z * invsqrt2) / 2
-function normccdf(μ::Real, σ::Real, x::Number)
+@inline normccdf(z::Number) = erfc(z * invsqrt2) / 2
+@inline function normccdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
     else
@@ -63,10 +67,10 @@ function normccdf(μ::Real, σ::Real, x::Number)
 end
 
 # logcdf
-normlogcdf(z::Number) = z < -1.0 ?
+@inline normlogcdf(z::Number) = z < -1.0 ?
     log(erfcx(-z * invsqrt2) / 2) - abs2(z) / 2 :
     log1p(-erfc(z * invsqrt2) / 2)
-function normlogcdf(μ::Real, σ::Real, x::Number)
+@inline function normlogcdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
     else
@@ -76,10 +80,10 @@ function normlogcdf(μ::Real, σ::Real, x::Number)
 end
 
 # logccdf
-normlogccdf(z::Number) = z > 1.0 ?
+@inline normlogccdf(z::Number) = z > 1.0 ?
     log(erfcx(z * invsqrt2) / 2) - abs2(z) / 2 :
     log1p(-erfc(-z * invsqrt2) / 2)
-function normlogccdf(μ::Real, σ::Real, x::Number)
+@inline function normlogccdf(μ::Real, σ::Real, x::Number)
     if iszero(σ) && x == μ
         z = zval(zero(μ), σ, one(x))
     else
