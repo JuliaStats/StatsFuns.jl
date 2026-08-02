@@ -1,170 +1,8 @@
-@testsnippet RMathHelpers begin
-    using Rmath: Rmath
-
-    # default relative tolerance for comparisons with Rmath
-    function _default_rtol(params, X::AbstractArray)
-        return _default_rtol(float(promote_type(Base.promote_typeof(params...), eltype(X))))
-    end
-    _default_rtol(::Type{Float64}) = eps(Float64)^(7 // 8)
-    _default_rtol(::Type{Float32}) = eps(Float32)^(3 // 4)
-    _default_rtol(::Type{Float16}) = eps(Float16)^(2 // 3)
-
-    function check_rmath(statsfun, rmathfun, params, a, isprob, rtol)
-        v = @inferred(statsfun(params..., a))
-        rv = @inferred(rmathfun(a, params...))
-        @test v isa float(Base.promote_typeof(params..., a))
-        return if isprob
-            @test v ≈ oftype(v, rv) rtol = rtol nans = true
-        else
-            @test v ≈ oftype(v, rv) atol = rtol rtol = rtol nans = true
-        end
-    end
-
-    function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_rtol(params, X))
-        rbasename = if basename == "nfdist"
-            "nf"
-        elseif basename == "ntdist"
-            "nt"
-        elseif basename == "srdist"
-            "tukey"
-        else
-            basename
-        end
-
-        # Rmath.ptukey / Rmath.qtukey take an extra `nranges` positional argument
-        # (defaulting to 1.0) between the distribution parameters and the
-        # `lower_tail`/`log_p` flags. Inject it explicitly for tukey so the test
-        # lambdas line up with the Rmath C signature.
-        extra_rmath_args = rbasename == "tukey" ? (1,) : ()
-
-        if isdefined(Rmath, Symbol(:d, rbasename))
-            stats_pdf = getproperty(@__MODULE__, Symbol(basename, :pdf))
-            rmath_pdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
-                (a, params...) -> f(a, params..., false)
-            end
-            @testset "pdf with x=$x" for x in X
-                check_rmath(
-                    stats_pdf, rmath_pdf,
-                    params, x, true, rtol
-                )
-            end
-
-            stats_logpdf = getproperty(@__MODULE__, Symbol(basename, :logpdf))
-            rmath_logpdf = let f = getproperty(Rmath, Symbol(:d, rbasename))
-                (a, params...) -> f(a, params..., true)
-            end
-            @testset "logpdf with x=$x" for x in X
-                check_rmath(
-                    stats_logpdf, rmath_logpdf,
-                    params, x, false, rtol
-                )
-            end
-        end
-
-        if isdefined(Rmath, Symbol(:p, rbasename))
-            stats_cdf = getproperty(@__MODULE__, Symbol(basename, :cdf))
-            rmath_cdf = let f = getproperty(Rmath, Symbol(:p, rbasename)), extra = extra_rmath_args
-                (a, params...) -> f(a, params..., extra..., true, false)
-            end
-            @testset "cdf with x=$x" for x in X
-                check_rmath(stats_cdf, rmath_cdf, params, x, true, rtol)
-            end
-
-            stats_ccdf = getproperty(@__MODULE__, Symbol(basename, :ccdf))
-            rmath_ccdf = let f = getproperty(Rmath, Symbol(:p, rbasename)), extra = extra_rmath_args
-                (a, params...) -> f(a, params..., extra..., false, false)
-            end
-            @testset "ccdf with x=$x" for x in X
-                check_rmath(stats_ccdf, rmath_ccdf, params, x, true, rtol)
-            end
-
-            stats_logcdf = getproperty(@__MODULE__, Symbol(basename, :logcdf))
-            rmath_logcdf = let f = getproperty(Rmath, Symbol(:p, rbasename)), extra = extra_rmath_args
-                (a, params...) -> f(a, params..., extra..., true, true)
-            end
-            @testset "logcdf with x=$x" for x in X
-                check_rmath(stats_logcdf, rmath_logcdf, params, x, false, rtol)
-            end
-
-            stats_logccdf = getproperty(@__MODULE__, Symbol(basename, :logccdf))
-            rmath_logccdf = let f = getproperty(Rmath, Symbol(:p, rbasename)), extra = extra_rmath_args
-                (a, params...) -> f(a, params..., extra..., false, true)
-            end
-            @testset "logccdf with x=$x" for x in X
-                check_rmath(stats_logccdf, rmath_logccdf, params, x, false, rtol)
-            end
-
-            #=
-            signrank and wilcox are implemented natively rather than by delegating to Rmath, so
-            their inverse functions are not expected to reproduce the Rmath quantile functions
-            bit for bit. The inverses locate a discontinuity by searching for the first argument
-            at which the cdf reaches `q`, and the `q` tested here are themselves cdf values, so
-            the comparison is decided by the last bit of the cdf and is not stable across
-            platforms. R's own signrank already varies this way:
-            julia> psignrank(18,10,false,true) # windows
-            -0.2076393647782445
-            julia> psignrank(18,10,false,true) # linux
-            -0.20763936477824452
-            As for the other natively implemented discrete distributions, the inverse functions
-            are instead tested by round tripping through our own cdf further down.
-            =#
-            test_inv = basename != "signrank" && basename != "wilcox"
-            if isdefined(Rmath, Symbol(:q, rbasename)) && test_inv
-                stats_invcdf = getproperty(@__MODULE__, Symbol(basename, :invcdf))
-                rmath_invcdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
-                    (a, params...) -> f(a, params..., extra..., true, false)
-                end
-                p = rmath_cdf.(X, params...)
-                @testset "invcdf with q=$_p" for _p in p
-                    check_rmath(stats_invcdf, rmath_invcdf, params, _p, false, rtol)
-                end
-
-                stats_invccdf = getproperty(@__MODULE__, Symbol(basename, :invccdf))
-                rmath_invccdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
-                    (a, params...) -> f(a, params..., extra..., false, false)
-                end
-                cp = rmath_ccdf.(X, params...)
-                @testset "invccdf with q=$_p" for _p in cp
-                    check_rmath(stats_invccdf, rmath_invccdf, params, _p, false, rtol)
-                end
-
-                stats_invlogcdf = getproperty(@__MODULE__, Symbol(basename, :invlogcdf))
-                rmath_invlogcdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
-                    (a, params...) -> f(a, params..., extra..., true, true)
-                end
-                lp = rmath_logcdf.(X, params...)
-                @testset "invlogcdf with log(q)=$_p" for _p in lp
-                    check_rmath(stats_invlogcdf, rmath_invlogcdf, params, _p, false, rtol)
-                end
-
-                stats_invlogccdf = getproperty(@__MODULE__, Symbol(basename, :invlogccdf))
-                rmath_invlogccdf = let f = getproperty(Rmath, Symbol(:q, rbasename)), extra = extra_rmath_args
-                    (a, params...) -> f(a, params..., extra..., false, true)
-                end
-                lcp = rmath_logccdf.(X, params...)
-                @testset "invlogccdf with log(q)=$_p" for _p in lcp
-                    check_rmath(stats_invlogccdf, rmath_invlogccdf, params, _p, false, rtol)
-                end
-            end
-        end
-
-        return nothing
-    end
-
-    function rmathcomp_tests(basename::String, configs)
-        return @testset "$basename" begin
-            @testset "params: $params" for (params, data) in configs
-                rmathcomp(basename, params, data)
-            end
-        end
-    end
-end
-
-@testitem "RMath beta" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath beta" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "beta", [
             ((0.1, 1.0), 0.0:0.01:1.0),
             ((1.0, 1.0), 0.0:0.01:1.0),
@@ -184,7 +22,7 @@ end
     # seems that Rmath is actually less accurate than we are but since we are comparing against Rmath
     # we have to use rtol=1e-12 although we are probably only off by around 1e-13.
     @testset "param: (1000, 2)" begin
-        rmathcomp(
+        Utils.rmathcomp(
             "beta",
             (1000, 2),
             # We have to drop the 0.48 value since the R quantile function fails while we succeed.
@@ -236,7 +74,7 @@ end
     end
 
     # Test values outside of the support
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "beta", [
             ((1.0, 1.0), [-10.0, -6.3, 2.1, 23.5]),
             ((1 // 1, 1 // 1), [-10 // 1, -63 // 10, 21 // 10, 47 // 2]),
@@ -245,11 +83,11 @@ end
     )
 end
 
-@testitem "RMath binom" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath binom" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "binom", [
             ((1, 0.5), 0.0:1.0),
             ((1, 0.7), 0.0:1.0),
@@ -267,7 +105,7 @@ end
     )
 
     # Test values outside of the support
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "binom", [
             ((5, 0.5), [-8, -2.3, 1.2, 5.4, 11.9]),
             ((5, 1 // 2), [-8, -23 // 10, 6 // 5, 27 // 5, 119 // 10]),
@@ -276,11 +114,11 @@ end
     )
 end
 
-@testitem "RMath chisq" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath chisq" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "chisq", [
             ((1,), 0.0:0.1:8.0),
             ((4,), 0.0:0.1:8.0),
@@ -294,11 +132,11 @@ end
     )
 end
 
-@testitem "RMath fdist" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath fdist" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "fdist", [
             ((1, 1), (0.0:0.1:5.0)),
             ((2, 1), (0.0:0.1:5.0)),
@@ -313,7 +151,7 @@ end
     )
 
     # Test values outside of the support
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "fdist", [
             ((1.0, 1.0), [-10.0, -6.3]),
             ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
@@ -322,11 +160,11 @@ end
     )
 end
 
-@testitem "RMath gamma" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath gamma" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "gamma", [
             ((1.0, 1.0), (0.0:0.05:12.0)),
             ((0.5, 1.0), (0.0:0.05:12.0)),
@@ -345,7 +183,7 @@ end
     )
 
     # Test values outside of the support
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "gamma", [
             ((1.0, 1.0), [-10.0, -6.3]),
             ((1 // 1, 1 // 1), [-10 // 1, -63 // 10]),
@@ -354,11 +192,11 @@ end
     )
 end
 
-@testitem "RMath hyper" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath hyper" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "hyper", [
             ((2, 3, 4), 0.0:4.0),
             ((2, 3, 4), 0:4),
@@ -369,11 +207,11 @@ end
     )
 end
 
-@testitem "RMath nbeta" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath nbeta" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "nbeta", [
             ((1.0, 1.0, 0.0), 0.01:0.01:0.99),
             ((2.0, 3.0, 0.0), 0.01:0.01:0.99),
@@ -390,11 +228,11 @@ end
     )
 end
 
-@testitem "RMath nbinom" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath nbinom" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "nbinom", [
             ((1, 0.5), 0.0:20.0),
             ((3, 0.5), 0.0:20.0),
@@ -411,11 +249,11 @@ end
     )
 end
 
-@testitem "RMath nchisq" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath nchisq" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "nchisq", [
             ((2, 1), 0.0:0.2:8.0),
             ((2, 3), 0.0:0.2:8.0),
@@ -430,11 +268,11 @@ end
     )
 end
 
-@testitem "RMath nfdist" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath nfdist" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "nfdist", [
             ((1.0, 1.0, 0.0), 0.1:0.1:10.0),
             ((1.0, 1.0, 2.0), 0.1:0.1:10.0),
@@ -450,11 +288,11 @@ end
     )
 end
 
-@testitem "RMath norm" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath norm" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "norm", [
             ((0.0, 1.0), -6.0:0.01:6.0),
             ((2.0, 1.0), -3.0:0.01:7.0),
@@ -475,11 +313,11 @@ end
     )
 end
 
-@testitem "RMath ntdist" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath ntdist" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "ntdist", [
             ((0, 1), -4.0:0.1:10.0),
             ((0, 4), -4.0:0.1:10.0),
@@ -494,11 +332,11 @@ end
     )
 end
 
-@testitem "RMath pois" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath pois" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "pois", [
             ((0.5,), 0.0:20.0),
             ((1.0,), 0.0:20.0),
@@ -514,7 +352,7 @@ end
     )
 
     # Test values outside of the support
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "pois", [
             ((0.5,), [-10, -2.5, 1.3, 8.7]),
             ((1 // 2,), [-10, -5 // 2, 13 // 10, 87 // 10]),
@@ -523,11 +361,11 @@ end
     )
 end
 
-@testitem "RMath tdist" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath tdist" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "tdist", [
             ((1,), -5.0:0.1:5.0),
             ((2,), -5.0:0.1:5.0),
@@ -543,11 +381,12 @@ end
     )
 end
 
-@testitem "RMath signrank" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath signrank" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
+    using Rmath: Rmath
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "signrank", [
             ((4), -2:12),
             ((4), -2.0:0.25:12.0),
@@ -586,11 +425,11 @@ end
     end
 end
 
-@testitem "RMath srdist" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath srdist" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "srdist", [
             ((1, 2), (0.0:0.2:5.0)),
             ((2, 2), (0.0:0.2:5.0)),
@@ -625,11 +464,12 @@ end
     end
 end
 
-@testitem "RMath wilcox" setup = [RMathHelpers] tags = [:rmath] begin
+@testitem "RMath wilcox" setup = [Utils] tags = [:rmath] begin
     using StatsFuns
     using Test
+    using Rmath: Rmath
 
-    rmathcomp_tests(
+    Utils.rmathcomp_tests(
         "wilcox", [
             ((3, 4), -2:13),
             ((3, 4), -2.0:13.0),
