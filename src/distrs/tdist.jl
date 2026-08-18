@@ -169,19 +169,12 @@ function _tdistinvcdf(ν::Float64, p::Float64)
     return p > 0.5 ? -tp : tp
 end
 
-function tdistinvcdf(ν::T, p::T) where {T <: Union{Float16, Float32, Float64}}
-    return T(_tdistinvcdf(Float64(ν), Float64(p)))
-end
+# The kernel operates in Float64, like the Rmath-based functions elsewhere in the
+# package; argument types with more precision than Float64 are truncated.
 function tdistinvcdf(ν::T, p::T) where {T <: Real}
-    if isinf(ν)
-        return norminvcdf(p)
-    elseif p < 0.5
-        return -sqrt(fdistinvccdf(one(ν), ν, 2 * p))
-    else
-        return sqrt(fdistinvccdf(one(ν), ν, 2 * (1 - p)))
-    end
+    return convert(float(T), _tdistinvcdf(Float64(ν), Float64(p)))
 end
-tdistinvcdf(ν::Real, p::Real) = tdistinvcdf(map(float, promote(ν, p))...)
+tdistinvcdf(ν::Real, p::Real) = tdistinvcdf(promote(ν, p)...)
 
 tdistinvccdf(ν::Real, p::Real) = -tdistinvcdf(ν, p)
 function tdistinvlogcdf(ν::T, logp::T) where {T <: Real}

@@ -160,6 +160,9 @@ end
         @test @inferred(tdistinvcdf(1, 0.75f0)) isa Float32
         @test @inferred(tdistinvcdf(Float16(1), Float16(0.75))) isa Float16
         @test @inferred(tdistinvcdf(1, 0.75)) isa Float64
+        # same-type non-IEEE arguments use the same kernel
+        @test tdistinvcdf(1 // 2, 1 // 100) == tdistinvcdf(0.5, 0.01)
+        @test @inferred(tdistinvcdf(5, 1)) == Inf
         # StatsFuns#228: deep tails for small ν used to underflow to -Inf
         @test isfinite(tdistinvcdf(0.5, 1.0e-8))
         # symmetry (1 - 0.75 is exact in binary)
