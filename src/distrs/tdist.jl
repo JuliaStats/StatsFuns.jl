@@ -97,84 +97,77 @@ function _tdistinvcdf(ν::Float64, p::Float64)
     logB = logbeta(ν / 2, 0.5)
     B = exp(logB)
 
-    local tp::Float64
-    tprob = 0.0
-    tpdif = 0.0
-    if pr >= 0.5 || (ν >= 1.0 && _tdist_cf_start_is_better(pr, ν))
+    tp = if pr >= 0.5 || (ν >= 1.0 && _tdist_cf_start_is_better(pr, ν))
         # Cornish-Fisher expansion of the t quantile in powers of 1/ν around the
         # normal quantile (Fisher & Cornish, Technometrics 2 (1960), 209-225)
         xn = norminvcdf(pr)
         x = xn * xn
-        tp = (((((27.0 * x + 339.0) * x + 930.0) * x - 1782.0) * x - 765.0) * x + 17955.0) / (368640.0 * ν)
-        tp = (tp + ((((79.0 * x + 776.0) * x + 1482.0) * x - 1920.0) * x - 945.0) / 92160.0) / ν
-        tp = (tp + (((3.0 * x + 19.0) * x + 17.0) * x - 15.0) / 384.0) / ν
-        tp = (tp + ((5.0 * x + 16.0) * x + 3.0) / 96.0) / ν
-        tp = (tp + (x + 1.0) / 4.0) / ν
-        tp = xn * (1.0 + tp)
+        t = (((((27.0 * x + 339.0) * x + 930.0) * x - 1782.0) * x - 765.0) * x + 17955.0) / (368640.0 * ν)
+        t = (t + ((((79.0 * x + 776.0) * x + 1482.0) * x - 1920.0) * x - 945.0) / 92160.0) / ν
+        t = (t + (((3.0 * x + 19.0) * x + 17.0) * x - 15.0) / 384.0) / ν
+        t = (t + ((5.0 * x + 16.0) * x + 3.0) / 96.0) / ν
+        t = (t + (x + 1.0) / 4.0) / ν
+        t = xn * (1.0 + t)
         # for large ν the expansion has already converged to full precision and the
         # Newton polish can be skipped (validated relative error <= 2.2e-15 in this
         # region against a high-precision reference)
         if ν >= 250.0 && x <= ν / 100.0
-            return p > 0.5 ? -tp : tp
+            return p > 0.5 ? -t : t
         end
-        tprob = 0.0
-        tpdif = 1.0 + abs(tp)
+        t
     elseif ν < 1.0
         # leading power-law term of the tail solved in log space:
         # pr ≈ (ν / t^2)^(ν / 2) / (ν * B)
         lν = log(ν)
-        tp = -exp(lν / 2 - (log(pr) + lν + logB) / ν)
-        isfinite(tp) || return p > 0.5 ? -tp : tp
-        tprob, f = _tdistcdf_pdf(ν, B, tp)
-        if f < floatmin(Float64)
-            tpdif = 0.0
-        else
-            tpdif = tprob / f * log1p((tprob - pr) / pr)
-            tpnew = tp - tpdif
-            tp = tpnew < 0.0 ? tpnew : tp / 2
-        end
+        -exp(lν / 2 - (log(pr) + lν + logB) / ν)
     else
-        # invert the leading power-law term of the tail: pr ≈ f(0) * √ν * |t|^(-ν)
-        # where f(0) = 1 / (√ν * B) is the density at zero, map back to the t scale,
-        # apply one closed-form next-order correction, and one Newton step
+        # invert the leading power-law term of the tail, pr ≈ f(0) * √ν * |t|^(-ν)
+        # where f(0) = 1 / (√ν * B) is the density at zero, map back to the t
+        # scale, and apply one closed-form next-order correction
         u = exp(-log(ν * B * pr) / ν)
-        tp = -sqrt(ν) * sqrt(u - 1.0) * sqrt(u + 1.0)
-        isfinite(tp) || return p > 0.5 ? -tp : tp
-        tpdif = tp / ν
-        tpdif = -log1p((0.5 - 1.0 / (ν + 2.0)) / (1.0 + tpdif * tp)) * (tpdif + 1.0 / tp)
-        tp -= tpdif
-        tprob, f = _tdistcdf_pdf(ν, B, tp)
-        if f < floatmin(Float64)
-            tpdif = 0.0
-        else
-            tpdif = tprob / f * log1p((tprob - pr) / pr)
-            tpnew = tp - tpdif
-            tp = tpnew < 0.0 ? tpnew : tp / 2
+        t = -sqrt(ν) * sqrt(u - 1.0) * sqrt(u + 1.0)
+        if isfinite(t)
+            d = t / ν
+            t -= -log1p((0.5 - 1.0 / (ν + 2.0)) / (1.0 + d * t)) * (d + 1.0 / t)
         end
+        t
     end
+    # the true quantile may overflow in the extreme tails
+    isfinite(tp) || return p > 0.5 ? -tp : tp
 
     # Newton iteration applied to log(cdf): step = cdf / pdf * log(cdf / pr).
     # Near the center this is an ordinary Newton step; in the tails, where the cdf
     # is nearly exponential in t, the log transform makes the problem nearly linear.
     iter = 0
-    while abs(tprob - pr) > smalllpr && abs(tpdif) > small * (1.0 + abs(tp))
-        (iter += 1) > 100 && break
+    while true
         tprob, f = _tdistcdf_pdf(ν, B, tp)
+        # the density underflows only where the start already carries full precision
         f < floatmin(Float64) && break
         tpdif = tprob / f * log1p((tprob - pr) / pr)
+        # second-order coefficient of the iteration, |d²log(cdf)/dt² / dlog(cdf)/dt|,
+        # for the quadratic-convergence estimate of the error remaining after the step
+        curv = abs(-(ν + 1.0) * tp / (ν + tp * tp) - f / tprob)
         tpnew = tp - tpdif
         # keep the iterate in the negative half-line, where the solution lies
         tp = tpnew < 0.0 ? tpnew : tp / 2
+        tol = small * (1.0 + abs(tp))
+        # converged if the cdf already matched, the step was negligible, or the
+        # estimated error remaining after the step is negligible (the exact
+        # second-order coefficient is 1/2; the factor 32 is a 64x safety margin)
+        abs(tprob - pr) <= smalllpr && break
+        abs(tpdif) <= tol && break
+        32.0 * curv * tpdif * tpdif <= tol && break
+        (iter += 1) >= 100 && break
     end
     return p > 0.5 ? -tp : tp
 end
 
-# The kernel operates in Float64, like the Rmath-based functions elsewhere in the
-# package; argument types with more precision than Float64 are truncated.
-function tdistinvcdf(ν::T, p::T) where {T <: Real}
-    return convert(float(T), _tdistinvcdf(Float64(ν), Float64(p)))
-end
-tdistinvcdf(ν::Real, p::Real) = tdistinvcdf(promote(ν, p)...)
+# Only Float16 and Float32 are routed explicitly through the Float64 kernel;
+# wider types such as BigFloat are unsupported rather than silently computed
+# at Float64 precision.
+_tdistinvcdf(ν::Float16, p::Float16) = convert(Float16, _tdistinvcdf(Float64(ν), Float64(p)))
+_tdistinvcdf(ν::Float32, p::Float32) = convert(Float32, _tdistinvcdf(Float64(ν), Float64(p)))
+tdistinvcdf(ν::Real, p::Real) = _tdistinvcdf(map(float, promote(ν, p))...)
 
 tdistinvccdf(ν::Real, p::Real) = -tdistinvcdf(ν, p)
 function tdistinvlogcdf(ν::T, logp::T) where {T <: Real}

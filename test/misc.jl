@@ -120,6 +120,10 @@ end
                 (1000.0, 0.975, 1.9623390808264081),
                 (1.0e4, 1.0e-20, -9.282474153254304),
                 (1.0e6, 1 - 1.0e-12, 7.0345756932732169),
+                # the density underflows at these two points, exercising the
+                # early exit from the Newton polish
+                (0.9, 1.0e-150, -1.2783541486158767e166),
+                (1.5, 1.0e-200, -1.1245005997832135e133),
             )
             @test tdistinvcdf(ν, p) ≈ t rtol = 1.0e-13
             @test tdistinvccdf(ν, p) == -tdistinvcdf(ν, p)
