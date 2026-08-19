@@ -35,9 +35,9 @@ for f in ("cdf", "ccdf", "logcdf", "logccdf")
     ff = Symbol("fdist" * f)
     bf = Symbol("beta" * f)
     @eval function $ff(ν1::T, ν2::T, x::T) where {T <: Real}
-        # the beta variate `u = r / (1 + r)` of the same ratio `r` as in `fdistlogpdf`, clamped
-        # to the support. Each form is only used on the half where it does not overflow
-        r = ν1 / ν2 * max(0, x)
+        # the beta variate `u = r / (1 + r)`, clamped to the support. Here an overflowing
+        # `ν1 * x` only saturates `u` to 1, so the ratio is formed that way round
+        r = (ν1 * max(0, x)) / ν2
         u = r > 1 ? inv(1 + inv(r)) : r / (1 + r)
         return $bf(ν1 / 2, ν2 / 2, u)
     end
