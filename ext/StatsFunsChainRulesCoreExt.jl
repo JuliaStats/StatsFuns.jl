@@ -41,10 +41,15 @@ ChainRulesCore.@scalar_rule(
         a = (x - 1) / temp1,
         νsum = ν1 + ν2,
         di = digamma(νsum / 2),
+        # `r = u / (1 - u)` for the beta variate `u = xν1 / temp1`, so that `-log1pr` is
+        # `log(1 - u)`
+        r = xν1 / ν2,
+        log1pr = log1p(r),
     ),
     (
-        (-log1p(ν2 / xν1) - ν2 * a + di - digamma(ν1 / 2)) / 2,
-        (-log1p(xν1 / ν2) + ν1 * a + di - digamma(ν2 / 2)) / 2,
+        # `log(u)` is evaluated as in `fdistlogpdf`, where it neither overflows nor cancels
+        ((r > 1 ? -log1p(inv(r)) : log(ν1 / ν2) + log(x) - log1pr) - ν2 * a + di - digamma(ν1 / 2)) / 2,
+        (-log1pr + ν1 * a + di - digamma(ν2 / 2)) / 2,
         ((ν1 - 2) / x - ν1 * νsum / temp1) / 2,
     ),
 )
