@@ -9,21 +9,25 @@ function fdistlogpdf(ν1::T, ν2::T, x::T) where {T <: Real}
     b = ν2 / 2
     lbeta = logbeta(a, b)
     # in terms of the beta variate `u = ν1 * x / (ν1 * x + ν2)` the density is
-    # `u^a * (1 - u)^b / (x * beta(a, b))`; `r` below is `u / (1 - u)`
-    r = ν1 * x / ν2
+    # `u^a * (1 - u)^b / (x * beta(a, b))`; `r` below is `u / (1 - u)`, formed so that a large
+    # `x` does not overflow it
+    ν1ν2 = ν1 / ν2
+    r = ν1ν2 * x
+    invr = inv(r)
     return if x < 0
         # outside of the support, where `log(x)` would error as well
         oftype(lbeta, -Inf)
-    elseif r > 1
-        # `u > 1/2`: `log(u) = -log1p(1 / r)` and `log(1 - u) = -log1p(r)`, which is symmetric
-        # in the two degrees of freedom, so no two terms growing like `ν1 * log(ν1)` cancel
-        -xlog1py(a, inv(r)) - xlog1py(b, r) - log(x) - lbeta
+    elseif isfinite(invr)
+        # `log(u) = -log1p(1 / r)` and `log(1 - u) = -log1p(r)`, symmetric in the two degrees
+        # of freedom, so no two terms growing like `ν1 * log(ν1)` cancel. `r` overflows for the
+        # largest `x`, where `log1p(r)` is ordinary and both summands below are positive
+        blog1pr = isinf(r) ? xlogy(b, ν1ν2) + xlogy(b, x) : xlog1py(b, r)
+        -xlog1py(a, invr) - blog1pr - log(x) - lbeta
     else
-        # `u <= 1/2`: the textbook form, but with `log1p(r)` instead of `log(1 + r)`, which
-        # would absorb a tiny `r`. Splitting `log(u)` into `log(ν1 / ν2) + log(x)` also keeps
-        # it accurate if `r` underflows. Covers `x == 0`, where the density behaves like
-        # `x^(a - 1)`, and `NaN`, which propagates through `xlogy`.
-        xlogy(a, ν1 / ν2) + xlogy(a - 1, x) - xlog1py(a + b, r) - lbeta
+        # `r` is zero or subnormal: `x == 0`, `r` underflowing, or `NaN`. The textbook form
+        # covers all three - `log1p(r)` keeps a tiny `r` that `log(1 + r)` would absorb, and
+        # splitting `log(u)` into `log(ν1 / ν2) + log(x)` needs no precision from `r`
+        xlogy(a, ν1ν2) + xlogy(a - 1, x) - xlog1py(a + b, r) - lbeta
     end
 end
 
@@ -31,11 +35,10 @@ for f in ("cdf", "ccdf", "logcdf", "logccdf")
     ff = Symbol("fdist" * f)
     bf = Symbol("beta" * f)
     @eval function $ff(ν1::T, ν2::T, x::T) where {T <: Real}
-        # the beta variate `u = y / (y + ν2)`, clamped to the support. `ν2 / y` overflows for
-        # small `y` and `y / (y + ν2)` is `NaN` for `y = Inf`, so each form is only used where
-        # it holds up
-        y = ν1 * max(0, x)
-        u = y > ν2 ? inv(1 + ν2 / y) : y / (y + ν2)
+        # the beta variate `u = r / (1 + r)` of the same ratio `r` as in `fdistlogpdf`, clamped
+        # to the support. Each form is only used on the half where it does not overflow
+        r = ν1 / ν2 * max(0, x)
+        u = r > 1 ? inv(1 + inv(r)) : r / (1 + r)
         return $bf(ν1 / 2, ν2 / 2, u)
     end
     @eval $ff(ν1::Real, ν2::Real, x::Real) = $ff(promote(ν1, ν2, x)...)

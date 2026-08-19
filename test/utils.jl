@@ -168,3 +168,29 @@
         end
     end
 end
+
+@testmodule FDistRef begin
+    using SpecialFunctions: logbeta
+
+    # textbook formulas for `fdist`, evaluated in `BigFloat`. They cancel badly in `Float64` -
+    # that is precisely what is being tested - but 256 bits absorb it
+    function logpdf(ν1::Real, ν2::Real, x::Real)
+        _ν1, _ν2, _x = BigFloat(ν1), BigFloat(ν2), BigFloat(x)
+        a, b = _ν1 / 2, _ν2 / 2
+        return a * log(_ν1 / _ν2) + (a - 1) * log(_x) - (a + b) * log1p(_ν1 * _x / _ν2) - logbeta(a, b)
+    end
+
+    function dlogpdf_dx(ν1::Real, ν2::Real, x::Real)
+        _ν1, _ν2, _x = BigFloat(ν1), BigFloat(ν2), BigFloat(x)
+        return (_ν1 / 2 - 1) / _x - ((_ν1 + _ν2) / 2) * _ν1 / (_ν1 * _x + _ν2)
+    end
+
+    # for `x` so small that the beta variate `u = ν1 * x / (ν1 * x + ν2)` is negligible the cdf
+    # is `u^a / (a * beta(a, b)) * (1 + O(u))`, which needs no incomplete beta function
+    function logcdf_smallx(ν1::Real, ν2::Real, x::Real)
+        _ν1, _ν2, _x = BigFloat(ν1), BigFloat(ν2), BigFloat(x)
+        a, b = _ν1 / 2, _ν2 / 2
+        u = _ν1 * _x / (_ν1 * _x + _ν2)
+        return a * log(u) - log(a) - logbeta(a, b)
+    end
+end

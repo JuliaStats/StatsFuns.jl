@@ -89,3 +89,30 @@ end
         test_frule(fdistlogpdf, ν1, ν2, x ⊢ x / 10)
     end
 end
+
+@testitem "ChainRules fdistlogpdf with large ν1" setup = [FDistRef] tags = [:autodiff] begin
+    using StatsFuns, Test
+    using ChainRulesCore
+    using SpecialFunctions: digamma
+
+    # `∂/∂x` was a difference of two terms growing like `ν1 / x`, which cancelled completely:
+    # at `(1e18, 5, 2)` it returned `0.0`. `test_frule` cannot see this, since a finite
+    # difference in `ν1` is lost in the rounding of `ν1` itself, so the pullback is evaluated
+    # directly. It returns the three partials separately, whereas `frule` would sum them
+    @testset "(ν1, ν2, x) = ($ν1, $ν2, $x)" for (ν1, ν2, x) in (
+            (1.0e8, 5.0, 2.0), (1.0e18, 5.0, 2.0), (1.0e20, 1.0, 0.5),
+            (4.0, 100.0, floatmax(Float64)),
+        )
+        _, pullback = rrule(fdistlogpdf, ν1, ν2, x)
+        @test pullback(1.0)[4] ≈ FDistRef.dlogpdf_dx(ν1, ν2, x) rtol = 1.0e-12
+    end
+
+    # `(x - 1) / (ν1 * x + ν2)` was `NaN` at `x = Inf`, taking `∂/∂ν1` and `∂/∂ν2` with it
+    @testset "x = Inf" begin
+        _, pullback = rrule(fdistlogpdf, 3.0, 7.0, Inf)
+        _, ∂ν1, ∂ν2, ∂x = pullback(1.0)
+        @test ∂ν1 ≈ (digamma(5.0) - digamma(1.5) - 7 / 3) / 2
+        @test ∂ν2 == -Inf
+        @test ∂x == 0
+    end
+end
