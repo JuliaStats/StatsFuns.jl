@@ -45,14 +45,16 @@ ChainRulesCore.@scalar_rule(
         # `(x - 1) / (ν1 * x + ν2)`, in the form that stays finite for a large `x`
         temp1 = ν1 * x + ν2,
         a = isinf(temp1) ? (1 - inv(x)) / (ν1 + ν2 / x) : (x - 1) / temp1,
+        ν2a = ν2 * a,
     ),
     (
         # `log(u)` as in `fdistlogpdf`
-        ((isfinite(invr) ? -log1p(invr) : log(ν1ν2) + log(x) - log1pr) - ν2 * a + di - digamma(ν1 / 2)) / 2,
+        ((isfinite(invr) ? -log1p(invr) : log(ν1ν2) + log(x) - log1pr) - ν2a + di - digamma(ν1 / 2)) / 2,
         (-log1pr + ν1 * a + di - digamma(ν2 / 2)) / 2,
         # `(ν1 - 2) / (2 * x) - ν1 * (ν1 + ν2) / (2 * temp1)`, combined into a single quotient
-        # so that the two terms cannot cancel for a large `ν1`
-        -(ν1 * ν2 * a / 2 + 1) / x,
+        # so that the two terms cannot cancel for a large `ν1`. `ν1 * ν2` would overflow for the
+        # largest degrees of freedom, whereas `ν2 * a` is a ratio of the two
+        -(ν1 * ν2a / 2 + 1) / x,
     ),
 )
 

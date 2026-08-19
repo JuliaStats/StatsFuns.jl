@@ -98,10 +98,12 @@ end
     # `∂/∂x` was a difference of two terms growing like `ν1 / x`, which cancelled completely:
     # at `(1e18, 5, 2)` it returned `0.0`. `test_frule` cannot see this, since a finite
     # difference in `ν1` is lost in the rounding of `ν1` itself, so the pullback is evaluated
-    # directly. It returns the three partials separately, whereas `frule` would sum them
+    # directly. It returns the three partials separately, whereas `frule` would sum them.
+    # The last three are where the single quotient's own `ν1 * ν2` would overflow
     @testset "(ν1, ν2, x) = ($ν1, $ν2, $x)" for (ν1, ν2, x) in (
             (1.0e8, 5.0, 2.0), (1.0e18, 5.0, 2.0), (1.0e20, 1.0, 0.5),
             (4.0, 100.0, floatmax(Float64)),
+            (1.0e200, 1.0e300, 1.0e200), (1.0e300, 1.0e200, 2.0), (1.0e200, 1.0e200, 2.0),
         )
         _, pullback = rrule(fdistlogpdf, ν1, ν2, x)
         @test pullback(1.0)[4] ≈ FDistRef.dlogpdf_dx(ν1, ν2, x) rtol = 1.0e-12

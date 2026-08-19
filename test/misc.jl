@@ -171,6 +171,16 @@ end
         end
     end
 
+    # with both degrees of freedom of `floatmax` scale the product `ν1 * x` overflows where the
+    # ratio `(ν1 / ν2) * x` and the density itself are ordinary
+    @testset "huge (ν1, ν2) = ($ν1, $ν2)" for (ν1, ν2) in ((1.0e200, 1.0e300), (1.0e300, 1.0e200))
+        @testset "x = $x" for x in
+            (1.0e-300, 1.0e-8, 0.5, 2.0, 1.0e8, 1.0e200, floatmax(Float64), ν2 / ν1)
+
+            @test @inferred(fdistlogpdf(ν1, ν2, x))::Float64 ≈ FDistRef.logpdf(ν1, ν2, x) rtol = 1.0e-12
+        end
+    end
+
     # `ν2 / (ν1 * x)` overflows for `x < ν2 / (ν1 * floatmax(T))` - an ordinary argument in
     # `Float16` - and used to take the density and the cdf with it
     @testset "small x = $x" for x in (1.0e-300, 1.0f-38, Float16(1.0e-4))
@@ -191,7 +201,10 @@ end
         @test @inferred(fdistlogpdf(ν1, ν2, x))::T ≈ T(FDistRef.logpdf(ν1, ν2, x)) rtol = eps(T)^(3 // 4)
     end
 
-    # the beta variate of the cdf used to overflow for a huge `ν2`
+    # the beta variate of the cdf overflows for a huge `ν2` if formed as `ν2 / (ν1 * x)`, and for a
+    # huge `x` if formed as `(ν1 * x) / (ν1 * x + ν2)` - the latter takes `u` to `0`, not `1`
     @test fdistcdf(1.0, floatmax(Float64), floatmax(Float64)) ==
         betacdf(0.5, floatmax(Float64) / 2, 0.5)
+    @test fdistcdf(1.0, 1.0e308, 1.0e308) == 1
+    @test fdistcdf(1.0, 1.0e308, 0.9e308) == 1
 end
