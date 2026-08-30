@@ -108,6 +108,14 @@ end
 function wilcoxlogpdf(nx::Int, ny::Int, U::Union{Float64, Int})
     return log(wilcoxpdf(nx, ny, U))
 end
+# `wilcox_probabilities` seeds the recurrence with `1 / binomial(nx + ny, nx)`, so the
+# normalising constant is never formed: dropping it would neither be cheaper nor more accurate
+function wilcoxlogupdf(nx::Int, ny::Int, U::Union{Float64, Int})
+    return wilcoxlogpdf(nx, ny, U)
+end
+function wilcoxlogulikelihood(nx::Int, ny::Int, U::Union{Float64, Int})
+    return wilcoxlogpdf(nx, ny, U)
+end
 
 function wilcoxcdf(nx::Int, ny::Int, U::Float64)
     return wilcoxcdf(nx, ny, round(Int, U, RoundNearestTiesUp))
