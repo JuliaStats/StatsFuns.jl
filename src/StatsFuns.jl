@@ -3,7 +3,7 @@ module StatsFuns
 using Base: Math.@horner
 using Reexport: @reexport
 using SpecialFunctions: beta_inc, beta_inc_inv, digamma,
-    erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logbeta, loggamma
+    erfc, erfcinv, erfcx, gamma_inc, gamma_inc_inv, logabsbinomial, logbeta, loggamma
 
 # reexports
 @reexport using IrrationalConstants:

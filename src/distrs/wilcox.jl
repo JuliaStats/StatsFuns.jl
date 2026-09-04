@@ -34,14 +34,20 @@ H. B. Mann, D. R. Whitney. "On a Test of Whether one of Two Random Variables is 
 A. Löffler: "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Test." Wissenschaftliche Zeitschrift der Martin-Luther-Universität Halle-Wittenberg; Mathematisch-Naturwissenschaftliche Reihe, XXXII'83 M, Heft 5, 87–89; available as https://upload.wikimedia.org/wikipedia/commons/f/f5/LoefflerWilcoxonMannWhitneyTest.pdf
 =#
 
-@inline function wilcox_partitions(nx::Int, ny::Int, U::Int)
+#=
+The recurrence below is linear and homogeneous in `pₘ,ₙ`, so seeding it with
+`1 / binomial(nx + ny, nx)` instead of `1` yields the probabilities directly.
+This matters because the counts themselves grow like `binomial(nx + ny, nx)` and overflow
+`Int` from `nx + ny = 68` onwards, whereas the probabilities are bounded by 1.
+=#
+function wilcox_probabilities(nx::Int, ny::Int, U::Int)
     # This internal function expects 0 <= U <= nx * ny / 2
     if !(0 <= U <= (nx * ny) / 2)
-        throw(ArgumentError("`wilcox_partitions(nx, ny, U)` is only implemented for 0 <= U <= (nx * ny) / 2"))
+        throw(ArgumentError("`wilcox_probabilities(nx, ny, U)` is only implemented for 0 <= U <= (nx * ny) / 2"))
     end
 
-    # Due to symmetry, `wilcox_partitions(nx, ny, U) = wilcox_partitions(ny, nx, U)`
-    # Hence for simplicity we only consider the case `wilcox_partitions(min(nx, ny), max(nx, ny), U)` here
+    # Due to symmetry, `wilcox_probabilities(nx, ny, U) = wilcox_probabilities(ny, nx, U)`
+    # Hence for simplicity we only consider the case `wilcox_probabilities(min(nx, ny), max(nx, ny), U)` here
     m, n = minmax(nx, ny)
 
     # Compute σ(k) = ∑_{d|k} ϵ(d) d where
@@ -60,18 +66,30 @@ A. Löffler: "Über eine Partition der nat. Zahlen und ihre Anwendung beim U-Tes
         end
     end
 
-    # Recursively compute the number of partitions pₘ,ₙ(a) for 0 <= a <= U
-    partitions = Vector{Int}(undef, U + 1)
-    partitions[1] = 1
+    # Recursively compute pₘ,ₙ(a) / binomial(nx + ny, nx) for 0 <= a <= U, in units of
+    # 2^shift. The logarithm of the coefficient is used since `binomial(nx + ny, nx)` itself
+    # overflows `Int` from `nx + ny = 68` onwards.
+    #
+    # The seed is the probability of the least likely outcome, so it leaves the normal range
+    # long before the probabilities of interest do: it is subnormal from `nx + ny = 1030` and
+    # zero from `nx + ny = 1090`, and since the recurrence is homogeneous a seed of zero
+    # would silently zero every probability. Working in units of 2^shift avoids that. The
+    # recurrence is homogeneous so the choice of unit cannot affect the result, `ldexp`
+    # removes it from the scalar result exactly, and `shift` is zero whenever the seed is
+    # normal.
+    logbinom = first(logabsbinomial(nx + ny, nx))
+    shift = max(0, ceil(Int, (logbinom - 700) / logtwo))
+    probabilities = Vector{Float64}(undef, U + 1)
+    probabilities[1] = exp(shift * logtwo - logbinom)
     for a in 1:U
-        p = 0
+        p = 0.0
         for i in 1:a
-            p += partitions[i] * sigmas[a + 1 - i]
+            p += probabilities[i] * sigmas[a + 1 - i]
         end
-        partitions[a + 1] = p ÷ a
+        probabilities[a + 1] = p / a
     end
 
-    return partitions
+    return probabilities, shift
 end
 
 function wilcoxpdf(nx::Int, ny::Int, U::Float64)
@@ -83,8 +101,8 @@ function wilcoxpdf(nx::Int, ny::Int, U::Int)
         return 0.0
     end
     U = min(U, max_U - U)
-    partitions = wilcox_partitions(nx, ny, U)
-    return partitions[end] / binomial(nx + ny, nx)
+    probabilities, shift = wilcox_probabilities(nx, ny, U)
+    return ldexp(probabilities[end], -shift)
 end
 
 function wilcoxlogpdf(nx::Int, ny::Int, U::Union{Float64, Int})
@@ -102,8 +120,8 @@ function wilcoxcdf(nx::Int, ny::Int, U::Int)
         return 1.0
     else
         U2 = max_U - U - 1
-        partitions = wilcox_partitions(nx, ny, min(U, U2))
-        p = sum(float, partitions) / binomial(nx + ny, nx)
+        probabilities, shift = wilcox_probabilities(nx, ny, min(U, U2))
+        p = ldexp(sum(probabilities), -shift)
         return U2 < U ? 1.0 - p : p
     end
 end

@@ -11,15 +11,28 @@ the number of subsets of {1,2,...,n-1} summing to W.
 This can be calculated bottom up using dynamic programming.
 
 The i'th element of DP in the j'th outer loop iteration represents:
-the number of ways {1,2,...,j} can sum to W-i+1.
+the probability that a subset of {1,2,...,j} sums to W-i+1,
+i.e. the number of such subsets divided by the 2^j subsets in total.
+
+The counts themselves grow like 2^n and overflow `Int` well before the
+distribution stops being of interest, so the recursion is normalised as it goes
+rather than divided by 2^n at the end. Halving is exact in binary floating
+point, so while every count stays below 2^53 this gives exactly the counts
+divided by 2^n; beyond that the additions round, but the entries stay in [0,1]
+and can never overflow.
  =#
 
-@inline function signrankDP(n, W)
-    DP = zeros(Int, W + 1)
-    DP[W + 1] = 1
+function signrankDP(n, W)
+    DP = zeros(Float64, W + 1)
+    DP[W + 1] = 1.0
     for j in 1:n
         for i in 1:(W + 1 - j)
-            DP[i] += DP[i + j]
+            DP[i] = (DP[i] + DP[i + j]) / 2
+        end
+        # Sums smaller than j cannot contain j, so their counts are unchanged and
+        # the corresponding probabilities only pick up the factor 1/2
+        for i in max(1, W + 2 - j):(W + 1)
+            DP[i] /= 2
         end
     end
     return DP
@@ -38,7 +51,7 @@ function signrankpdf(n::Int, W::Int)
         return signrankpdf(n, W2)
     end
     DP = signrankDP(n, W)
-    return ldexp(float(DP[1]), -n)
+    return DP[1]
 end
 
 function signranklogpdf(n::Int, W::Union{Float64, Int})
@@ -58,7 +71,7 @@ function signrankcdf(n::Int, W::Int)
         return 1.0 - signrankcdf(n, W2)
     end
     DP = signrankDP(n, W)
-    return sum(Base.Fix2(ldexp, -n) ∘ float, DP)
+    return sum(DP)
 end
 
 function signranklogcdf(n::Int, W::Union{Float64, Int})
