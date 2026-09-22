@@ -1,4 +1,4 @@
-module StatsFunsForwardDiffExt
+module ForwardDiffExt
 
 import StatsFuns
 using ForwardDiff: ForwardDiff, Dual
