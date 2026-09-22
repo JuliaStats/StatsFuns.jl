@@ -29,8 +29,6 @@
             ignore = (
                 # Ref https://github.com/JuliaTesting/ExplicitImports.jl/issues/92
                 :digamma,
-                # ForwardDiff declares no part of its dual-number API public
-                :Dual,
             ),
         ) ===
             nothing
@@ -54,6 +52,8 @@
                 # ForwardDiff declares no part of its dual-number API public
                 :value,
                 :partials,
+                :dual_definition_retval,
+                Symbol("@define_ternary_dual_op"),
             ),
         ) ===
             nothing
