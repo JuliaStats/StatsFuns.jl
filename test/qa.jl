@@ -50,11 +50,13 @@
         @test ExplicitImports.check_no_self_qualified_accesses(StatsFuns) === nothing
     end
 
-    @testset "JET" begin
-        # Check that there are no undefined global references and undefined field accesses
-        JET.test_package(StatsFuns; target_modules = (StatsFuns,), mode = :typo)
+    if !isdefined(JET, :JET_AVAILABLE) || JET.JET_AVAILABLE
+        @testset "JET" begin
+            # Check that there are no undefined global references and undefined field accesses
+            JET.test_package(StatsFuns; target_modules = (StatsFuns,), mode = :typo)
 
-        # Analyze methods based on their declared signature
-        JET.report_package(StatsFuns; target_modules = (StatsFuns,))
+            # Analyze methods based on their declared signature
+            JET.report_package(StatsFuns; target_modules = (StatsFuns,))
+        end
     end
 end
