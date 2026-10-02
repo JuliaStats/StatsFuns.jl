@@ -35,7 +35,7 @@ to [`loggamma`](@ref):
 
 In Julia syntax, this means:
 
-    lstirling_asym(x) = loggamma(x) + x - (x-0.5)*log(x) - 0.5*log(2π)
+    lstirling_asym(x) = loggamma(x) + x - (x - 0.5) * log(x) - 0.5 * log(2π)
 
 For sufficiently large `x`, this can be approximated using the asymptotic
 _Stirling's series_ ([DLMF 5.11.1](https://dlmf.nist.gov/5.11.1)):
