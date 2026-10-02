@@ -40,30 +40,30 @@ log4π,      # log(4π)
 ```julia
 # basicfuns
 xlogx,          # x * log(x), or 0 when x is zero
-xlogy,          # x * log(y), or 0 when x is zero
-xlog1py,        # x * log(1 + y) for x > 0, or 0 when x == 0
-logistic,       # 1 / (1 + exp(-x))
-logit,          # log(x / (1 - x))
-log1psq,        # log(1 + x^2)
-log1pexp,       # log(1 + exp(x))
-log1mexp,       # log(1 - exp(x))
-log2mexp,       # log(2 - exp(x))
-logexpm1,       # log(exp(x) - 1)
-softplus,       # alias of log1pexp
-invsoftplus,    # alias of logexpm1
-log1pmx,        # log(1 + x) - x
-logmxp1,        # log(x) - x + 1
-logaddexp,      # log(exp(x) + exp(y))
-logsubexp,      # log(abs(exp(x) - exp(y)))
-logsumexp,      # log(sum(exp(x)))
-softmax,        # exp(x_i) / sum(exp(x)), for i
-softmax!,       # inplace softmax
+    xlogy,          # x * log(y), or 0 when x is zero
+    xlog1py,        # x * log(1 + y) for x > 0, or 0 when x == 0
+    logistic,       # 1 / (1 + exp(-x))
+    logit,          # log(x / (1 - x))
+    log1psq,        # log(1 + x^2)
+    log1pexp,       # log(1 + exp(x))
+    log1mexp,       # log(1 - exp(x))
+    log2mexp,       # log(2 - exp(x))
+    logexpm1,       # log(exp(x) - 1)
+    softplus,       # alias of log1pexp
+    invsoftplus,    # alias of logexpm1
+    log1pmx,        # log(1 + x) - x
+    logmxp1,        # log(x) - x + 1
+    logaddexp,      # log(exp(x) + exp(y))
+    logsubexp,      # log(abs(exp(x) - exp(y)))
+    logsumexp,      # log(sum(exp(x)))
+    softmax,        # exp(x_i) / sum(exp(x)), for i
+    softmax!,       # inplace softmax
 
-# misc
-logmvgamma,     # logarithm of multivariate gamma function
-lstirling_asym,
+    # misc
+    logmvgamma,     # logarithm of multivariate gamma function
+    lstirling_asym,
 
-owens_t         # Owen's T function
+    owens_t         # Owen's T function
 ```
 
 ## Distribution-related functions
