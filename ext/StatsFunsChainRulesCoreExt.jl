@@ -14,9 +14,25 @@ ChainRulesCore.@scalar_rule(
         (α - 1) / x + (1 - β) / (1 - x),
     ),
 )
+ChainRulesCore.@scalar_rule(
+    betalogupdf(α::Real, β::Real, x::Number),
+    (
+        log(x),
+        log1p(-x),
+        (α - 1) / x + (1 - β) / (1 - x),
+    ),
+)
 
 ChainRulesCore.@scalar_rule(
     binomlogpdf(n::Real, p::Real, k::Real),
+    (
+        ChainRulesCore.NoTangent(),
+        (k / p - n) / (1 - p),
+        ChainRulesCore.NoTangent(),
+    ),
+)
+ChainRulesCore.@scalar_rule(
+    binomlogupdf(n::Real, p::Real, k::Real),
     (
         ChainRulesCore.NoTangent(),
         (k / p - n) / (1 - p),
@@ -28,8 +44,15 @@ ChainRulesCore.@scalar_rule(
     chisqlogpdf(k::Real, x::Number),
     @setup(hk = k / 2),
     (
-        (log(x) - logtwo - digamma(hk)) / 2,
+        (log(x / 2) - digamma(hk)) / 2,
         (hk - 1) / x - one(hk) / 2,
+    ),
+)
+ChainRulesCore.@scalar_rule(
+    chisqlogupdf(k::Real, x::Number),
+    (
+        log(x) / 2,
+        (k - x - 2) / (2 * x),
     ),
 )
 
@@ -57,6 +80,19 @@ ChainRulesCore.@scalar_rule(
         -(ν1 * ν2a / 2 + 1) / x,
     ),
 )
+ChainRulesCore.@scalar_rule(
+    fdistlogupdf(ν1::Real, ν2::Real, x::Number),
+    @setup(
+        tmp = x * ν1 + ν2,
+        xotmp = x / tmp,
+        a = xotmp * (ν1 + ν2),
+    ),
+    (
+        (log(xotmp) - a) / 2,
+        -(log(tmp) + (ν1 + ν2) / tmp) / 2,
+        (ν1 * (1 - a) - 2) / (2 * x),
+    ),
+)
 
 ChainRulesCore.@scalar_rule(
     gammalogpdf(k::Real, θ::Real, x::Number),
@@ -71,9 +107,25 @@ ChainRulesCore.@scalar_rule(
         - (1 + z) / x,
     ),
 )
+ChainRulesCore.@scalar_rule(
+    gammalogupdf(k::Real, θ::Real, x::Number),
+    (
+        log(x),
+        x / θ^2,
+        (k - 1) / x - inv(θ),
+    ),
+)
 
 ChainRulesCore.@scalar_rule(
     poislogpdf(λ::Number, x::Number),
+    ((iszero(x) && iszero(λ) ? zero(x / λ) : x / λ) - 1, ChainRulesCore.NoTangent()),
+)
+ChainRulesCore.@scalar_rule(
+    poislogupdf(λ::Number, x::Number),
+    ((iszero(x) && iszero(λ) ? zero(x / λ) : x / λ), ChainRulesCore.NoTangent()),
+)
+ChainRulesCore.@scalar_rule(
+    poislogulikelihood(λ::Number, x::Number),
     ((iszero(x) && iszero(λ) ? zero(x / λ) : x / λ) - 1, ChainRulesCore.NoTangent()),
 )
 
@@ -88,6 +140,18 @@ ChainRulesCore.@scalar_rule(
     ),
     (
         (digamma(νp1 / 2) - digamma(ν / 2) + a * b - log1p(a) - invν) / 2,
+        - x * b,
+    ),
+)
+ChainRulesCore.@scalar_rule(
+    tdistlogupdf(ν::Real, x::Number),
+    @setup(
+        xsq = x^2,
+        a = xsq / ν,
+        b = (ν + 1) / (ν + xsq),
+    ),
+    (
+        (a * b - log1p(a)) / 2,
         - x * b,
     ),
 )

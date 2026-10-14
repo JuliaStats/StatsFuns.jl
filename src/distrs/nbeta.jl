@@ -1,5 +1,8 @@
 # functions related to noncentral beta distribution
 
+nbetalogupdf(α::Real, β::Real, λ::Real, x::Real) = nbetalogpdf(α, β, λ, x)
+nbetalogulikelihood(α::Real, β::Real, λ::Real, x::Real) = nbetalogpdf(α, β, λ, x)
+
 # Rmath implementations
 function nbetapdf(α::Real, β::Real, λ::Real, x::Real)
     T = float(Base.promote_typeof(α, β, λ, x))

@@ -57,6 +57,14 @@ end
 function signranklogpdf(n::Int, W::Union{Float64, Int})
     return log(signrankpdf(n, W))
 end
+# `signrankDP` normalises the recursion as it goes, so the normalising constant `2^n` is
+# never formed: dropping it would neither be cheaper nor more accurate
+function signranklogupdf(n::Int, W::Union{Float64, Int})
+    return signranklogpdf(n, W)
+end
+function signranklogulikelihood(n::Int, W::Union{Float64, Int})
+    return signranklogpdf(n, W)
+end
 
 function signrankcdf(n::Int, W::Float64)
     return signrankcdf(n, round(Int, W, RoundNearestTiesUp))

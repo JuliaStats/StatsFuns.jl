@@ -1,5 +1,8 @@
 # functions related to noncentral chi-square distribution
 
+nchisqlogupdf(k::Real, λ::Real, x::Real) = nchisqlogpdf(k, λ, x)
+nchisqlogulikelihood(k::Real, λ::Real, x::Real) = nchisqlogpdf(k, λ, x)
+
 # Rmath implementations
 function nchisqpdf(k::Real, λ::Real, x::Real)
     T = float(Base.promote_typeof(k, λ, x))
