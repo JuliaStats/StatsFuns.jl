@@ -27,7 +27,7 @@
             for x in (0.5, 1.0, 4.0, 12.0)
     ]
     @testset "Erlang closed form: $f($k, $θ, $x)" for (f, erlang, k, θ, x) in erlang_cases
-        @test ForwardDiff.value(f(k, θ, Dual(x, 1.0))) ≈ f(k, θ, x)
+        @test ForwardDiff.value(f(k, θ, Dual(x, 1.0))) ≈ erlang(k, θ, x)
         @test ForwardDiff.derivative(y -> f(k, θ, y), x) ≈
             ForwardDiff.derivative(y -> erlang(k, θ, y), x)
         @test ForwardDiff.derivative(t -> f(k, t, x), θ) ≈
@@ -83,8 +83,8 @@
         @test ForwardDiff.derivative(y -> gammaccdf(1.0, 2.0, y), 0.0) ≈ -0.5
     end
 
-    # The Poisson tails promote `λ` and the shape to `Dual`s, which `_gammalogcdf` and
-    # `_gammalogccdf` do not accept (JuliaStats/StatsFuns.jl#161).
+    # The Poisson tails call the gamma tails with a `Dual` `x = λ`, which failed before
+    # (JuliaStats/StatsFuns.jl#161).
     poisson_cases = [(λ, n) for λ in (0.5, 1.3, 7.0) for n in (0, 3, 10)]
     @testset "Poisson tails differentiate (λ=$λ, n=$n)" for (λ, n) in poisson_cases
         @test ForwardDiff.derivative(l -> poiscdf(l, n), λ) ≈ -poispdf(λ, n)
@@ -112,17 +112,26 @@
         @test ForwardDiff.derivative(t -> f(oftype(t, 2), t, 1.5), 1.0) ≈ dθ
         @test ForwardDiff.derivative(y -> f(oftype(y, 2), 1.0, y), 1.5) ≈ dx
         @test ForwardDiff.gradient(v -> f(2 + 0 * v[1], v[1], v[2]), [1.0, 1.5]) ≈ [dθ, dx]
+        @test ForwardDiff.hessian(v -> f(2 + 0 * v[1], v[1], v[2]), [1.0, 1.5]) ≈
+            ForwardDiff.hessian(v -> erlang(2, v[1], v[2]), [1.0, 1.5])
         @test ForwardDiff.partials(f(Dual(2.0, 0.0), 1.0, Dual(1.5, 1.0)))[1] ≈ dx
         # a zero-partial shape with a different tag than `θ`
         @test ForwardDiff.derivative(
-            t -> ForwardDiff.derivative(s -> f(2 + 0 * s, t, 1.5), 1.0),
+            t -> ForwardDiff.derivative(s -> s * f(2 + 0 * s, t, 1.5), 1.0),
             1.0,
-        ) ==
-            0
+        ) ≈ dθ
         @test ForwardDiff.derivative(
-            s -> ForwardDiff.derivative(t -> f(2 + 0 * s, t, 1.5), 1.0),
+            s -> s * ForwardDiff.derivative(t -> f(2 + 0 * s, t, 1.5), 1.0),
             1.0,
-        ) ==
-            0
+        ) ≈ dθ
+    end
+
+    @testset "$f with an integer shape keeps Float32" for (f, erlang) in tails
+        dθ = ForwardDiff.derivative(t -> f(2, t, 1.5f0), 1.0f0)
+        dx = ForwardDiff.derivative(y -> f(2, 1.0f0, y), 1.5f0)
+        @test dθ isa Float32
+        @test dx isa Float32
+        @test dθ ≈ ForwardDiff.derivative(t -> erlang(2, t, 1.5), 1.0) rtol = 1.0e-5
+        @test dx ≈ ForwardDiff.derivative(y -> erlang(2, 1.0, y), 1.5) rtol = 1.0e-5
     end
 end

@@ -3,20 +3,31 @@ module ForwardDiffExt
 import StatsFuns
 using ForwardDiff: ForwardDiff, ≺ # `≺` is used by `ForwardDiff.@define_ternary_dual_op`
 
-# `SpecialFunctions.gamma_inc`, which every gamma tail bottoms out in, is defined
-# for `Float16`, `Float32` and `Float64` only, so for `Dual` arguments we evaluate
-# the function on the primal values and attach the partials analytically.
+# `SpecialFunctions.gamma_inc`, which every gamma tail bottoms out in, is not defined
+# for `Dual`s, so for `Dual` arguments we evaluate the function on the primal values
+# and attach the partials analytically.
 
 # With the tail written as `P(k, x/θ)`, `|∂P/∂x| = f_k(x)` and `|∂P/∂θ| = k f_{k+1}(x)`,
-# both in log space so they are zero outside the support and at `x = 0`. The log forms
-# divide them by the tail probability `exp(primal)`.
-function _dual_tail(f, complementary::Bool, logarithmic::Bool, k::Real, θ::Real, x::Real)
+# both in log space so they are zero outside the support. The log forms
+# divide them by the tail probability `exp(primal)`. Only the requested partials are
+# computed; the other is zero.
+function _dual_tail(
+        f, complementary::Bool, logarithmic::Bool, k::Real, θ::Real, x::Real,
+        with_θ::Bool, with_x::Bool,
+    )
+    k, θ, x = promote(k, θ, x)
     primal = f(k, θ, x)
-    log_partial_x = StatsFuns.gammalogpdf(k, θ, x)
-    log_partial_θ = log(k) + StatsFuns.gammalogpdf(k + 1, θ, x)
     sign = complementary ? -1 : 1
-    partial_θ = -sign * _partial_magnitude(log_partial_θ, primal, logarithmic)
-    partial_x = sign * _partial_magnitude(log_partial_x, primal, logarithmic)
+    partial_θ = zero(primal)
+    partial_x = zero(primal)
+    if with_θ
+        log_partial_θ = log(k) + StatsFuns.gammalogpdf(k + 1, θ, x)
+        partial_θ = -sign * _partial_magnitude(log_partial_θ, primal, logarithmic)
+    end
+    if with_x
+        log_partial_x = StatsFuns.gammalogpdf(k, θ, x)
+        partial_x = sign * _partial_magnitude(log_partial_x, primal, logarithmic)
+    end
     return primal, partial_θ, partial_x
 end
 
@@ -62,6 +73,8 @@ for (f, complementary, logarithmic) in (
                 x,
                 vy,
                 vz,
+                true,
+                true,
             )
             ForwardDiff.dual_definition_retval(
                 Val(Tyz),
@@ -82,6 +95,8 @@ for (f, complementary, logarithmic) in (
                 x,
                 vy,
                 z,
+                true,
+                false,
             )
             ForwardDiff.dual_definition_retval(
                 Val(Ty),
@@ -99,6 +114,8 @@ for (f, complementary, logarithmic) in (
                 x,
                 y,
                 vz,
+                false,
+                true,
             )
             ForwardDiff.dual_definition_retval(
                 Val(Tz),
