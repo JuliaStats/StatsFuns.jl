@@ -28,11 +28,21 @@
             ignore = (
                 # Ref https://github.com/JuliaTesting/ExplicitImports.jl/issues/92
                 :digamma,
+                # Not declared public in ForwardDiff, but `ForwardDiff.@define_ternary_dual_op`
+                # expands to unqualified uses of it
+                :≺,
             ),
         ) === nothing
 
         # No explicit imports (`using XY: Z`) that are not used
-        @test ExplicitImports.check_no_stale_explicit_imports(StatsFuns; ignore = (:digamma,)) === nothing
+        @test ExplicitImports.check_no_stale_explicit_imports(
+            StatsFuns;
+            ignore = (
+                :digamma,
+                # Only used in the expansion of `ForwardDiff.@define_ternary_dual_op`
+                :≺,
+            ),
+        ) === nothing
 
         # Nothing is accessed via modules other than its owner
         @test ExplicitImports.check_all_qualified_accesses_via_owners(StatsFuns) === nothing
@@ -43,6 +53,11 @@
             ignore = (
                 (VERSION < v"1.11" ? (:Fix2,) : ())...,
                 :promote_typeof,
+                # Not declared public in ForwardDiff
+                :value,
+                :partials,
+                :dual_definition_retval,
+                Symbol("@define_ternary_dual_op"),
             ),
         ) === nothing
 
