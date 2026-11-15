@@ -258,7 +258,7 @@ end
         end
     end
 
-    @testset "T = $T, ν = $ν" for T in (Float32, Float64), ν in (1, 2)
+    @testset "T = $T, ν = $ν" for T in (Float16, Float32, Float64), ν in (1, 2)
         logps = T[
             # p ≈ 1/2, where the quantile is tiny and the rounding error of `logtwo` has to be accounted for
             -logtwo;
@@ -268,13 +268,17 @@ end
             -logtwo / 2;
             prevfloat(T(-logtwo / 2));
             nextfloat(T(-logtwo / 2));
-            # other values in the bulk and in both tails (for logp = -30 and ν = 1, t^2 is still finite in Float32)
+            # other values in the bulk and in both tails
             -logtwo .+ T[-1, -0.5, -0.1, -1.0e-3, 1.0e-3, 0.1];
             T[-30, -10, -3, -1, -0.5, -0.2, -0.1, -1.0e-2, -1.0e-3, -1.0e-6, -1.0e-10, -1.0e-17];
         ]
         @testset "logp = $logp" for logp in logps
             t = @inferred(tdistinvlogcdf(T(ν), logp))::T
-            @test t ≈ T(tquantile(ν, logp)) rtol = 64 * eps(T)
+            ref = T(tquantile(ν, logp))
+            # t is computed from the F quantile t^2, which has to be a normal floating point number
+            if isinf(ref) || floatmin(T) ≤ ref^2 ≤ floatmax(T)
+                @test t ≈ ref rtol = 64 * eps(T)
+            end
             @test @inferred(tdistinvlogccdf(T(ν), logp))::T == -t
         end
     end
