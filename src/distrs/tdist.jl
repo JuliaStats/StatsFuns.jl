@@ -52,12 +52,9 @@ function tdistinvlogcdf(ν::T, logp::T) where {T <: Real}
     if isinf(ν)
         return norminvlogcdf(logp)
     else
-        logq = logp + logtwo
-        if logq < 0
-            return -sqrt(fdistinvlogccdf(one(ν), ν, logq))
-        else
-            return sqrt(fdistinvlogccdf(one(ν), ν, log2mexp(logq)))
-        end
+        # `-abs(l) = log(2 min(p, 1 - p))`
+        l = laplaceinvlogcdf(logp)
+        return copysign(sqrt(fdistinvlogccdf(one(ν), ν, -abs(l))), l)
     end
 end
 tdistinvlogcdf(ν::Real, logp::Real) = tdistinvlogcdf(map(float, promote(ν, logp))...)

@@ -73,6 +73,15 @@ ChainRulesCore.@scalar_rule(
 )
 
 ChainRulesCore.@scalar_rule(
+    laplacelogpdf(μ::Real, θ::Real, x::Number),
+    @setup(
+        z = (x - μ) / θ,
+        s = sign(z) / θ,
+    ),
+    (s, (abs(z) - 1) / θ, -s),
+)
+
+ChainRulesCore.@scalar_rule(
     poislogpdf(λ::Number, x::Number),
     ((iszero(x) && iszero(λ) ? zero(x / λ) : x / λ) - 1, ChainRulesCore.NoTangent()),
 )

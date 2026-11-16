@@ -125,6 +125,18 @@ export
     hyperinvlogcdf, # inverse-logcdf of hypergeometric distribution
     hyperinvlogccdf, # inverse-logccdf of hypergeometric distribution
 
+    # distrs/laplace
+    laplacepdf, # pdf of Laplace distribution
+    laplacelogpdf, # logpdf of Laplace distribution
+    laplacecdf, # cdf of Laplace distribution
+    laplaceccdf, # ccdf of Laplace distribution
+    laplacelogcdf, # logcdf of Laplace distribution
+    laplacelogccdf, # logccdf of Laplace distribution
+    laplaceinvcdf, # inverse-cdf of Laplace distribution
+    laplaceinvccdf, # inverse-ccdf of Laplace distribution
+    laplaceinvlogcdf, # inverse-logcdf of Laplace distribution
+    laplaceinvlogccdf, # inverse-logccdf of Laplace distribution
+
     # distrs/nbeta
     nbetapdf, # pdf of noncentral beta distribution
     nbetalogpdf, # logpdf of noncentral beta distribution
@@ -277,6 +289,7 @@ include("distrs/chisq.jl")
 include("distrs/fdist.jl")
 include("distrs/gamma.jl")
 include("distrs/hyper.jl")
+include("distrs/laplace.jl")
 include("distrs/nbeta.jl")
 include("distrs/nbinom.jl")
 include("distrs/nchisq.jl")
