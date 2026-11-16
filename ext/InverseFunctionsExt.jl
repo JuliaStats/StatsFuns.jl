@@ -1,4 +1,4 @@
-module StatsFunsInverseFunctionsExt
+module InverseFunctionsExt
 
 using StatsFuns
 import InverseFunctions

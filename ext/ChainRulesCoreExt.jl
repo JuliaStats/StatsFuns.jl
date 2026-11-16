@@ -1,4 +1,4 @@
-module StatsFunsChainRulesCoreExt
+module ChainRulesCoreExt
 
 using StatsFuns
 using SpecialFunctions: digamma, erf
