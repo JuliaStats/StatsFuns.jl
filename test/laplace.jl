@@ -62,6 +62,13 @@ end
         @test laplaceinvlogcdf(-1) === laplaceinvlogcdf(-1.0)
     end
 
+    @testset "low part of log(2): T = $T" for T in (Float16, Float32, Float64, BigFloat)
+        # `x` at the default precision of `T`, outside of `setprecision`
+        x = T(logtwo)
+        lo = setprecision(() -> big(logtwo) - x, BigFloat, 4 * precision(T))
+        @test StatsFuns._logtwo_lo(T)::T == T(lo)
+    end
+
     @testset "location and scale" begin
         μ, θ = 1.5, 2.0
         @testset "x = $x" for x in (-3.0, 1.5, 4.0)
