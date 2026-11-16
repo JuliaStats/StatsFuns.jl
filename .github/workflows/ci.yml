@@ -26,9 +26,9 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - min-patch # oldest supported version
-          - lts # LTS
-          - '1' # latest release
+          - 'min'
+          - '1'
+          - 'pre'
         os:
           - ubuntu-latest
           - macos-latest
