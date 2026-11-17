@@ -1,4 +1,4 @@
-module StatsFunsChainRulesCoreExt
+module ChainRulesCoreExt
 
 using StatsFuns
 using SpecialFunctions: digamma, erf
@@ -70,6 +70,15 @@ ChainRulesCore.@scalar_rule(
         invθ * z,
         - (1 + z) / x,
     ),
+)
+
+ChainRulesCore.@scalar_rule(
+    laplacelogpdf(μ::Real, θ::Real, x::Number),
+    @setup(
+        z = (x - μ) / θ,
+        s = sign(z) / θ,
+    ),
+    (s, (abs(z) - 1) / θ, -s),
 )
 
 ChainRulesCore.@scalar_rule(
