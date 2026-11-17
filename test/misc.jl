@@ -248,23 +248,38 @@ end
     end
 end
 
-@testitem "tdistinvlogcdf: numerical issue" begin
+@testitem "tdist quantiles: numerical issue" begin
     # closed-form quantiles for ν = 1 (Cauchy) and ν = 2 in terms of p and q = 1 - p
-    function tquantile(ν, logp)
+    function tquantile(ν, y, islog)
         return setprecision(BigFloat, 1024) do
-            p = exp(big(logp))
-            q = -expm1(big(logp))
+            p, q = islog ? (exp(big(y)), -expm1(big(y))) : (big(y), 1 - big(y))
             return ν == 1 ? cot(big(π) * q) : (p - q) / sqrt(2 * p * q)
         end
     end
 
-    @testset "T = $T, ν = $ν" for T in (Float16, Float32, Float64), ν in (1, 2)
+    @testset "tdistinvcdf: T = $T, ν = $ν" for T in (Float16, Float32, Float64), ν in (1, 2)
+        ps = T[
+            1.0e-30, 1.0e-20, 1.0e-10, 1.0e-5, 1.0e-3, 0.1, 0.3, 0.5, 0.7, 0.9,
+            1 - 1.0e-3, 1 - 1.0e-5, 1 - 1.0e-7, 1 - 1.0e-10, 1 - 1.0e-15,
+        ]
+        @testset "p = $p" for p in filter(p -> 0 < p < 1, ps)
+            t = @inferred(tdistinvcdf(T(ν), p))::T
+            ref = T(tquantile(ν, p, false))
+            # t is computed from the F quantile t^2, which has to be a normal floating point number
+            if isinf(ref) || floatmin(T) ≤ ref^2 ≤ floatmax(T)
+                @test t ≈ ref rtol = 64 * eps(T)
+            end
+            @test @inferred(tdistinvccdf(T(ν), p))::T == -t
+        end
+    end
+
+    @testset "tdistinvlogcdf: T = $T, ν = $ν" for T in (Float16, Float32, Float64), ν in (1, 2)
         logps = T[
             # p ≈ 1/2, where the quantile is tiny and the rounding error of `logtwo` has to be accounted for
             -logtwo;
             [prevfloat(T(-logtwo), k) for k in 1:3:30];
             [nextfloat(T(-logtwo), k) for k in 1:3:30];
-            # boundary between the two branches for p > 1/2
+            # boundary between the two branches of `laplaceinvlogcdf` for p > 1/2
             -logtwo / 2;
             prevfloat(T(-logtwo / 2));
             nextfloat(T(-logtwo / 2));
@@ -274,7 +289,7 @@ end
         ]
         @testset "logp = $logp" for logp in logps
             t = @inferred(tdistinvlogcdf(T(ν), logp))::T
-            ref = T(tquantile(ν, logp))
+            ref = T(tquantile(ν, logp, true))
             # t is computed from the F quantile t^2, which has to be a normal floating point number
             if isinf(ref) || floatmin(T) ≤ ref^2 ≤ floatmax(T)
                 @test t ≈ ref rtol = 64 * eps(T)

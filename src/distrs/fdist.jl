@@ -44,42 +44,32 @@ for f in ("cdf", "ccdf", "logcdf", "logccdf")
     @eval $ff(ν1::Real, ν2::Real, x::Real) = $ff(promote(ν1, ν2, x)...)
 end
 
-# The quantile is `ν2 * x / (ν1 * (1 - x))` for the corresponding quantile `x` of the beta variate
-# `u ~ Beta(ν1 / 2, ν2 / 2)`. For `x` close to 1 (the upper tail of the F distribution) `1 - x` has
-# to be computed directly instead of by subtraction.
-
-# `_beta_inc_inv` returns both `x` and `1 - x`
-# (currently inaccurate if the median of `u` is far from 1/2: https://github.com/JuliaMath/SpecialFunctions.jl/issues/578)
+# The quantile is `ν2 * x / (ν1 * (1 - x))` for the quantile `x` of `u ~ Beta(ν1 / 2, ν2 / 2)`,
+# with `1 - x` computed directly (inaccurate for skewed `u`: JuliaMath/SpecialFunctions.jl#578)
 function fdistinvcdf(ν1::T, ν2::T, p::T) where {T <: Real}
     x, xc = _beta_inc_inv(ν1 / 2, ν2 / 2, p)
     return (ν2 * x) / (ν1 * xc)
 end
 function fdistinvccdf(ν1::T, ν2::T, q::T) where {T <: Real}
-    # `1 - u ~ Beta(ν2 / 2, ν1 / 2)`
     xc, x = _beta_inc_inv(ν2 / 2, ν1 / 2, q)
     return (ν2 * x) / (ν1 * xc)
 end
 
-# `betainvlogcdf` and `betainvlogccdf` return only `x`. We solve for whichever of `u` and
-# `1 - u ~ Beta(ν2 / 2, ν1 / 2)` is at most 1/2 at the quantile, which is `u` if and only if the
-# lower tail probability is at most `P(u ≤ 1/2)` (equivalently, the upper one is at least `P(u > 1/2)`)
-for (f, fc, lower) in (("invlogcdf", "invlogccdf", true), ("invlogccdf", "invlogcdf", false))
-    ff = Symbol("fdist" * f)
-    bf = Symbol("beta" * f)
-    bfc = Symbol("beta" * fc)
-    @eval function $ff(ν1::T, ν2::T, logy::T) where {T <: Real}
-        a = ν1 / 2
-        b = ν2 / 2
-        phalf, qhalf = beta_inc(a, b, one(a) / 2)
-        if $(lower ? :(logy ≤ log(phalf)) : :(logy ≥ log(qhalf)))
-            x = $bf(a, b, logy)
-            return (ν2 * x) / (ν1 * (1 - x))
-        else
-            xc = $bfc(b, a, logy)
-            return (ν2 * (1 - xc)) / (ν1 * xc)
-        end
+# `betainvlogcdf` returns only `x`, so we solve for whichever of `u` and `1 - u ~ Beta(ν2 / 2, ν1 / 2)`
+# is at most 1/2 at the quantile, which is `u` if and only if `logp ≤ log(P(u ≤ 1/2))`
+function fdistinvlogcdf(ν1::T, ν2::T, logp::T) where {T <: Real}
+    a = ν1 / 2
+    b = ν2 / 2
+    if logp ≤ log(first(beta_inc(a, b, one(a) / 2)))
+        x = betainvlogcdf(a, b, logp)
+        return (ν2 * x) / (ν1 * (1 - x))
+    else
+        xc = betainvlogccdf(b, a, logp)
+        return (ν2 * (1 - xc)) / (ν1 * xc)
     end
 end
+# `1 / F ~ F(ν2, ν1)`
+fdistinvlogccdf(ν1::T, ν2::T, logq::T) where {T <: Real} = inv(fdistinvlogcdf(ν2, ν1, logq))
 
 for f in ("invcdf", "invccdf", "invlogcdf", "invlogccdf")
     ff = Symbol("fdist" * f)

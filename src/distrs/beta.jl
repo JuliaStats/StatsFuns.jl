@@ -75,9 +75,8 @@ function betalogccdf(α::Real, β::Real, x::Real)
     end
 end
 
-# `beta_inc_inv(α, β, p)`, i.e., the quantile `x` of `Beta(α, β)` for the lower tail probability `p`
-# and `1 - x`, including the degenerate cases with all mass at 0 (`α = 0`) or 1 (`β = 0`) for which
-# `beta_inc_inv` does not return (https://github.com/JuliaStats/StatsFuns.jl/issues/154)
+# `beta_inc_inv(α, β, p)`, i.e., `(x, 1 - x)` for the quantile `x`, but also for `α = 0` or `β = 0`
+# for which `beta_inc_inv` does not return (https://github.com/JuliaStats/StatsFuns.jl/issues/154)
 function _beta_inc_inv(α::Real, β::Real, p::Real)
     if 0 ≤ p ≤ 1
         if iszero(α) && β > 0
