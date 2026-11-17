@@ -46,6 +46,12 @@
         test_frule(tdistlogpdf, x, y)
         test_rrule(tdistlogpdf, x, y)
 
+        x = randn()  # location: unbounded
+        y = pos()
+        z = randn()  # differentiable except at `z == x`, which a random draw avoids
+        test_frule(laplacelogpdf, x, y, z)
+        test_rrule(laplacelogpdf, x, y, z)
+
         x = rand(1:100)  # `n`: integer, NoTangent
         y = unit01()
         z = rand(1:x)    # `k`: integer, NoTangent

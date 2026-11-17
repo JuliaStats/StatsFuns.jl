@@ -9,5 +9,10 @@
         InverseFunctions.test_inverse(norminvccdf, x)
         InverseFunctions.test_inverse(norminvlogcdf, log(x))
         InverseFunctions.test_inverse(norminvlogccdf, log(x))
+
+        InverseFunctions.test_inverse(laplaceinvcdf, x)
+        InverseFunctions.test_inverse(laplaceinvccdf, x)
+        InverseFunctions.test_inverse(laplaceinvlogcdf, log(x))
+        InverseFunctions.test_inverse(laplaceinvlogccdf, log(x))
     end
 end
