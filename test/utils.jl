@@ -176,8 +176,8 @@ end
     # that is precisely what is being tested - and for degrees of freedom of `floatmax` scale the
     # cancellation runs to 300 digits, well past the 77 that the default 256 bits give. At 256 bits
     # `logpdf(1e200, 1e300, 0.5)` is off by a relative 3.6e3 and would validate anything
-    function logpdf(ν1::Real, ν2::Real, x::Real)
-        return setprecision(BigFloat, 1024) do
+    function logpdf(ν1::Real, ν2::Real, x::Real; precision::Int = 1024)
+        return setprecision(BigFloat, precision) do
             _ν1, _ν2, _x = BigFloat(ν1), BigFloat(ν2), BigFloat(x)
             a, b = _ν1 / 2, _ν2 / 2
             a * log(_ν1 / _ν2) + (a - 1) * log(_x) - (a + b) * log1p(_ν1 * _x / _ν2) - logbeta(a, b)

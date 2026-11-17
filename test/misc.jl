@@ -150,6 +150,69 @@
     end
 end
 
+# https://github.com/JuliaStats/StatsFuns.jl/issues/225
+@testitem "fdist: both degrees of freedom large" setup = [FDistRef] begin
+    using StatsFuns
+    using Test
+
+    # This is a textbook log-gamma reference, not the implementation's grouped
+    # Stirling expression. Even 1024 bits are inadequate near x = 1 for degrees
+    # of freedom of floatmax scale. Check convergence at two higher precisions.
+    function check_large(ν1::T, ν2::T, x::T) where {T}
+        reference = FDistRef.logpdf(ν1, ν2, x; precision = 2048)
+        high = FDistRef.logpdf(ν1, ν2, x; precision = 3072)
+        @test isapprox(reference, high; rtol = big"1e-100", atol = big"1e-100")
+        actual = @inferred(fdistlogpdf(ν1, ν2, x))::T
+        tolerance = T === Float32 ? 64eps(T) : T(2.0e-12)
+        @test actual ≈ T(high) rtol = tolerance atol = tolerance
+        return actual
+    end
+
+    pairs = (
+        (20.0, 20.0), (20.1, 34.5),
+        (1.0e8, 1.0e8), (1.0e10, 1.0e10), (1.0e12, 1.0e12),
+        (1.0e16, 1.0e16), (1.0e100, 1.0e100), (1.0e300, 1.0e300),
+        (floatmax(Float64), floatmax(Float64)),
+        (1.0e8, 1.0e12), (1.0e12, 1.0e8),
+        (20.0, 1.0e300), (1.0e300, 20.0),
+        (1.0e100, 1.0e300), (1.0e300, 1.0e100),
+    )
+    @testset "Float64 ($ν1, $ν2)" for (ν1, ν2) in pairs
+        for x in (0.1, 0.5, prevfloat(1.0), 1.0, nextfloat(1.0), 2.0, 10.0)
+            check_large(ν1, ν2, x)
+        end
+    end
+
+    @testset "Float32 ($ν1, $ν2)" for (ν1, ν2) in (
+            (20.0f0, 20.0f0), (1.0f4, 1.0f4), (1.0f8, 1.0f8),
+            (1.0f20, 1.0f20), (floatmax(Float32), floatmax(Float32)),
+            (1.0f4, 1.0f8), (1.0f8, 1.0f4), (20.0f0, 1.0f30), (1.0f30, 20.0f0),
+        )
+        for x in (0.5f0, prevfloat(1.0f0), 1.0f0, nextfloat(1.0f0), 2.0f0)
+            check_large(ν1, ν2, x)
+        end
+    end
+
+    # Tail ratios and the branch boundary must not introduce a discontinuity.
+    for (ν1, ν2, x) in (
+            (20.0, 20.0, nextfloat(0.0)), (20.0, 20.0, floatmax(Float64)),
+            (1.0e300, 1.0e300, 1.0e-300), (1.0e300, 1.0e300, 1.0e300),
+            (20.0, 1.0e300, 1.0e300), (1.0e300, 20.0, 1.0e-300),
+            (prevfloat(20.0), 20.0, 1.0), (nextfloat(20.0), 20.0, 1.0),
+        )
+        check_large(ν1, ν2, x)
+    end
+    @test @inferred(fdistlogpdf(10^10, 10^10, 1)) === fdistlogpdf(1.0e10, 1.0e10, 1.0)
+
+    for T in (Float32, Float64), (ν1, ν2) in ((T(3), T(7)), (T(20), T(20)))
+        @test @inferred(fdistlogpdf(ν1, ν2, T(-1))) == -T(Inf)
+        @test @inferred(fdistlogpdf(ν1, ν2, zero(T))) == -T(Inf)
+        @test @inferred(fdistlogpdf(ν1, ν2, -zero(T))) == -T(Inf)
+        @test @inferred(fdistlogpdf(ν1, ν2, T(Inf))) == -T(Inf)
+        @test isnan(@inferred(fdistlogpdf(ν1, ν2, T(NaN))))
+    end
+end
+
 # https://github.com/JuliaStats/StatsFuns.jl/issues/224
 @testitem "fdist: numerical issue" setup = [FDistRef] begin
     using StatsFuns
