@@ -75,31 +75,24 @@ function betalogccdf(α::Real, β::Real, x::Real)
     end
 end
 
-function betainvcdf(α::Real, β::Real, p::Real)
-    # Handle degenerate cases
+# `beta_inc_inv(α, β, p)`, i.e., `(x, 1 - x)` for the quantile `x`, but also for `α = 0` or `β = 0`
+# for which `beta_inc_inv` does not return (https://github.com/JuliaStats/StatsFuns.jl/issues/154)
+function _beta_inc_inv(α::Real, β::Real, p::Real)
     if 0 ≤ p ≤ 1
         if iszero(α) && β > 0
-            return last(promote(α, β, p, false))
+            _, _, _, x, xc = promote(α, β, p, false, true)
+            return x, xc
         elseif iszero(β) && α > 0
-            return last(promote(α, β, p, p > 0))
+            _, _, _, x, xc = promote(α, β, p, p > 0, p == 0)
+            return x, xc
         end
     end
 
-    return first(beta_inc_inv(α, β, p))
+    return beta_inc_inv(α, β, p)
 end
 
-function betainvccdf(α::Real, β::Real, p::Real)
-    # Handle degenerate cases
-    if 0 ≤ p ≤ 1
-        if iszero(α) && β > 0
-            return last(promote(α, β, p, p == 0))
-        elseif iszero(β) && α > 0
-            return last(promote(α, β, p, true))
-        end
-    end
-
-    return last(beta_inc_inv(β, α, p))
-end
+betainvcdf(α::Real, β::Real, p::Real) = first(_beta_inc_inv(α, β, p))
+betainvccdf(α::Real, β::Real, p::Real) = last(_beta_inc_inv(β, α, p))
 
 # Rmath implementations
 function betainvlogcdf(α::Real, β::Real, lq::Real)

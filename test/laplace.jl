@@ -97,25 +97,6 @@ end
     end
 end
 
-@testitem "tdistinvlogcdf via laplaceinvlogcdf" begin
-    using StatsFuns, Test
-
-    # closed forms of the t quantile for ν = 1 (Cauchy) and ν = 2
-    function tquantile(ν, logp)
-        return setprecision(BigFloat, 1024) do
-            p = exp(big(logp))
-            ν == 1 ? -cot(big(π) * p) : (2p - 1) / sqrt(2p * (1 - p))
-        end
-    end
-    @testset "T = $T, ν = $ν" for T in (Float32, Float64), ν in (1, 2)
-        l2 = T(-log(big(2)))
-        @testset "logp = $logp" for logp in T[-3, -1, nextfloat(l2, -3), l2, nextfloat(l2, 3), -0.5, -0.1]
-            t = @inferred(tdistinvlogcdf(T(ν), logp))::T
-            @test t ≈ tquantile(ν, logp) rtol = 64 * eps(T)
-        end
-    end
-end
-
 @testitem "Laplace ForwardDiff" tags = [:autodiff] begin
     using StatsFuns, Test
     using ForwardDiff: derivative

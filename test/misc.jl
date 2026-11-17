@@ -208,3 +208,93 @@ end
     @test fdistcdf(1.0, 1.0e308, 1.0e308) == 1
     @test fdistcdf(1.0, 1.0e308, 0.9e308) == 1
 end
+
+@testitem "fdist quantiles: numerical issue" begin
+    # quantiles obtained by inverting the closed-form cdf for ν1 = 2 or ν2 = 2:
+    #   ν1 = 2: cdf(x) = 1 - (1 + 2x / ν2)^(-ν2 / 2)   =>  x = ν2 / 2 * (q^(-2 / ν2) - 1)
+    #   ν2 = 2: cdf(x) = (ν1 x / (ν1 x + 2))^(ν1 / 2)  =>  x = 2 / (ν1 * (p^(-2 / ν1) - 1))
+    # where `p` and `q = 1 - p` are the exact lower and upper tail probabilities of the argument `y`
+    function fquantile(ν1, ν2, y, islog, lower)
+        return setprecision(BigFloat, 1024) do
+            e, c = islog ? (exp(big(y)), -expm1(big(y))) : (big(y), 1 - big(y))
+            p, q = lower ? (e, c) : (c, e)
+            ν1 == 2 ? big(ν2) / 2 * (q^(-2 / big(ν2)) - 1) : 2 / (big(ν1) * (p^(-2 / big(ν1)) - 1))
+        end
+    end
+
+    @testset "$f, T = $T, (ν1, ν2) = ($ν1, $ν2)" for T in (Float32, Float64),
+            (ν1, ν2) in ((2, 1), (2, 30), (1, 2), (40, 2), (2, 1.0e4), (1.0e4, 2)),
+            (f, islog, lower) in (
+                (fdistinvcdf, false, true), (fdistinvccdf, false, false),
+                (fdistinvlogcdf, true, true), (fdistinvlogccdf, true, false),
+            )
+
+        # `beta_inc_inv` is inaccurate if the median of the beta variate is far from 1/2:
+        # https://github.com/JuliaMath/SpecialFunctions.jl/issues/578
+        if islog || max(ν1, ν2) < 100
+            ys = if islog
+                T[-30, -10, -1, -logtwo, -0.1, -1.0e-3, -1.0e-10, -1.0e-17]
+            else
+                T[1.0e-30, 1.0e-10, 1.0e-3, 0.1, 0.5, 0.9, 0.999, 1 - 1.0e-5, 1 - 1.0e-7]
+            end
+            @testset "y = $y" for y in ys
+                ref = fquantile(ν1, ν2, y, islog, lower)
+                # quantiles that are normal floating point numbers of type `T`
+                if floatmin(T) ≤ ref ≤ floatmax(T)
+                    @test @inferred(f(T(ν1), T(ν2), y))::T ≈ T(ref) rtol = 64 * eps(T)
+                end
+            end
+        end
+    end
+end
+
+@testitem "tdist quantiles: numerical issue" begin
+    # closed-form quantiles for ν = 1 (Cauchy) and ν = 2 in terms of p and q = 1 - p
+    function tquantile(ν, y, islog)
+        return setprecision(BigFloat, 1024) do
+            p, q = islog ? (exp(big(y)), -expm1(big(y))) : (big(y), 1 - big(y))
+            return ν == 1 ? cot(big(π) * q) : (p - q) / sqrt(2 * p * q)
+        end
+    end
+
+    @testset "tdistinvcdf: T = $T, ν = $ν" for T in (Float16, Float32, Float64), ν in (1, 2)
+        ps = T[
+            1.0e-30, 1.0e-20, 1.0e-10, 1.0e-5, 1.0e-3, 0.1, 0.3, 0.5, 0.7, 0.9,
+            1 - 1.0e-3, 1 - 1.0e-5, 1 - 1.0e-7, 1 - 1.0e-10, 1 - 1.0e-15,
+        ]
+        @testset "p = $p" for p in filter(p -> 0 < p < 1, ps)
+            t = @inferred(tdistinvcdf(T(ν), p))::T
+            ref = T(tquantile(ν, p, false))
+            # t is computed from the F quantile t^2, which has to be a normal floating point number
+            if isinf(ref) || floatmin(T) ≤ ref^2 ≤ floatmax(T)
+                @test t ≈ ref rtol = 64 * eps(T)
+            end
+            @test @inferred(tdistinvccdf(T(ν), p))::T == -t
+        end
+    end
+
+    @testset "tdistinvlogcdf: T = $T, ν = $ν" for T in (Float16, Float32, Float64), ν in (1, 2)
+        logps = T[
+            # p ≈ 1/2, where the quantile is tiny and the rounding error of `logtwo` has to be accounted for
+            -logtwo;
+            [prevfloat(T(-logtwo), k) for k in 1:3:30];
+            [nextfloat(T(-logtwo), k) for k in 1:3:30];
+            # boundary between the two branches of `laplaceinvlogcdf` for p > 1/2
+            -logtwo / 2;
+            prevfloat(T(-logtwo / 2));
+            nextfloat(T(-logtwo / 2));
+            # other values in the bulk and in both tails
+            -logtwo .+ T[-1, -0.5, -0.1, -1.0e-3, 1.0e-3, 0.1];
+            T[-30, -10, -3, -1, -0.5, -0.2, -0.1, -1.0e-2, -1.0e-3, -1.0e-6, -1.0e-10, -1.0e-17];
+        ]
+        @testset "logp = $logp" for logp in logps
+            t = @inferred(tdistinvlogcdf(T(ν), logp))::T
+            ref = T(tquantile(ν, logp, true))
+            # t is computed from the F quantile t^2, which has to be a normal floating point number
+            if isinf(ref) || floatmin(T) ≤ ref^2 ≤ floatmax(T)
+                @test t ≈ ref rtol = 64 * eps(T)
+            end
+            @test @inferred(tdistinvlogccdf(T(ν), logp))::T == -t
+        end
+    end
+end

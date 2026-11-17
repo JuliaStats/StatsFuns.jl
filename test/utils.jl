@@ -30,7 +30,11 @@
     end
 
     function rmathcomp(basename::String, params, X::AbstractArray, rtol = _default_rtol(params, X))
-        rbasename = if basename == "nfdist"
+        rbasename = if basename == "fdist"
+            "f"
+        elseif basename == "tdist"
+            "t"
+        elseif basename == "nfdist"
             "nf"
         elseif basename == "ntdist"
             "nt"

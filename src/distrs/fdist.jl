@@ -43,12 +43,35 @@ for f in ("cdf", "ccdf", "logcdf", "logccdf")
     end
     @eval $ff(ν1::Real, ν2::Real, x::Real) = $ff(promote(ν1, ν2, x)...)
 end
+
+# The quantile is `ν2 * x / (ν1 * (1 - x))` for the quantile `x` of `u ~ Beta(ν1 / 2, ν2 / 2)`,
+# with `1 - x` computed directly (inaccurate for skewed `u`: JuliaMath/SpecialFunctions.jl#578)
+function fdistinvcdf(ν1::T, ν2::T, p::T) where {T <: Real}
+    x, xc = _beta_inc_inv(ν1 / 2, ν2 / 2, p)
+    return (ν2 * x) / (ν1 * xc)
+end
+function fdistinvccdf(ν1::T, ν2::T, q::T) where {T <: Real}
+    xc, x = _beta_inc_inv(ν2 / 2, ν1 / 2, q)
+    return (ν2 * x) / (ν1 * xc)
+end
+
+# `betainvlogcdf` returns only `x`, so we solve for whichever of `u` and `1 - u ~ Beta(ν2 / 2, ν1 / 2)`
+# is at most 1/2 at the quantile, which is `u` if and only if `logp ≤ log(P(u ≤ 1/2))`
+function fdistinvlogcdf(ν1::T, ν2::T, logp::T) where {T <: Real}
+    a = ν1 / 2
+    b = ν2 / 2
+    if logp ≤ log(first(beta_inc(a, b, one(a) / 2)))
+        x = betainvlogcdf(a, b, logp)
+        return (ν2 * x) / (ν1 * (1 - x))
+    else
+        xc = betainvlogccdf(b, a, logp)
+        return (ν2 * (1 - xc)) / (ν1 * xc)
+    end
+end
+# `1 / F ~ F(ν2, ν1)`
+fdistinvlogccdf(ν1::T, ν2::T, logq::T) where {T <: Real} = inv(fdistinvlogcdf(ν2, ν1, logq))
+
 for f in ("invcdf", "invccdf", "invlogcdf", "invlogccdf")
     ff = Symbol("fdist" * f)
-    bf = Symbol("beta" * f)
-    @eval function $ff(ν1::T, ν2::T, y::T) where {T <: Real}
-        x = $bf(ν1 / 2, ν2 / 2, y)
-        return x / (1 - x) * ν2 / ν1
-    end
     @eval $ff(ν1::Real, ν2::Real, y::Real) = $ff(promote(ν1, ν2, y)...)
 end
