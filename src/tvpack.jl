@@ -128,10 +128,10 @@ end
 # # One Dimensional Globally Adaptive Integration Function
 
 function adonet(f::Function, a::Float64, b::Float64, tol::Float64)
-    ai = Vector{Float64}(100)
-    bi = Vector{Float64}(100)
-    ei = Vector{Float64}(100)
-    fi = Vector{Float64}(100)
+    ai = Vector{Float64}(undef, 100)
+    bi = Vector{Float64}(undef, 100)
+    ei = Vector{Float64}(undef, 100)
+    fi = Vector{Float64}(undef, 100)
     ai[1] = a
     bi[1] = b
     err = 1.0

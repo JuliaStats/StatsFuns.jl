@@ -56,7 +56,7 @@
             JET.test_package(StatsFuns; target_modules = (StatsFuns,), mode = :typo)
 
             # Analyze methods based on their declared signature
-            JET.report_package(StatsFuns; target_modules = (StatsFuns,))
+            JET.test_package(StatsFuns; target_modules = (StatsFuns,))
         end
     end
 end
